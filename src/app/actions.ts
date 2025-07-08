@@ -4,12 +4,25 @@ import { randomUUID } from 'crypto';
 import { initialSubmissions } from '@/lib/data';
 import { users } from '@/lib/data';
 import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
-import type { Submission, SubmissionStatus, User } from '@/lib/types';
+import type { Submission, SubmissionStatus } from '@/lib/types';
 
-// This is our in-memory "database".
-// It's a mutable array that lives on the server and is initialized with some sample data.
-// It will be reset if the server restarts.
-let submissions: Submission[] = [...initialSubmissions];
+
+// --- In-memory database for development ---
+// This creates a global variable to store submissions, making the data
+// persist across Next.js hot reloads. This is for demonstration purposes
+// and would be replaced by a real database (like PostgreSQL, MongoDB, or Firebase)
+// in a production application.
+declare global {
+  var submissions: Submission[];
+}
+
+if (!global.submissions) {
+  global.submissions = [...initialSubmissions];
+}
+
+const submissions = global.submissions;
+// --- End of in-memory database ---
+
 
 export async function getSubmissions(): Promise<Submission[]> {
     // Simulate network delay
@@ -84,12 +97,12 @@ export async function updateSubmissionStatus(id: string, status: SubmissionStatu
 }
 
 export async function deleteSubmission(id: string) {
-    const initialLength = submissions.length;
-    submissions = submissions.filter(s => s.id !== id);
-    
-    if (submissions.length === initialLength) {
+    const index = submissions.findIndex(s => s.id === id);
+    if (index === -1) {
          return { success: false, message: "Submission not found." };
     }
+    
+    submissions.splice(index, 1);
     
     return { success: true, message: "Submission deleted." };
 }
