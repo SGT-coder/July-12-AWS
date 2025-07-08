@@ -38,6 +38,10 @@ const strategicPlanSchema = z.object({
     executingBody: z.string({ required_error: "ፈጻሚ አካል መምረጥ ያስፈልጋል" }).min(1, "ፈጻሚ አካል መምረጥ ያስፈልጋል"),
     executionTime: z.string({ required_error: "የሚከናወንበት ጊዜ መምረጥ ያስፈልጋል" }).min(1, "የሚከናወንበት ጊዜ መምረጥ ያስፈልጋል"),
     budgetSource: z.string({ required_error: "የበጀት ምንጭ መምረጥ ያስፈልጋል" }).min(1, "የበጀት ምንጭ መምረጥ ያስፈልጋል"),
+    governmentBudgetAmount: z.string().optional(),
+    governmentBudgetCode: z.string().optional(),
+    grantBudgetAmount: z.string().optional(),
+    sdgBudgetAmount: z.string().optional(),
 });
 
 type StrategicPlanFormValues = z.infer<typeof strategicPlanSchema>;
@@ -51,8 +55,14 @@ export function StrategicPlanForm() {
         metric: "",
         mainTask: "",
         mainTaskTarget: "",
+        governmentBudgetAmount: "",
+        governmentBudgetCode: "",
+        grantBudgetAmount: "",
+        sdgBudgetAmount: "",
     },
   });
+
+  const budgetSource = form.watch("budgetSource");
 
   function onSubmit(data: StrategicPlanFormValues) {
     console.log(data);
@@ -228,49 +238,98 @@ export function StrategicPlanForm() {
             
             <Card>
                 <CardHeader><CardTitle className="text-xl">አፈጻጸም እና በጀት</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <FormField control={form.control} name="executingBody" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>ፈጻሚ አካል</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="ፈጻሚ አካል ይምረጡ" /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="internal">ውስጣዊ</SelectItem>
-                                    <SelectItem value="external">ውጫዊ</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="executionTime" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>የሚከናወንበት ጊዜ</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="የሚከናወንበትን ጊዜ ይምረጡ" /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="q1">ሩብ 1</SelectItem>
-                                    <SelectItem value="q2">ሩብ 2</SelectItem>
-                                    <SelectItem value="q3">ሩብ 3</SelectItem>
-                                    <SelectItem value="q4">ሩብ 4</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="budgetSource" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>በጀት ምንጭ</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="የበጀት ምንጭ ይምረጡ" /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="gov">መንግስት</SelectItem>
-                                    <SelectItem value="private">የግል</SelectItem>
-                                    <SelectItem value="ngo">መንግስታዊ ያልሆነ</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <FormField control={form.control} name="executingBody" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>ፈጻሚ አካል</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="ፈጻሚ አካል ይምረጡ" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="internal">ውስጣዊ</SelectItem>
+                                        <SelectItem value="external">ውጫዊ</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="executionTime" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>የሚከናወንበት ጊዜ</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="የሚከናወንበትን ጊዜ ይምረጡ" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="q1">ሩብ 1</SelectItem>
+                                        <SelectItem value="q2">ሩብ 2</SelectItem>
+                                        <SelectItem value="q3">ሩብ 3</SelectItem>
+                                        <SelectItem value="q4">ሩብ 4</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="budgetSource" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>በጀት ምንጭ</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="የበጀት ምንጭ ይምረጡ" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="gov">መንግስት</SelectItem>
+                                        <SelectItem value="grant">ግራንት</SelectItem>
+                                        <SelectItem value="sdg">ኢስዲጂ</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </div>
+                    
+                    {budgetSource && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t">
+                            {budgetSource === 'gov' && (
+                                <>
+                                    <FormField control={form.control} name="governmentBudgetAmount" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>ከመንግስት በጀት በብር</FormLabel>
+                                            <FormControl><Input placeholder="ብር" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="governmentBudgetCode" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>ከመንግስት በጀት ኮድ</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="ኮድ ይምረጡ" /></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="code1">ኮድ 100</SelectItem>
+                                                    <SelectItem value="code2">ኮድ 200</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                </>
+                            )}
+                             {budgetSource === 'grant' && (
+                                <FormField control={form.control} name="grantBudgetAmount" render={({ field }) => (
+                                    <FormItem className="md:col-span-1">
+                                        <FormLabel>ከግራንት በጀት በብር</FormLabel>
+                                        <FormControl><Input placeholder="ብር" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                            )}
+                            {budgetSource === 'sdg' && (
+                                <FormField control={form.control} name="sdgBudgetAmount" render={({ field }) => (
+                                    <FormItem className="md:col-span-1">
+                                        <FormLabel>ከኢስ ዲ ጂ በጀት በብር</FormLabel>
+                                        <FormControl><Input placeholder="ብር" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                            )}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
