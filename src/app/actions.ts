@@ -1,33 +1,24 @@
 'use server';
 
 import { randomUUID } from 'crypto';
-import { initialSubmissions } from '@/lib/data';
+import { collection, doc, getDocs, query, setDoc, updateDoc, deleteDoc, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { users } from '@/lib/data';
 import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
 import type { Submission, SubmissionStatus } from '@/lib/types';
 
 
-// --- In-memory database for development ---
-// This creates a global variable to store submissions, making the data
-// persist across Next.js hot reloads. This is for demonstration purposes
-// and would be replaced by a real database (like PostgreSQL, MongoDB, or Firebase)
-// in a production application.
-declare global {
-  var submissions: Submission[];
-}
-
-if (!global.submissions) {
-  global.submissions = [...initialSubmissions];
-}
-
-const submissions = global.submissions;
-// --- End of in-memory database ---
-
-
 export async function getSubmissions(): Promise<Submission[]> {
-    // Simulate network delay
-    await new Promise((res) => setTimeout(res, 300));
-    return submissions;
+    try {
+        const submissionsCol = collection(db, 'submissions');
+        const q = query(submissionsCol, orderBy('submittedAt', 'desc'));
+        const submissionSnapshot = await getDocs(q);
+        const submissionList = submissionSnapshot.docs.map(doc => doc.data() as Submission);
+        return submissionList;
+    } catch (error) {
+        console.error("Error fetching submissions: ", error);
+        return [];
+    }
 }
 
 export async function addSubmission(data: StrategicPlanFormValues) {
@@ -37,14 +28,14 @@ export async function addSubmission(data: StrategicPlanFormValues) {
         return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
 
-    // Since we don't have login, we'll assign a default user for submissions made through the 'User' role.
     const user = users.find(u => u.id === 'user1');
     if (!user) {
         return { success: false, message: "Default user not found." };
     }
     
+    const newId = randomUUID();
     const newSubmission: Submission = {
-        id: randomUUID(),
+        id: newId,
         userId: user.id,
         userName: user.name,
         status: 'Pending',
@@ -53,9 +44,13 @@ export async function addSubmission(data: StrategicPlanFormValues) {
         ...parsedData.data,
     };
     
-    submissions.unshift(newSubmission);
-    
-    return { success: true, submission: newSubmission, message: "ዕቅድ በተሳካ ሁኔታ ገብቷል!" };
+    try {
+        await setDoc(doc(db, "submissions", newId), newSubmission);
+        return { success: true, submission: newSubmission, message: "ዕቅድ በተሳካ ሁኔታ ገብቷል!" };
+    } catch (error) {
+        console.error("Error adding submission: ", error);
+        return { success: false, message: "An error occurred while saving the submission." };
+    }
 }
 
 export async function updateSubmission(id: string, data: StrategicPlanFormValues) {
@@ -64,45 +59,50 @@ export async function updateSubmission(id: string, data: StrategicPlanFormValues
         return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
 
-    const index = submissions.findIndex(s => s.id === id);
-    if (index === -1) {
-        return { success: false, message: "Submission not found." };
-    }
-    
-    const updatedSubmission = {
-        ...submissions[index],
+    const submissionRef = doc(db, 'submissions', id);
+
+    const updatedData = {
         ...parsedData.data,
-        status: 'Pending' as SubmissionStatus, // Reset status on edit
+        status: 'Pending' as SubmissionStatus,
         lastModifiedAt: new Date().toISOString(),
     };
-    submissions[index] = updatedSubmission;
-
-    return { success: true, submission: updatedSubmission, message: "ዕቅድ በተሳካ ሁኔታ ተስተካክሏል!" };
+    
+    try {
+        await updateDoc(submissionRef, updatedData);
+        return { success: true, message: "ዕቅድ በተሳካ ሁኔታ ተስተካክሏል!" };
+    } catch (error) {
+        console.error("Error updating submission: ", error);
+        return { success: false, message: "An error occurred while updating the submission." };
+    }
 }
 
 export async function updateSubmissionStatus(id: string, status: SubmissionStatus, comments?: string) {
-    const index = submissions.findIndex(s => s.id === id);
-    if (index === -1) {
-        return { success: false, message: "Submission not found." };
-    }
+    const submissionRef = doc(db, 'submissions', id);
     
-    submissions[index] = {
-        ...submissions[index],
+    const statusUpdate: Partial<Submission> = {
         status,
-        comments: comments && comments.trim() !== '' ? comments : submissions[index].comments,
         lastModifiedAt: new Date().toISOString(),
     };
-    
-    return { success: true, message: `Status updated to ${status}` };
+
+    if (comments && comments.trim() !== '') {
+        statusUpdate.comments = comments;
+    }
+
+    try {
+        await updateDoc(submissionRef, statusUpdate);
+        return { success: true, message: `Status updated to ${status}` };
+    } catch (error) {
+        console.error("Error updating status: ", error);
+        return { success: false, message: "An error occurred while updating the status." };
+    }
 }
 
 export async function deleteSubmission(id: string) {
-    const index = submissions.findIndex(s => s.id === id);
-    if (index === -1) {
-         return { success: false, message: "Submission not found." };
+    try {
+        await deleteDoc(doc(db, 'submissions', id));
+        return { success: true, message: "Submission deleted." };
+    } catch (error) {
+        console.error("Error deleting submission: ", error);
+        return { success: false, message: "An error occurred while deleting the submission." };
     }
-    
-    submissions.splice(index, 1);
-    
-    return { success: true, message: "Submission deleted." };
 }
