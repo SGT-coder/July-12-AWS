@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
-import { UserDashboard } from "@/components/dashboard/user-dashboard";
+import { ApproverLogin } from "@/components/auth/approver-login";
 import { ApproverDashboard } from "@/components/dashboard/approver-dashboard";
 import { StrategicPlanForm } from "@/components/forms/strategic-plan-form";
 import { SubmissionView } from "@/components/forms/submission-view";
@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
-  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'form' | 'view-submission'>('role-selector');
+  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'form' | 'view-submission' | 'approver-login'>('role-selector');
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -23,9 +23,12 @@ export default function Home() {
   const { toast } = useToast();
 
   React.useEffect(() => {
-    if (view !== 'role-selector') {
+    if (view === 'dashboard') {
       fetchSubmissions();
+    } else if (view === 'role-selector') {
+        setIsLoading(false);
     } else {
+        // For other views like form, login, etc., we don't need to load all submissions initially.
         setIsLoading(false);
     }
   }, [view]);
@@ -39,15 +42,28 @@ export default function Home() {
 
   const handleSelectRole = (selectedRole: Role) => {
     if (selectedRole) {
-      setRole(selectedRole);
       if (selectedRole === 'User') {
+        setRole('User');
         setView('form');
         setCurrentSubmissionId(null);
-      } else {
-        setView('dashboard');
+      } else if (selectedRole === 'Approver') {
+        setView('approver-login');
       }
     }
   };
+
+  const handleApproverLogin = (username: string, password: string):boolean => {
+    // Hardcoded credentials for demonstration
+    if (username === 'admin' && password === 'password') {
+        setRole('Approver');
+        setView('dashboard');
+        toast({ title: "Login Successful", description: "Welcome, Approver!" });
+        return true;
+    } else {
+        toast({ title: "Login Failed", description: "Invalid username or password.", variant: "destructive" });
+        return false;
+    }
+  }
 
   const handleLogout = () => {
     setRole(null);
@@ -71,11 +87,12 @@ export default function Home() {
   };
   
   const handleBack = () => {
-      if (role === 'User') {
-        // A user who cancels a form goes back to role selection
+      if (view === 'form' && role === 'User') {
         handleLogout();
-      } else {
-        // An approver goes back to their dashboard
+      } else if (view === 'approver-login') {
+        handleLogout();
+      }
+      else {
         setView('dashboard');
         setCurrentSubmissionId(null);
       }
@@ -92,7 +109,6 @@ export default function Home() {
       });
       
       if (role === 'User') {
-        // For a public user, just reset the form for a new submission
         setFormKey(Date.now());
       } else {
         setView('dashboard');
@@ -130,7 +146,6 @@ export default function Home() {
   };
 
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
-  const userSubmissions = submissions.filter(s => s.userId === 'user1'); // Simplified for now
 
   const renderContent = () => {
     if (isLoading && view !== 'role-selector') {
@@ -145,7 +160,6 @@ export default function Home() {
 
     switch(view) {
       case 'dashboard':
-        // The 'User' role no longer has a dashboard
         if (role === 'Approver') {
           return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateStatus} onDelete={handleDelete} />;
         }
@@ -159,6 +173,9 @@ export default function Home() {
           return <SubmissionView submission={currentSubmission} onBack={handleBack} />;
         }
         return null;
+
+      case 'approver-login':
+        return <ApproverLogin onLogin={handleApproverLogin} onBack={handleBack} />;
 
       default:
         return <RoleSelector onSelectRole={handleSelectRole} />;
