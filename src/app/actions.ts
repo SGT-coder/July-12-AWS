@@ -15,7 +15,7 @@ export async function getSubmissions(): Promise<Submission[]> {
     return submissions;
 }
 
-export async function addSubmission(data: StrategicPlanFormValues, user: User) {
+export async function addSubmission(data: StrategicPlanFormValues) {
     const parsedData = strategicPlanSchema.safeParse(data);
 
     if (!parsedData.success) {
@@ -24,8 +24,7 @@ export async function addSubmission(data: StrategicPlanFormValues, user: User) {
     
     const newSubmission: Submission = {
         id: `sub${Date.now()}`,
-        userId: user.id,
-        userName: user.name,
+        userId: 'public_user', // Generic ID for public submissions
         status: 'Pending',
         submittedAt: new Date().toISOString(),
         lastModifiedAt: new Date().toISOString(),

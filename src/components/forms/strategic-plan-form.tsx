@@ -27,6 +27,7 @@ import { strategicPlanSchema, type StrategicPlanFormValues } from "@/lib/schemas
 import type { Submission } from "@/lib/types";
 
 const defaultFormValues: StrategicPlanFormValues = {
+    userName: "",
     projectTitle: "",
     department: "",
     goal: "",
@@ -51,7 +52,7 @@ const defaultFormValues: StrategicPlanFormValues = {
 interface StrategicPlanFormProps {
     submission?: Submission;
     onSave: (data: StrategicPlanFormValues, id?: string) => void;
-    onCancel: () => void;
+    onCancel?: () => void;
     isSubmitting: boolean;
 }
 
@@ -87,7 +88,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Card className="max-w-5xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center font-headline">{submission ? "ዕቅድ አርትዕ" : "አዲስ ስልታዊ ዕቅድ"}</CardTitle>
+            <CardTitle className="text-3xl font-bold text-center font-headline">{submission ? "ዕቅድ አርትዕ" : "ስትራቴጂ ጉዳዮች ዕቅድ ማስገቢያ ቅጽ"}</CardTitle>
             <CardDescription className="text-center text-lg">
               ለግምገማ አዲስ ስልታዊ ዕቅድ ለማስገባት እባክዎ ከታች ያሉትን መስኮች ይሙሉ
             </CardDescription>
@@ -97,6 +98,13 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
             <Card>
                 <CardHeader><CardTitle className="text-xl">አጠቃላይ መረጃ</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="userName" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>ሙሉ ስም</FormLabel>
+                            <FormControl><Input placeholder="ሙሉ ስምዎን ያስገቡ" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
                     <FormField control={form.control} name="projectTitle" render={({ field }) => (
                         <FormItem>
                             <FormLabel>የእቅድ ርዕስ</FormLabel>
@@ -344,7 +352,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
 
           </CardContent>
           <CardFooter className="flex justify-end gap-4 p-6">
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>ተመለስ</Button>
+              {onCancel && <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>ተመለስ</Button>}
               <Button type="button" variant="ghost" onClick={handleReset} disabled={isSubmitting}>አጽዳ</Button>
               <Button type="submit" disabled={isSubmitting} className="text-lg px-6 py-4">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (submission ? 'ለውጦችን አስቀምጥ' : 'ዕቅድ አስገባ')}
