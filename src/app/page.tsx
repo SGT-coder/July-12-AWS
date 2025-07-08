@@ -157,7 +157,7 @@ export default function Home() {
     setView('approver-login');
   };
 
-  const handleResetPassword = async (email: string) => {
+  const handleResetPassword = async (name: string, email: string) => {
       toast({ title: "Password Reset Requested", description: `If an account exists for ${email}, a reset link will be sent.` });
       setView('approver-login');
   };
