@@ -20,10 +20,10 @@ export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
     <div className="flex flex-col items-center justify-center pt-16">
       <div className="text-center mb-12">
         <h1 className="font-headline text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-          Welcome to AHRI Workflow
+          ወደ AHRI Workflow እንኳን በደህና መጡ
         </h1>
         <p className="mt-4 text-lg leading-8 text-gray-600">
-          Digitizing strategic planning for a more efficient future.
+          ለበለጠ ውጤታማነት ስትራቴጂካዊ ዕቅድን በዲጂታል መልክ ማደራጀት።
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl w-full">
@@ -32,14 +32,14 @@ export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
             <div className="p-4 bg-primary/10 rounded-full mb-4">
               <User className="h-10 w-10 text-primary" />
             </div>
-            <CardTitle className="font-headline text-2xl">User</CardTitle>
+            <CardTitle className="font-headline text-2xl">ተጠቃሚ</CardTitle>
             <CardDescription>
-              Fill and submit forms for strategic planning and activities.
+              የስትራቴጂክ ዕቅድ እና የሥራ እንቅስቃሴ ቅጾችን ይሙሉ እና ያስገቡ።
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center px-8 pb-8">
             <Button onClick={() => onSelectRole("User")} className="w-full">
-              Proceed as User
+              እንደ ተጠቃሚ ይቀጥሉ
             </Button>
           </CardContent>
         </Card>
@@ -48,14 +48,14 @@ export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
             <div className="p-4 bg-accent/10 rounded-full mb-4">
               <Shield className="h-10 w-10 text-accent" />
             </div>
-            <CardTitle className="font-headline text-2xl">Approver</CardTitle>
+            <CardTitle className="font-headline text-2xl">አጽዳቂ</CardTitle>
             <CardDescription>
-              Review, approve, or reject submitted forms and manage workflows.
+              የገቡ ቅጾችን ይገምግሙ፣ ያጽድቁ ወይም ውድቅ ያድርጉ እና የሥራ ሂደቶችን ያስተዳድሩ።
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center px-8 pb-8">
             <Button onClick={() => onSelectRole("Approver")} className="w-full" style={{backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))'}}>
-              Proceed as Approver
+              እንደ አጽዳቂ ይቀጥሉ
             </Button>
           </CardContent>
         </Card>

@@ -38,7 +38,7 @@ export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
     <div className="max-w-4xl mx-auto space-y-6">
       <Button variant="outline" onClick={onBack}>
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Dashboard
+        ወደ ዳሽቦርድ ተመለስ
       </Button>
 
       <Card>
@@ -46,18 +46,18 @@ export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="font-headline text-3xl">{submission.projectTitle}</CardTitle>
-              <CardDescription>Submitted by {submission.userName}</CardDescription>
+              <CardDescription>ያስገባው: {submission.userName}</CardDescription>
             </div>
             <StatusBadge status={submission.status} className="text-base px-4 py-2" />
           </div>
         </CardHeader>
         <CardContent>
           <dl className="divide-y">
-            <DescriptionListItem term="Department">{submission.department}</DescriptionListItem>
-            <DescriptionListItem term="Goal">{submission.goal}</DescriptionListItem>
-            <DescriptionListItem term="Objective">{submission.objective}</DescriptionListItem>
-            <DescriptionListItem term="Submitted At"><DateDisplay dateString={submission.submittedAt} includeTime /></DescriptionListItem>
-            <DescriptionListItem term="Last Modified"><DateDisplay dateString={submission.lastModifiedAt} includeTime /></DescriptionListItem>
+            <DescriptionListItem term="ዲፓርትመንት">{submission.department}</DescriptionListItem>
+            <DescriptionListItem term="ግብ">{submission.goal}</DescriptionListItem>
+            <DescriptionListItem term="ዓላማ">{submission.objective}</DescriptionListItem>
+            <DescriptionListItem term="የገባበት ቀን"><DateDisplay dateString={submission.submittedAt} includeTime /></DescriptionListItem>
+            <DescriptionListItem term="ለመጨረሻ ጊዜ የተሻሻለው"><DateDisplay dateString={submission.lastModifiedAt} includeTime /></DescriptionListItem>
           </dl>
         </CardContent>
       </Card>
@@ -103,7 +103,7 @@ export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
             </dl>
         </CardContent>
         <CardFooter className="text-right">
-            <p className="w-full text-xl font-bold">Total Budget: <span className="text-primary">{totalBudget.toLocaleString()} ብር</span></p>
+            <p className="w-full text-xl font-bold">ጠቅላላ በጀት: <span className="text-primary">{totalBudget.toLocaleString()} ብር</span></p>
         </CardFooter>
       </Card>
 
@@ -112,8 +112,8 @@ export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
            <CardHeader className="flex flex-row items-center gap-4">
             <MessageSquareWarning className="h-8 w-8 text-amber-600" />
             <div>
-                <CardTitle className="font-headline text-amber-900">Approver Comments</CardTitle>
-                <CardDescription className="text-amber-700">Feedback from the reviewer.</CardDescription>
+                <CardTitle className="font-headline text-amber-900">የአጽዳቂው አስተያየት</CardTitle>
+                <CardDescription className="text-amber-700">ከገምጋሚው የተሰጠ አስተያየት።</CardDescription>
             </div>
            </CardHeader>
            <CardContent>

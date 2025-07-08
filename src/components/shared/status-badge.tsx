@@ -9,6 +9,12 @@ interface StatusBadgeProps extends BadgeProps {
   status: SubmissionStatus;
 }
 
+const statusTranslations: Record<SubmissionStatus, string> = {
+  Approved: "ጸድቋል",
+  Pending: "በመጠባበቅ ላይ",
+  Rejected: "ውድቅ ተደርጓል",
+};
+
 export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
   const statusConfig = {
     Approved: {
@@ -29,6 +35,7 @@ export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
   };
 
   const config = statusConfig[status];
+  const translatedStatus = statusTranslations[status];
 
   return (
     <Badge
@@ -37,7 +44,7 @@ export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
       {...props}
     >
       {config.icon}
-      {status}
+      {translatedStatus}
     </Badge>
   );
 }

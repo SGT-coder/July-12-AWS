@@ -50,7 +50,7 @@ export default function Home() {
         const fetchedSubmissions = await getSubmissions();
         setSubmissions(fetchedSubmissions);
     } catch (error) {
-        toast({ title: "Error", description: "Failed to load submissions.", variant: "destructive" });
+        toast({ title: "ስህተት", description: "ዕቅዶችን መጫን አልተቻለም", variant: "destructive" });
     } finally {
         setIsLoading(false);
     }
@@ -93,7 +93,7 @@ export default function Home() {
         setView({ name: currentUser?.role === "User" ? "USER_DASHBOARD" : "APPROVER_DASHBOARD" });
     } else {
         toast({
-            title: "Error Submitting",
+            title: "በማስገባት ላይ ስህተት",
             description: result.message,
             variant: "destructive"
         });

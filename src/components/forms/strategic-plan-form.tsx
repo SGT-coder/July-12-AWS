@@ -87,7 +87,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Card className="max-w-5xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center font-headline">{submission ? "Edit" : "New"} Strategic Plan</CardTitle>
+            <CardTitle className="text-3xl font-bold text-center font-headline">{submission ? "ዕቅድ አርትዕ" : "አዲስ ስልታዊ ዕቅድ"}</CardTitle>
             <CardDescription className="text-center text-lg">
               ለግምገማ አዲስ ስልታዊ ዕቅድ ለማስገባት እባክዎ ከታች ያሉትን መስኮች ይሙሉ
             </CardDescription>

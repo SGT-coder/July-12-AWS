@@ -39,26 +39,26 @@ export function UserDashboard({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="font-headline">My Submissions</CardTitle>
+          <CardTitle className="font-headline">የእኔ ማመልከቻዎች</CardTitle>
           <CardDescription>
-            Track the status of your strategic planning forms.
+            የእርስዎን ስልታዊ የዕቅድ ቅጾች ሁኔታ ይከታተሉ።
           </CardDescription>
         </div>
         <Button onClick={onCreateNew}>
           <FilePlus className="mr-2 h-4 w-4" />
-          New Submission
+          አዲስ ማመልከቻ
         </Button>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Project Title</TableHead>
-              <TableHead>Submitted At</TableHead>
-              <TableHead>Last Updated</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>የፕሮጀክት ርዕስ</TableHead>
+              <TableHead>የገባበት ቀን</TableHead>
+              <TableHead>ለመጨረሻ ጊዜ የተሻሻለው</TableHead>
+              <TableHead>ሁኔታ</TableHead>
               <TableHead>
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">ድርጊቶች</span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -79,11 +79,11 @@ export function UserDashboard({
                     <StatusBadge status={submission.status} />
                   </TableCell>
                   <TableCell className="text-right">
-                     <Button variant="ghost" size="icon" onClick={() => onView(submission.id)} aria-label="View">
+                     <Button variant="ghost" size="icon" onClick={() => onView(submission.id)} aria-label="ይመልከቱ">
                        <Eye className="h-4 w-4" />
                      </Button>
                     {submission.status === 'Rejected' && (
-                       <Button variant="ghost" size="icon" onClick={() => onEdit(submission.id)} aria-label="Edit">
+                       <Button variant="ghost" size="icon" onClick={() => onEdit(submission.id)} aria-label="አርትዕ">
                          <Edit className="h-4 w-4" />
                        </Button>
                     )}
@@ -95,11 +95,11 @@ export function UserDashboard({
                  <TableCell colSpan={5} className="h-48 text-center">
                    <div className="flex flex-col items-center gap-4">
                      <FileWarning className="mx-auto h-12 w-12 text-muted-foreground" />
-                     <h3 className="text-xl font-semibold">No submissions yet</h3>
-                     <p className="text-muted-foreground">Click the button below to create your first submission.</p>
+                     <h3 className="text-xl font-semibold">እስካሁን ምንም ማመልከቻዎች የሉም</h3>
+                     <p className="text-muted-foreground">የመጀመሪያ ማመልከቻዎን ለመፍጠር ከታች ያለውን ቁልፍ ይጫኑ።</p>
                      <Button onClick={onCreateNew}>
                        <FilePlus className="mr-2 h-4 w-4" />
-                       Create New Submission
+                       አዲስ ማመልከቻ ይፍጠሩ
                      </Button>
                    </div>
                  </TableCell>

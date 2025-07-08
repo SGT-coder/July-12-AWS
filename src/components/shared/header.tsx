@@ -25,12 +25,12 @@ export function AppHeader({ role, onLogout }: HeaderProps) {
               <div className="hidden sm:flex items-center space-x-2 text-sm text-muted-foreground">
                 <UserCircle className="w-5 h-5" />
                 <span>
-                  Role: <span className="font-semibold text-foreground">{role}</span>
+                  ሚና: <span className="font-semibold text-foreground">{role}</span>
                 </span>
               </div>
               <Button variant="outline" size="sm" onClick={onLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                Logout
+                ውጣ
               </Button>
             </div>
           )}
