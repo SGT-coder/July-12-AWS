@@ -1,5 +1,6 @@
 'use server';
 
+import { randomUUID } from 'crypto';
 import { initialSubmissions } from '@/lib/data';
 import { users } from '@/lib/data';
 import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
@@ -30,7 +31,7 @@ export async function addSubmission(data: StrategicPlanFormValues) {
     }
     
     const newSubmission: Submission = {
-        id: `sub${Date.now()}`,
+        id: randomUUID(),
         userId: user.id,
         userName: user.name,
         status: 'Pending',

@@ -8,6 +8,7 @@ import {
   Eye,
   Trash2,
   FileWarning,
+  Search,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -46,6 +48,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Submission, SubmissionStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { DateDisplay } from "@/components/shared/date-display";
@@ -109,6 +119,53 @@ export function ApproverDashboard({
   onUpdateStatus,
   onDelete,
 }: ApproverDashboardProps) {
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [departmentFilter, setDepartmentFilter] = React.useState("all");
+  const [statusFilter, setStatusFilter] = React.useState<SubmissionStatus | "all">("all");
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const ITEMS_PER_PAGE = 5;
+
+  const filteredSubmissions = React.useMemo(() => {
+    return submissions
+      .filter((submission) =>
+        submission.projectTitle.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter((submission) =>
+        departmentFilter === "all" ? true : submission.department === departmentFilter
+      )
+      .filter((submission) =>
+        statusFilter === "all" ? true : submission.status === statusFilter
+      );
+  }, [submissions, searchTerm, departmentFilter, statusFilter]);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, departmentFilter, statusFilter]);
+  
+  const totalPages = Math.ceil(filteredSubmissions.length / ITEMS_PER_PAGE);
+  const paginatedSubmissions = filteredSubmissions.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePreviousPage = () => {
+      setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+      setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const departmentTranslations: { [key: string]: string } = {
+    hr: "Human Resources",
+    finance: "Finance",
+    it: "IT",
+  };
+
+  const departmentOptions = React.useMemo(() => {
+      return [...new Set(submissions.map(s => s.department))];
+  }, [submissions]);
+
 
   return (
     <Card>
@@ -119,6 +176,39 @@ export function ApproverDashboard({
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search by project title..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-full"
+                />
+            </div>
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by Department" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Departments</SelectItem>
+                    {departmentOptions.map(dept => (
+                      <SelectItem key={dept} value={dept}>{departmentTranslations[dept] || dept}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as SubmissionStatus | "all")}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by Status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Approved">Approved</SelectItem>
+                    <SelectItem value="Rejected">Rejected</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -135,15 +225,15 @@ export function ApproverDashboard({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {submissions.length > 0 ? (
-              submissions.map((submission) => (
+            {paginatedSubmissions.length > 0 ? (
+              paginatedSubmissions.map((submission) => (
                 <TableRow key={submission.id}>
                   <TableCell className="font-medium">
                     {submission.projectTitle}
                   </TableCell>
                   <TableCell>{submission.userName}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{submission.department}</Badge>
+                    <Badge variant="outline">{departmentTranslations[submission.department] || submission.department}</Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <DateDisplay dateString={submission.submittedAt} />
@@ -207,13 +297,43 @@ export function ApproverDashboard({
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   <FileWarning className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                  No submissions found.
+                  No submissions found matching your criteria.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </CardContent>
+      {totalPages > 1 && (
+         <CardFooter className="flex items-center justify-between border-t pt-6">
+            <div className="text-sm text-muted-foreground">
+                Showing{' '}
+                <strong>
+                    {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredSubmissions.length)}-
+                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredSubmissions.length)}
+                </strong>{' '}
+                of <strong>{filteredSubmissions.length}</strong> submissions
+            </div>
+            <div className="flex items-center gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                </Button>
+            </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }
