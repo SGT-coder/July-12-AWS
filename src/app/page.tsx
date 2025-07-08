@@ -11,10 +11,12 @@ import { ApproverDashboard } from "@/components/dashboard/approver-dashboard";
 import { StrategicPlanForm } from "@/components/forms/strategic-plan-form";
 import { SubmissionView } from "@/components/forms/submission-view";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RegisterForm } from "@/components/auth/register-form";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
-  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'form' | 'view-submission' | 'approver-login'>('role-selector');
+  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'form' | 'view-submission' | 'approver-login' | 'register' | 'reset-password'>('role-selector');
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -52,15 +54,15 @@ export default function Home() {
     }
   };
 
-  const handleApproverLogin = (username: string, password: string):boolean => {
+  const handleApproverLogin = (email: string, password: string):boolean => {
     // Hardcoded credentials for demonstration
-    if (username === 'admin' && password === 'password') {
+    if (email.toLowerCase() === 'admin@example.com' && password === 'password') {
         setRole('Approver');
         setView('dashboard');
         toast({ title: "Login Successful", description: "Welcome, Approver!" });
         return true;
     } else {
-        toast({ title: "Login Failed", description: "Invalid username or password.", variant: "destructive" });
+        toast({ title: "Login Failed", description: "Invalid email or password.", variant: "destructive" });
         return false;
     }
   }
@@ -89,7 +91,7 @@ export default function Home() {
   const handleBack = () => {
       if (view === 'form' && role === 'User') {
         handleLogout();
-      } else if (view === 'approver-login') {
+      } else if (view === 'approver-login' || view === 'register' || view === 'reset-password') {
         handleLogout();
       }
       else {
@@ -97,6 +99,10 @@ export default function Home() {
         setCurrentSubmissionId(null);
       }
   };
+
+  const handleBackToLogin = () => {
+      setView('approver-login');
+  }
 
   const handleSaveSubmission = async (data: StrategicPlanFormValues, id?: string) => {
     setIsSubmitting(true);
@@ -145,6 +151,19 @@ export default function Home() {
     }
   };
 
+  // --- Placeholder Auth Functions ---
+  const handleRegister = async (data: any) => {
+    toast({ title: "Registration Submitted", description: "In a real app, a confirmation email would be sent." });
+    setView('approver-login');
+  };
+
+  const handleResetPassword = async (email: string) => {
+      toast({ title: "Password Reset Requested", description: `If an account exists for ${email}, a reset link will be sent.` });
+      setView('approver-login');
+  };
+  // ------------------------------------
+
+
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
 
   const renderContent = () => {
@@ -175,7 +194,13 @@ export default function Home() {
         return null;
 
       case 'approver-login':
-        return <ApproverLogin onLogin={handleApproverLogin} onBack={handleBack} />;
+        return <ApproverLogin onLogin={handleApproverLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} />;
+
+      case 'register':
+        return <RegisterForm onRegister={handleRegister} onBack={handleBackToLogin} />;
+      
+      case 'reset-password':
+        return <ResetPasswordForm onReset={handleResetPassword} onBack={handleBackToLogin} />;
 
       default:
         return <RoleSelector onSelectRole={handleSelectRole} />;
