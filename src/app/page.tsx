@@ -1,27 +1,29 @@
 "use client";
 
 import * as React from "react";
-import type { Role, Submission, SubmissionStatus, User } from "@/lib/types";
+import type { Role, Submission, StrategicPlanFormValues } from "@/lib/types";
 import { initialSubmissions, users } from "@/lib/data";
 import { RoleSelector } from "@/components/auth/role-selector";
 import { UserDashboard } from "@/components/dashboard/user-dashboard";
 import { ApproverDashboard } from "@/components/dashboard/approver-dashboard";
-import { SubmissionForm } from "@/components/forms/submission-form";
+import { StrategicPlanForm } from "@/components/forms/strategic-plan-form";
 import { SubmissionView } from "@/components/forms/submission-view";
 import { AppHeader } from "@/components/shared/header";
 import { useToast } from "@/hooks/use-toast";
+import { SubmissionStatus } from "@/lib/types";
 
 type View =
   | { name: "ROLE_SELECTION" }
   | { name: "USER_DASHBOARD" }
   | { name: "APPROVER_DASHBOARD" }
-  | { name: "SUBMISSION_FORM"; submissionId?: string }
+  | { name: "STRATEGIC_PLAN_FORM"; submissionId?: string }
   | { name: "SUBMISSION_VIEW"; submissionId: string };
 
 export default function Home() {
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [view, setView] = React.useState<View>({ name: "ROLE_SELECTION" });
   const [submissions, setSubmissions] = React.useState<Submission[]>(initialSubmissions);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
 
   const handleSelectRole = (role: Role) => {
@@ -41,32 +43,37 @@ export default function Home() {
     setView({ name: "ROLE_SELECTION" });
   };
   
-  const handleSaveSubmission = (data: Partial<Submission>) => {
-    const isEditing = !!data.id;
+  const handleSaveSubmission = (data: StrategicPlanFormValues, id?: string) => {
+    setIsSubmitting(true);
+    const isEditing = !!id;
     
-    setSubmissions(prev => {
-        if (isEditing) {
-            return prev.map(s => s.id === data.id ? { ...s, ...data, lastModifiedAt: new Date().toISOString() } : s);
-        } else {
-            const newSubmission: Submission = {
-                id: `sub${Date.now()}`,
-                userId: currentUser!.id,
-                userName: currentUser!.name,
-                status: 'Pending',
-                submittedAt: new Date().toISOString(),
-                lastModifiedAt: new Date().toISOString(),
-                ...data
-            } as Submission;
-            return [newSubmission, ...prev];
-        }
-    });
+    // Simulate server delay
+    setTimeout(() => {
+        setSubmissions(prev => {
+            if (isEditing) {
+                return prev.map(s => s.id === id ? { ...s, ...data, lastModifiedAt: new Date().toISOString(), status: 'Pending' } : s);
+            } else {
+                const newSubmission: Submission = {
+                    id: `sub${Date.now()}`,
+                    userId: currentUser!.id,
+                    userName: currentUser!.name,
+                    status: 'Pending',
+                    submittedAt: new Date().toISOString(),
+                    lastModifiedAt: new Date().toISOString(),
+                    ...data
+                };
+                return [newSubmission, ...prev];
+            }
+        });
 
-    toast({
-      title: isEditing ? "Submission Updated" : "Submission Created",
-      description: `Your submission "${data.projectTitle}" has been saved.`,
-    });
+        toast({
+          title: isEditing ? "ዕቅድ ተስተካክሏል" : "ዕቅድ ገብቷል",
+          description: `"${data.projectTitle}" የተሰኘው እቅድዎ ተቀምጧል።`,
+        });
 
-    setView({ name: currentUser?.role === "User" ? "USER_DASHBOARD" : "APPROVER_DASHBOARD" });
+        setIsSubmitting(false);
+        setView({ name: currentUser?.role === "User" ? "USER_DASHBOARD" : "APPROVER_DASHBOARD" });
+    }, 1000);
   };
 
   const handleDeleteSubmission = (id: string) => {
@@ -85,6 +92,10 @@ export default function Home() {
       description: `The submission has been marked as ${status}.`,
     });
   }
+  
+  const handleBackToDashboard = () => {
+      setView({ name: currentUser?.role === "User" ? "USER_DASHBOARD" : "APPROVER_DASHBOARD" });
+  }
 
   const renderContent = () => {
     switch (view.name) {
@@ -95,9 +106,9 @@ export default function Home() {
         return (
           <UserDashboard
             submissions={userSubmissions}
-            onCreateNew={() => setView({ name: "SUBMISSION_FORM" })}
+            onCreateNew={() => setView({ name: "STRATEGIC_PLAN_FORM" })}
             onView={(id) => setView({ name: "SUBMISSION_VIEW", submissionId: id })}
-            onEdit={(id) => setView({ name: "SUBMISSION_FORM", submissionId: id })}
+            onEdit={(id) => setView({ name: "STRATEGIC_PLAN_FORM", submissionId: id })}
           />
         );
       case "APPROVER_DASHBOARD":
@@ -109,14 +120,14 @@ export default function Home() {
             onDelete={handleDeleteSubmission}
           />
         );
-      case "SUBMISSION_FORM":
+      case "STRATEGIC_PLAN_FORM":
         const submissionToEdit = submissions.find(s => s.id === view.submissionId);
         return (
-            <SubmissionForm
+            <StrategicPlanForm
                 submission={submissionToEdit}
                 onSave={handleSaveSubmission}
-                onCancel={() => setView({ name: currentUser?.role === "User" ? "USER_DASHBOARD" : "APPROVER_DASHBOARD" })}
-                allSubmissions={submissions}
+                onCancel={handleBackToDashboard}
+                isSubmitting={isSubmitting}
             />
         );
       case "SUBMISSION_VIEW":
@@ -128,7 +139,7 @@ export default function Home() {
         return (
             <SubmissionView
                 submission={submissionToView}
-                onBack={() => setView({ name: currentUser?.role === "User" ? "USER_DASHBOARD" : "APPROVER_DASHBOARD" })}
+                onBack={handleBackToDashboard}
             />
         );
       default:

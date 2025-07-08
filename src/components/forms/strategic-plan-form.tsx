@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
@@ -23,111 +23,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { strategicPlanSchema, type StrategicPlanFormValues } from "@/lib/schemas";
-import { submitStrategicPlan } from "@/app/actions";
+import type { Submission } from "@/lib/types";
 
-export function StrategicPlanForm() {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const defaultFormValues: StrategicPlanFormValues = {
+    projectTitle: "",
+    department: "",
+    goal: "",
+    objective: "",
+    strategicAction: "",
+    metric: "",
+    mainTask: "",
+    mainTaskTarget: "",
+    objectiveWeight: "",
+    strategicActionWeight: "",
+    metricWeight: "",
+    mainTaskWeight: "",
+    executingBody: "",
+    executionTime: "",
+    budgetSource: "",
+    governmentBudgetAmount: "",
+    governmentBudgetCode: "",
+    grantBudgetAmount: "",
+    sdgBudgetAmount: "",
+};
 
+interface StrategicPlanFormProps {
+    submission?: Submission;
+    onSave: (data: StrategicPlanFormValues, id?: string) => void;
+    onCancel: () => void;
+    isSubmitting: boolean;
+}
+
+export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }: StrategicPlanFormProps) {
   const form = useForm<StrategicPlanFormValues>({
     resolver: zodResolver(strategicPlanSchema),
-    defaultValues: {
-        planTitle: "",
-        department: "",
-        goal: "",
-        objective: "",
-        strategicAction: "",
-        metric: "",
-        mainTask: "",
-        mainTaskTarget: "",
-        objectiveWeight: "",
-        strategicActionWeight: "",
-        metricWeight: "",
-        mainTaskWeight: "",
-        executingBody: "",
-        executionTime: "",
-        budgetSource: "",
-        governmentBudgetAmount: "",
-        governmentBudgetCode: "",
-        grantBudgetAmount: "",
-        sdgBudgetAmount: "",
-    },
+    defaultValues: submission ? {
+        ...defaultFormValues,
+        ...submission,
+    } : defaultFormValues,
   });
+
+  useEffect(() => {
+    if (submission) {
+      form.reset(submission);
+    } else {
+      form.reset(defaultFormValues);
+    }
+  }, [submission, form]);
 
   const budgetSource = form.watch("budgetSource");
 
-  async function onSubmit(data: StrategicPlanFormValues) {
-    setIsSubmitting(true);
-    try {
-      const result = await submitStrategicPlan(data);
-      if (result.success) {
-        toast({
-          title: "ተሳክቷል!",
-          description: result.message,
-        });
-        form.reset({
-            planTitle: "",
-            department: "",
-            goal: "",
-            objective: "",
-            strategicAction: "",
-            metric: "",
-            mainTask: "",
-            mainTaskTarget: "",
-            objectiveWeight: "",
-            strategicActionWeight: "",
-            metricWeight: "",
-            mainTaskWeight: "",
-            executingBody: "",
-            executionTime: "",
-            budgetSource: "",
-            governmentBudgetAmount: "",
-            governmentBudgetCode: "",
-            grantBudgetAmount: "",
-            sdgBudgetAmount: "",
-        });
-      } else {
-        toast({
-          title: "ስህተት",
-          description: result.message || "የማይታወቅ ስህተት ተፈጥሯል።",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-       toast({
-          title: "ስህተት",
-          description: "የማይታወቅ ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።",
-          variant: "destructive",
-        });
-    } finally {
-        setIsSubmitting(false);
-    }
+  function onSubmit(data: StrategicPlanFormValues) {
+    onSave(data, submission?.id);
   }
   
   const handleReset = () => {
-    form.reset({
-        planTitle: "",
-        department: "",
-        goal: "",
-        objective: "",
-        strategicAction: "",
-        metric: "",
-        mainTask: "",
-        mainTaskTarget: "",
-        objectiveWeight: "",
-        strategicActionWeight: "",
-        metricWeight: "",
-        mainTaskWeight: "",
-        executingBody: "",
-        executionTime: "",
-        budgetSource: "",
-        governmentBudgetAmount: "",
-        governmentBudgetCode: "",
-        grantBudgetAmount: "",
-        sdgBudgetAmount: "",
-    });
+    form.reset(defaultFormValues);
   }
 
   return (
@@ -135,7 +87,7 @@ export function StrategicPlanForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Card className="max-w-5xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center font-headline">ስትራቴጂ ጉዳዮች ዕቅድ ማስገቢያ ቅጽ</CardTitle>
+            <CardTitle className="text-3xl font-bold text-center font-headline">{submission ? "Edit" : "New"} Strategic Plan</CardTitle>
             <CardDescription className="text-center text-lg">
               ለግምገማ አዲስ ስልታዊ ዕቅድ ለማስገባት እባክዎ ከታች ያሉትን መስኮች ይሙሉ
             </CardDescription>
@@ -145,7 +97,7 @@ export function StrategicPlanForm() {
             <Card>
                 <CardHeader><CardTitle className="text-xl">አጠቃላይ መረጃ</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField control={form.control} name="planTitle" render={({ field }) => (
+                    <FormField control={form.control} name="projectTitle" render={({ field }) => (
                         <FormItem>
                             <FormLabel>የእቅድ ርዕስ</FormLabel>
                             <FormControl><Input placeholder="የዕቅዱን ርዕስ ያስገቡ" {...field} /></FormControl>
@@ -392,9 +344,10 @@ export function StrategicPlanForm() {
 
           </CardContent>
           <CardFooter className="flex justify-end gap-4 p-6">
-              <Button type="button" variant="outline" onClick={handleReset} disabled={isSubmitting} className="text-lg px-6 py-4">አጽዳ</Button>
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>ተመለስ</Button>
+              <Button type="button" variant="ghost" onClick={handleReset} disabled={isSubmitting}>አጽዳ</Button>
               <Button type="submit" disabled={isSubmitting} className="text-lg px-6 py-4">
-                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'ዕቅድ አስገባ'}
+                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (submission ? 'ለውጦችን አስቀምጥ' : 'ዕቅድ አስገባ')}
               </Button>
           </CardFooter>
         </Card>

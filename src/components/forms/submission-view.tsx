@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageSquareWarning } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { DateDisplay } from "@/components/shared/date-display";
-import { Separator } from "@/components/ui/separator";
 
 interface SubmissionViewProps {
   submission: Submission;
@@ -21,14 +20,19 @@ interface SubmissionViewProps {
 }
 
 const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode }) => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-1 py-3">
-    <dt className="font-medium text-muted-foreground">{term}</dt>
-    <dd className="md:col-span-2">{children}</dd>
-  </div>
+    !children || children === '' ? null :
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-1 py-3">
+      <dt className="font-medium text-muted-foreground">{term}</dt>
+      <dd className="md:col-span-2">{children}</dd>
+    </div>
 );
 
 export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
-  const totalBudget = submission.activities.reduce((acc, activity) => acc + activity.budget, 0);
+  const totalBudget = [
+    submission.governmentBudgetAmount,
+    submission.grantBudgetAmount,
+    submission.sdgBudgetAmount
+  ].reduce((acc, amount) => acc + (Number(amount) || 0), 0);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -50,34 +54,56 @@ export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
         <CardContent>
           <dl className="divide-y">
             <DescriptionListItem term="Department">{submission.department}</DescriptionListItem>
-            <DescriptionListItem term="Budget Year">{submission.budgetYear}</DescriptionListItem>
+            <DescriptionListItem term="Goal">{submission.goal}</DescriptionListItem>
+            <DescriptionListItem term="Objective">{submission.objective}</DescriptionListItem>
             <DescriptionListItem term="Submitted At"><DateDisplay dateString={submission.submittedAt} includeTime /></DescriptionListItem>
             <DescriptionListItem term="Last Modified"><DateDisplay dateString={submission.lastModifiedAt} includeTime /></DescriptionListItem>
-            <DescriptionListItem term="Objective">{submission.objective}</DescriptionListItem>
-            <DescriptionListItem term="Expected Outcome">{submission.expectedOutcome}</DescriptionListItem>
           </dl>
         </CardContent>
       </Card>
 
-      <Card>
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+            <CardHeader><CardTitle className="font-headline">ዝርዝር ዕቅድ</CardTitle></CardHeader>
+            <CardContent>
+                <dl className="divide-y">
+                    <DescriptionListItem term="ስትራቴጂክ እርምጃ">{submission.strategicAction}</DescriptionListItem>
+                    <DescriptionListItem term="መለኪያ">{submission.metric}</DescriptionListItem>
+                    <DescriptionListItem term="ዋና ተግባር">{submission.mainTask}</DescriptionListItem>
+                    <DescriptionListItem term="የዋና ተግባር ዒላማ">{submission.mainTaskTarget}</DescriptionListItem>
+                </dl>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader><CardTitle className="font-headline">ክብደቶች</CardTitle></CardHeader>
+            <CardContent>
+                <dl className="divide-y">
+                    <DescriptionListItem term="ዓላማ ክብደት">{submission.objectiveWeight}</DescriptionListItem>
+                    <DescriptionListItem term="ስትራቴጂክ እርምጃ ክብደት">{submission.strategicActionWeight}</DescriptionListItem>
+                    <DescriptionListItem term="የመለኪያ ክብደት">{submission.metricWeight}</DescriptionListItem>
+                    <DescriptionListItem term="የዋና ተግባር ክብደት">{submission.mainTaskWeight}</DescriptionListItem>
+                </dl>
+            </CardContent>
+        </Card>
+      </div>
+
+       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Activities</CardTitle>
-          <CardDescription>Detailed breakdown of project activities.</CardDescription>
+          <CardTitle className="font-headline text-2xl">አፈጻጸም እና በጀት</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {submission.activities.map((activity, index) => (
-            <div key={activity.id} className="p-4 border rounded-lg">
-              <h4 className="font-bold text-lg">{index + 1}. {activity.name}</h4>
-              <p className="text-muted-foreground mt-1">{activity.description}</p>
-              <div className="flex justify-between items-center mt-3 text-sm">
-                <span className="font-medium">Timeline: <span className="font-normal">{activity.timeline}</span></span>
-                <span className="font-medium text-primary">Budget: <span className="font-normal">${activity.budget.toLocaleString()}</span></span>
-              </div>
-            </div>
-          ))}
+        <CardContent>
+            <dl className="divide-y">
+                <DescriptionListItem term="ፈጻሚ አካል">{submission.executingBody}</DescriptionListItem>
+                <DescriptionListItem term="የሚከናወንበት ጊዜ">{submission.executionTime}</DescriptionListItem>
+                <DescriptionListItem term="በጀት ምንጭ">{submission.budgetSource}</DescriptionListItem>
+                <DescriptionListItem term="ከመንግስት በጀት በብር">{submission.governmentBudgetAmount}</DescriptionListItem>
+                <DescriptionListItem term="ከመንግስት በጀት ኮድ">{submission.governmentBudgetCode}</DescriptionListItem>
+                <DescriptionListItem term="ከግራንት በጀት በብር">{submission.grantBudgetAmount}</DescriptionListItem>
+                <DescriptionListItem term="ከኢስ ዲ ጂ በጀት በብር">{submission.sdgBudgetAmount}</DescriptionListItem>
+            </dl>
         </CardContent>
         <CardFooter className="text-right">
-            <p className="w-full text-xl font-bold">Total Budget: <span className="text-primary">${totalBudget.toLocaleString()}</span></p>
+            <p className="w-full text-xl font-bold">Total Budget: <span className="text-primary">{totalBudget.toLocaleString()} ብር</span></p>
         </CardFooter>
       </Card>
 

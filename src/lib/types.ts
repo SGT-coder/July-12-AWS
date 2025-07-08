@@ -1,23 +1,14 @@
+import type { strategicPlanSchema } from "@/lib/schemas";
+import type { z } from "zod";
+
 export type SubmissionStatus = "Pending" | "Approved" | "Rejected";
 
-export interface Activity {
-  id: string;
-  name: string;
-  description: string;
-  timeline: string;
-  budget: number;
-}
+export type StrategicPlanFormValues = z.infer<typeof strategicPlanSchema>;
 
-export interface Submission {
+export interface Submission extends StrategicPlanFormValues {
   id: string;
   userId: string;
   userName: string;
-  projectTitle: string;
-  department: string;
-  budgetYear: number;
-  objective: string;
-  activities: Activity[];
-  expectedOutcome: string;
   status: SubmissionStatus;
   submittedAt: string;
   lastModifiedAt: string;
