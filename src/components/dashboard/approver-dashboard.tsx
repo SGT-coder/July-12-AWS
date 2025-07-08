@@ -61,18 +61,54 @@ interface ApproverDashboardProps {
   onDelete: (id: string) => void;
 }
 
+const RejectionDialog = ({ onConfirm }: { onConfirm: (comment: string) => void }) => {
+    const [comment, setComment] = React.useState("");
+    return (
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Reject Submission?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Please provide a reason for rejecting this submission. This will be visible to the user.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Textarea 
+                placeholder="Type your comments here..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+            />
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setComment('')}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onConfirm(comment)}>Confirm Rejection</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    )
+}
+
+
+const DeletionDialog = ({ onConfirm }: { onConfirm: () => void }) => (
+    <AlertDialogContent>
+        <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the submission.
+            </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Yes, delete it
+            </AlertDialogAction>
+        </AlertDialogFooter>
+    </AlertDialogContent>
+);
+
+
 export function ApproverDashboard({
   submissions,
   onView,
   onUpdateStatus,
   onDelete,
 }: ApproverDashboardProps) {
-  const [rejectionComment, setRejectionComment] = React.useState("");
-
-  const handleReject = (submissionId: string) => {
-    onUpdateStatus(submissionId, "Rejected", rejectionComment);
-    setRejectionComment("");
-  };
 
   return (
     <Card>
@@ -116,7 +152,6 @@ export function ApproverDashboard({
                     <StatusBadge status={submission.status} />
                   </TableCell>
                   <TableCell>
-                    <AlertDialog>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -141,57 +176,30 @@ export function ApproverDashboard({
                             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                             Approve
                           </DropdownMenuItem>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <XCircle className="mr-2 h-4 w-4 text-orange-500" />
-                              Reject
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
+
+                           <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <XCircle className="mr-2 h-4 w-4 text-orange-500" />
+                                    Reject
+                                  </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <RejectionDialog onConfirm={(comment) => onUpdateStatus(submission.id, "Rejected", comment)} />
+                          </AlertDialog>
+
                           <DropdownMenuSeparator />
-                          <AlertDialogTrigger asChild>
-                             <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
+                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <DeletionDialog onConfirm={() => onDelete(submission.id)} />
+                          </AlertDialog>
+
                         </DropdownMenuContent>
                       </DropdownMenu>
-
-                       {/* Rejection Dialog */}
-                       <AlertDialogContent>
-                         <AlertDialogHeader>
-                           <AlertDialogTitle>Reject Submission?</AlertDialogTitle>
-                           <AlertDialogDescription>
-                             Please provide a reason for rejecting this submission. This will be visible to the user.
-                           </AlertDialogDescription>
-                         </AlertDialogHeader>
-                         <Textarea 
-                           placeholder="Type your comments here..."
-                           value={rejectionComment}
-                           onChange={(e) => setRejectionComment(e.target.value)}
-                         />
-                         <AlertDialogFooter>
-                           <AlertDialogCancel onClick={() => setRejectionComment('')}>Cancel</AlertDialogCancel>
-                           <AlertDialogAction onClick={() => handleReject(submission.id)}>Confirm Rejection</AlertDialogAction>
-                         </AlertDialogFooter>
-                       </AlertDialogContent>
-
-                       {/* Deletion Dialog */}
-                       <AlertDialogContent>
-                          <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete the submission.
-                              </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => onDelete(submission.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                  Yes, delete it
-                              </AlertDialogAction>
-                          </AlertDialogFooter>
-                      </AlertDialogContent>
-
-                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))
