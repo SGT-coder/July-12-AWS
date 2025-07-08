@@ -1,6 +1,7 @@
 'use server';
 
 import { initialSubmissions } from '@/lib/data';
+import { users } from '@/lib/data';
 import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
 import type { Submission, SubmissionStatus, User } from '@/lib/types';
 
@@ -21,10 +22,17 @@ export async function addSubmission(data: StrategicPlanFormValues) {
     if (!parsedData.success) {
         return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
+
+    // Since we don't have login, we'll assign a default user for submissions made through the 'User' role.
+    const user = users.find(u => u.id === 'user1');
+    if (!user) {
+        return { success: false, message: "Default user not found." };
+    }
     
     const newSubmission: Submission = {
         id: `sub${Date.now()}`,
-        userId: 'public_user', // Generic ID for public submissions
+        userId: user.id,
+        userName: user.name,
         status: 'Pending',
         submittedAt: new Date().toISOString(),
         lastModifiedAt: new Date().toISOString(),

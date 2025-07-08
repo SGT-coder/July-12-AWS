@@ -27,7 +27,6 @@ import { strategicPlanSchema, type StrategicPlanFormValues } from "@/lib/schemas
 import type { Submission } from "@/lib/types";
 
 const defaultFormValues: StrategicPlanFormValues = {
-    userName: "",
     projectTitle: "",
     department: "",
     goal: "",
@@ -50,7 +49,7 @@ const defaultFormValues: StrategicPlanFormValues = {
 };
 
 interface StrategicPlanFormProps {
-    submission?: Submission;
+    submission?: Submission | null;
     onSave: (data: StrategicPlanFormValues, id?: string) => void;
     onCancel?: () => void;
     isSubmitting: boolean;
@@ -98,13 +97,6 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
             <Card>
                 <CardHeader><CardTitle className="text-xl">አጠቃላይ መረጃ</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField control={form.control} name="userName" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>ሙሉ ስም</FormLabel>
-                            <FormControl><Input placeholder="ሙሉ ስምዎን ያስገቡ" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
                     <FormField control={form.control} name="projectTitle" render={({ field }) => (
                         <FormItem>
                             <FormLabel>የእቅድ ርዕስ</FormLabel>
