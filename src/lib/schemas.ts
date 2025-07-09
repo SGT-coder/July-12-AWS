@@ -52,6 +52,10 @@ export const adminAddUserSchema = z.object({
     name: z.string().min(2, "ስም ቢያንስ 2 ቁምፊዎች መሆን አለበት።"),
     email: z.string().email("የተሳሳተ የኢሜይል አድራሻ።"),
     password: z.string().min(6, "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።"),
+    confirmPassword: z.string(),
     role: z.enum(['Admin', 'Approver'], { required_error: "ሚና መምረጥ ያስፈልጋል።" }),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "የይለፍ ቃሎች አይዛመዱም።",
+    path: ["confirmPassword"],
 });
 export type AdminAddUserFormValues = z.infer<typeof adminAddUserSchema>;

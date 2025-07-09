@@ -1,4 +1,3 @@
-
 {
   "submissions": [
     {
@@ -28,20 +27,20 @@
       "governmentBudgetCode": "code1"
     },
     {
-      "id": "TRX-2025-0709-MC64J",
+      "id": "TRX-2025-0709-FOQDB",
       "userId": "user1",
-      "userName": "የህዝብ ተጠቃሚ",
       "status": "Pending",
-      "submittedAt": "2025-07-09T06:31:02.366Z",
-      "lastModifiedAt": "2025-07-09T06:31:02.366Z",
-      "projectTitle": "habata",
+      "submittedAt": "2025-07-09T08:31:37.570Z",
+      "lastModifiedAt": "2025-07-09T08:31:37.570Z",
+      "userName": "sad",
+      "projectTitle": "z",
       "department": "hr",
       "goal": "goal1",
       "objective": "obj1",
-      "strategicAction": "a",
-      "metric": "a",
-      "mainTask": "a",
-      "mainTaskTarget": "a",
+      "strategicAction": "fd",
+      "metric": "d",
+      "mainTask": "sd",
+      "mainTaskTarget": "sdf",
       "objectiveWeight": "1",
       "strategicActionWeight": "1",
       "metricWeight": "1",
@@ -49,22 +48,76 @@
       "executingBody": "internal",
       "executionTime": "q1",
       "budgetSource": "gov",
-      "governmentBudgetAmount": "aaaa",
+      "governmentBudgetAmount": "77",
       "governmentBudgetCode": "code1",
       "grantBudgetAmount": "",
       "sdgBudgetAmount": ""
+    },
+    {
+      "id": "TRX-2025-0709-R9VPX",
+      "userId": "user1",
+      "status": "Pending",
+      "submittedAt": "2025-07-09T08:32:06.365Z",
+      "lastModifiedAt": "2025-07-09T08:32:06.365Z",
+      "userName": "wer",
+      "projectTitle": "rew",
+      "department": "it",
+      "goal": "goal2",
+      "objective": "obj2",
+      "strategicAction": "wer",
+      "metric": "r",
+      "mainTask": "wre",
+      "mainTaskTarget": "r",
+      "objectiveWeight": "3",
+      "strategicActionWeight": "1",
+      "metricWeight": "4",
+      "mainTaskWeight": "4",
+      "executingBody": "internal",
+      "executionTime": "q4",
+      "budgetSource": "grant",
+      "governmentBudgetAmount": "",
+      "governmentBudgetCode": "",
+      "grantBudgetAmount": "rwer",
+      "sdgBudgetAmount": ""
+    },
+    {
+      "id": "TRX-2025-0709-A7RP2",
+      "userId": "user1",
+      "status": "Pending",
+      "submittedAt": "2025-07-09T08:32:38.259Z",
+      "lastModifiedAt": "2025-07-09T08:32:38.259Z",
+      "userName": "fds fds ",
+      "projectTitle": "sfd",
+      "department": "finance",
+      "goal": "goal2",
+      "objective": "obj1",
+      "strategicAction": "fds",
+      "metric": "ds",
+      "mainTask": "sdf",
+      "mainTaskTarget": "fds",
+      "objectiveWeight": "3",
+      "strategicActionWeight": "4",
+      "metricWeight": "4",
+      "mainTaskWeight": "2",
+      "executingBody": "external",
+      "executionTime": "q4",
+      "budgetSource": "sdg",
+      "governmentBudgetAmount": "",
+      "governmentBudgetCode": "",
+      "grantBudgetAmount": "",
+      "sdgBudgetAmount": "8789"
     }
   ],
   "users": [
     {
       "id": "admin-001",
-      "name": "Super Admin",
+      "name": "ADMIN",
       "email": "admin@example.com",
-      "password": "password",
+      "password": "admin123",
       "role": "Admin",
       "status": "Approved",
       "createdAt": "2024-01-01T10:00:00.000Z",
-      "statusUpdatedAt": "2024-01-01T10:00:00.000Z"
+      "statusUpdatedAt": "2025-07-09T08:22:46.359Z"
     },
     {
       "id": "approver-001",
@@ -98,13 +151,33 @@
     },
     {
       "id": "d412e84c-5dfe-4366-918f-8d8be17edd70",
-      "name": "habtamu",
+      "name": "habtamuu",
       "email": "habta@gmail.com",
-      "password": "zxcvbnm",
+      "password": "approver123",
       "role": "Approver",
       "status": "Approved",
       "createdAt": "2024-06-15T09:00:00.000Z",
-      "statusUpdatedAt": "2024-06-15T09:00:00.000Z"
+      "statusUpdatedAt": "2025-07-09T08:36:56.373Z"
+    },
+    {
+      "id": "02212e99-4713-4fb2-8b0a-ef37130dd65c",
+      "name": "Test Test",
+      "email": "Test@gmail.com",
+      "password": "bnn1886p",
+      "role": "Approver",
+      "status": "Pending",
+      "createdAt": "2025-07-09T08:53:31.032Z",
+      "statusUpdatedAt": "2025-07-09T08:53:51.993Z"
+    },
+    {
+      "id": "542bc0b5-ac84-4540-8fb7-aaf8c3e464eb",
+      "name": "samuel",
+      "email": "sa@gmail.com",
+      "password": "85wp1lly",
+      "role": "Admin",
+      "status": "Approved",
+      "createdAt": "2025-07-09T08:58:30.975Z",
+      "statusUpdatedAt": "2025-07-09T08:59:59.504Z"
     }
   ]
 }
