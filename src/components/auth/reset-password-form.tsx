@@ -29,11 +29,13 @@ export function ResetPasswordForm({ onReset, onBack }: ResetPasswordFormProps) {
     e.preventDefault();
     setIsLoading(true);
     const success = await onReset({ fullName, email });
-    if (!success) {
-      setIsLoading(false);
+    setIsLoading(false); // Stop loading regardless of outcome
+    if (success) {
+      // Parent will show dialog, we just clear the form
+      setFullName("");
+      setEmail("");
     }
-    // On success, the parent component will show a toast and we stay on the page or navigate back
-    // so we don't need to set isLoading to false on success.
+    // On failure, parent shows a toast, we just stop loading
   };
 
   return (

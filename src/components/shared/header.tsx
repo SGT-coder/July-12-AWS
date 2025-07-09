@@ -133,7 +133,7 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, p
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={`https://placehold.co/100x100.png`} alt={user.name} data-ai-hint="profile avatar" />
+                      <AvatarImage src={`https://placehold.co/100x100.png`} alt={user.name} data-ai-hint="professional avatar" />
                       <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
                   </Button>

@@ -160,6 +160,11 @@ export async function requestPasswordReset(data: z.infer<typeof resetPasswordSch
         return { success: false, message: "በዚያ ስም እና የኢሜይል አድራሻ የተመዘገበ መለያ የለም።" };
     }
     
+    // Security check: Prevent admins from resetting their own password via this public form
+    if (db.users[userIndex].role === 'Admin') {
+        return { success: false, message: "አስተዳዳሪዎች የራሳቸውን የይለፍ ቃል ዳግም ማስጀመር አይችሉም። እባክዎ ሌላ አስተዳዳሪን ያግኙ።" };
+    }
+
     const newPassword = Math.random().toString(36).substring(2, 10);
     db.users[userIndex].password = newPassword;
     db.users[userIndex].statusUpdatedAt = new Date().toISOString();

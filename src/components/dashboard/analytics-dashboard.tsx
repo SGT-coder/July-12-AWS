@@ -13,6 +13,7 @@ import {
     LineChart,
     Line,
     CartesianGrid,
+    ResponsiveContainer
 } from "recharts";
 import { format } from "date-fns";
 
@@ -113,11 +114,11 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
       .sort((a, b) => b.count - a.count);
 
     const departmentChartData = Object.entries(departmentCounts)
-        .map(([department, count]) => ({ department, count, }))
+        .map(([department, count]) => ({ department, count, fill: "hsl(var(--primary))" }))
         .sort((a, b) => b.count - a.count);
 
     const quarterChartData = Object.entries(quarterCounts)
-        .map(([quarter, count]) => ({ quarter, count }))
+        .map(([quarter, count]) => ({ quarter, count, fill: "hsl(var(--accent))" }))
         .sort((a,b) => a.quarter.localeCompare(b.quarter));
 
     const monthlyChartData = Object.entries(monthlyCounts)
@@ -249,20 +250,22 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
         </CardHeader>
         <CardContent className="h-[350px] w-full">
             <ChartContainer config={{}}>
-                <LineChart data={analyticsData.monthlyChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis allowDecimals={false} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} name="ማመልከቻዎች" />
-                </LineChart>
+                 <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={analyticsData.monthlyChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis allowDecimals={false} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} name="ማመልከቻዎች" />
+                    </LineChart>
+                </ResponsiveContainer>
             </ChartContainer>
         </CardContent>
       </Card>
 
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="md:col-span-1">
             <CardHeader>
                  <div className="flex items-center gap-2">
                     <PieChartIcon className="h-6 w-6 text-primary" />
@@ -272,32 +275,33 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
             </CardHeader>
             <CardContent>
                  <ChartContainer config={{}} className="mx-auto aspect-square max-h-[300px]">
-                    <PieChart>
-                         <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                        <Pie data={analyticsData.statusChartData} dataKey="count" nameKey="status" innerRadius={60} outerRadius={80} paddingAngle={5}>
-                            {analyticsData.statusChartData.map((entry) => (
-                                <Cell key={`cell-${entry.status}`} fill={entry.fill} />
-                            ))}
-                        </Pie>
-                        <ChartLegend content={<ChartLegendContent nameKey="status" />} />
-                    </PieChart>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                            <Pie data={analyticsData.statusChartData} dataKey="count" nameKey="status" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                                {analyticsData.statusChartData.map((entry) => (
+                                    <Cell key={`cell-${entry.status}`} fill={entry.fill} />
+                                ))}
+                            </Pie>
+                            <ChartLegend content={<ChartLegendContent nameKey="status" />} />
+                        </PieChart>
+                    </ResponsiveContainer>
                  </ChartContainer>
             </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="md:col-span-1">
             <CardHeader>
                  <div className="flex items-center gap-2">
                     <BarChart2 className="h-6 w-6 text-primary" />
-                    <CardTitle>ማመልከቻዎች በዲፓርትመንት እና ሩብ ዓመት</CardTitle>
+                    <CardTitle>ማመልከቻዎች በዲፓርትመንት</CardTitle>
                 </div>
-                <CardDescription>በዲፓርትመንት እና በሩብ ዓመት የማመልከቻዎች ብዛት ንጽጽር።</CardDescription>
+                <CardDescription>በዲፓርትመንት የማመልከቻዎች ብዛት።</CardDescription>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-6">
-                 <div className="h-[300px]">
-                    <h3 className="text-sm font-medium text-center mb-2">በዲፓርትመንት</h3>
-                    <ChartContainer config={{}}>
-                         <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 20 }}>
+            <CardContent className="h-[300px]">
+                <ChartContainer config={{}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 20, right: 20 }}>
                             <XAxis type="number" hide />
                             <YAxis
                                 dataKey="department"
@@ -309,21 +313,40 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
                                 width={80}
                             />
                             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                            <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} name="ማመልከቻዎች" />
+                            <Bar dataKey="count" radius={4} name="ማመልከቻዎች">
+                                {analyticsData.departmentChartData.map((entry) => (
+                                    <Cell key={`cell-${entry.department}`} fill={entry.fill} />
+                                ))}
+                            </Bar>
                         </BarChart>
-                    </ChartContainer>
-                 </div>
-                 <div className="h-[300px]">
-                    <h3 className="text-sm font-medium text-center mb-2">በሩብ ዓመት</h3>
-                    <ChartContainer config={{}}>
-                         <BarChart data={analyticsData.quarterChartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                    </ResponsiveContainer>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+
+        <Card className="md:col-span-1">
+            <CardHeader>
+                 <div className="flex items-center gap-2">
+                    <BarChart2 className="h-6 w-6 text-accent" />
+                    <CardTitle>ማመልከቻዎች በሩብ ዓመት</CardTitle>
+                </div>
+                <CardDescription>በሩብ ዓመት የማመልከቻዎች ብዛት።</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+                 <ChartContainer config={{}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={analyticsData.quarterChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <XAxis dataKey="quarter" />
                             <YAxis allowDecimals={false} />
                             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                            <Bar dataKey="count" fill="hsl(var(--accent))" radius={4} name="ማመልከቻዎች" />
+                             <Bar dataKey="count" radius={4} name="ማመልከቻዎች">
+                                {analyticsData.quarterChartData.map((entry) => (
+                                    <Cell key={`cell-${entry.quarter}`} fill={entry.fill} />
+                                ))}
+                            </Bar>
                         </BarChart>
-                    </ChartContainer>
-                 </div>
+                    </ResponsiveContainer>
+                 </ChartContainer>
             </CardContent>
         </Card>
       </div>
