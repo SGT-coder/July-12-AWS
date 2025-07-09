@@ -92,6 +92,8 @@ export default function Home() {
   const handleSelectView = (newView: 'form' | 'approver-login') => {
     if (newView === 'form') {
         setRole('User');
+        setCurrentSubmissionId(null);
+        setFormKey(Date.now());
     }
     setView(newView);
     setCurrentSubmissionId(null);
@@ -131,6 +133,7 @@ export default function Home() {
 
   const handleCreateNew = () => {
     setCurrentSubmissionId(null);
+    setFormKey(Date.now());
     setView('form');
   };
 
@@ -158,8 +161,10 @@ export default function Home() {
         // Go back to the correct dashboard based on logged in user's role
         if (loggedInUser?.role === 'Admin') {
             setView('admin-dashboard');
-        } else {
+        } else if (loggedInUser?.role === 'Approver') {
             setView('dashboard');
+        } else {
+            handleLogout();
         }
         setCurrentSubmissionId(null);
       }
@@ -181,6 +186,7 @@ export default function Home() {
       
       if (role === 'User') {
         setFormKey(Date.now());
+        handleBack();
       } else {
         setView('dashboard');
         fetchSubmissions();
@@ -233,18 +239,18 @@ export default function Home() {
   const handleResetPassword = async (data: { fullName: string; email: string }): Promise<boolean> => {
     setIsSubmitting(true);
     const result = await requestPasswordReset(data);
+    setIsSubmitting(false);
     if (result.success) {
       if (result.isAdminRequest) {
         toast({ title: "ጥያቄው ተልኳል", description: result.message });
+        handleBackToLogin();
       } else if (result.newPassword) {
         setNewPassword(result.newPassword);
         setIsPasswordResetDialogOpen(true);
       }
-      setIsSubmitting(false);
       return true;
     } 
     toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
-    setIsSubmitting(false);
     return false;
   };
 
@@ -345,7 +351,7 @@ export default function Home() {
         return <AnalyticsDashboard submissions={submissions} />;
 
       case 'form':
-        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} />;
+        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} onBack={handleBack} />;
 
       case 'view-submission':
         if (currentSubmission) {
@@ -381,7 +387,7 @@ export default function Home() {
   
   if (view === 'role-selector') {
     return (
-        <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <main className="min-h-screen">
             <RoleSelector onSelectView={handleSelectView} />
         </main>
     );
