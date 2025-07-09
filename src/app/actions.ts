@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { z } from 'zod';
-import { strategicPlanSchema, type StrategicPlanFormValues, updateProfileSchema, changePasswordSchema } from '@/lib/schemas';
+import { strategicPlanSchema, type StrategicPlanFormValues, updateProfileSchema, changePasswordSchema, adminAddUserSchema, type AdminAddUserFormValues } from '@/lib/schemas';
 import type { Submission, SubmissionStatus, User, UserStatus, Role } from '@/lib/types';
 
 // Path to the local JSON database file
@@ -124,6 +124,9 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
         password, // Storing plaintext password
         role: 'Approver',
         status: 'Pending',
+        createdAt: new Date().toISOString(),
+        statusUpdatedAt: new Date().toISOString(),
+        passwordResetRequested: false,
     };
 
     db.users.push(newUser);
@@ -156,13 +159,12 @@ export async function requestPasswordReset(data: z.infer<typeof resetPasswordSch
         return { success: false, message: "በዚያ ስም እና የኢሜይል አድራሻ የተመዘገበ መለያ የለም።" };
     }
     
-    // Generate a new 8-character random password
-    const newPassword = Math.random().toString(36).substring(2, 10);
-    db.users[userIndex].password = newPassword;
+    db.users[userIndex].passwordResetRequested = true;
+    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
     
     await writeDb(db);
 
-    return { success: true, newPassword };
+    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎ ለአስተዳዳሪ ተልኳል።" };
 }
 
 // --- Admin Actions ---
@@ -173,6 +175,42 @@ export async function getUsers(): Promise<User[]> {
     return db.users.map(({ password, ...user }) => user);
 }
 
+export async function adminAddUser(data: AdminAddUserFormValues) {
+    const parsedData = adminAddUserSchema.safeParse(data);
+    if (!parsedData.success) {
+        const issues = parsedData.error.flatten().fieldErrors;
+        const message = Object.values(issues).flat().join(' ');
+        return { success: false, message: message || "የተሳሳተ መረጃ ቀርቧል።" };
+    }
+    
+    const { name, email, password, role } = parsedData.data;
+    const db = await readDb();
+
+    const existingUser = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (existingUser) {
+        return { success: false, message: 'በዚህ ኢሜይል አስቀድሞ የተመዘገበ መለያ አለ።' };
+    }
+
+    const newUser: User = {
+        id: randomUUID(),
+        name,
+        email,
+        password,
+        role,
+        status: 'Approved',
+        createdAt: new Date().toISOString(),
+        statusUpdatedAt: new Date().toISOString(),
+        passwordResetRequested: false,
+    };
+
+    db.users.push(newUser);
+    await writeDb(db);
+
+    const { password: _, ...userWithoutPassword } = newUser;
+    return { success: true, message: 'ተጠቃሚው በተሳካ ሁኔታ ተፈጥሯል።', user: userWithoutPassword };
+}
+
+
 export async function updateUserStatus(userId: string, status: UserStatus) {
     const db = await readDb();
     const userIndex = db.users.findIndex(u => u.id === userId);
@@ -182,9 +220,42 @@ export async function updateUserStatus(userId: string, status: UserStatus) {
     }
 
     db.users[userIndex].status = status;
+    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
     await writeDb(db);
     const translatedStatus = statusTranslations[status] || status;
     return { success: true, message: `የተጠቃሚው ሁኔታ ወደ '${translatedStatus}' ተቀይሯል።`};
+}
+
+export async function approvePasswordReset(userId: string) {
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
+    }
+
+    const newPassword = Math.random().toString(36).substring(2, 10);
+    db.users[userIndex].password = newPassword;
+    db.users[userIndex].passwordResetRequested = false;
+    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
+    
+    await writeDb(db);
+
+    return { success: true, newPassword, message: `ለ ${db.users[userIndex].name} አዲስ የይለፍ ቃል ተፈጥሯል።` };
+}
+
+export async function denyPasswordReset(userId: string) {
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+     if (userIndex === -1) {
+        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
+    }
+
+    db.users[userIndex].passwordResetRequested = false;
+    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
+    await writeDb(db);
+
+    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ ውድቅ ተደርጓል።" };
 }
 
 export async function deleteUser(userId: string) {

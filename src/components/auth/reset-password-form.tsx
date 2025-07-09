@@ -32,6 +32,8 @@ export function ResetPasswordForm({ onReset, onBack }: ResetPasswordFormProps) {
     if (!success) {
       setIsLoading(false);
     }
+    // On success, the parent component will show a toast and we stay on the page or navigate back
+    // so we don't need to set isLoading to false on success.
   };
 
   return (
@@ -40,7 +42,7 @@ export function ResetPasswordForm({ onReset, onBack }: ResetPasswordFormProps) {
         <CardHeader className="text-center">
           <CardTitle className="font-headline text-2xl">የይለፍ ቃል ዳግም ያስጀምሩ</CardTitle>
           <CardDescription>
-            የይለፍ ቃልዎን ዳግም ለማስጀመር ጥያቄ ለማስገባት እባክዎ ሙሉ ስምዎን እና የኢሜይል አድራሻዎን ያስገቡ።
+            የይለፍ ቃልዎን ዳግም ለማስጀመር ጥያቄ ለማስገባት እባክዎ ሙሉ ስምዎን እና የኢሜይል አድራሻዎን ያስገቡ። ጥያቄዎ በአስተዳዳሪ ይገመገማል።
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

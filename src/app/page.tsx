@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
     loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
-    updateUserProfile, changeUserPassword
+    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, denyPasswordReset
 } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
@@ -22,15 +22,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RegisterForm } from "@/components/auth/register-form";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { SettingsPage } from "@/components/settings/settings-page";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings';
 
@@ -46,20 +37,17 @@ export default function Home() {
   const [formKey, setFormKey] = React.useState(Date.now());
   const { toast } = useToast();
 
-  const [newPassword, setNewPassword] = React.useState<string | null>(null);
-  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = React.useState(false);
-
   React.useEffect(() => {
-    if (view === 'dashboard' || view === 'analytics') {
-      fetchSubmissions();
-    } else if (view === 'admin-dashboard') {
-        fetchUsers();
-    } else if (view === 'role-selector') {
-        setIsLoading(false);
+    if (loggedInUser?.role === 'Admin') {
+      fetchUsers();
+    } else if (loggedInUser?.role === 'Approver') {
+      if (view === 'dashboard' || view === 'analytics') {
+        fetchSubmissions();
+      }
     } else {
-        setIsLoading(false);
+      setIsLoading(false);
     }
-  }, [view]);
+  }, [view, loggedInUser]);
 
   const fetchSubmissions = async () => {
     setIsLoading(true);
@@ -106,6 +94,8 @@ export default function Home() {
     setLoggedInUser(null);
     setView('role-selector');
     setCurrentSubmissionId(null);
+    setSubmissions([]);
+    setUsers([]);
   };
 
   const handleGoToSettings = () => {
@@ -213,9 +203,8 @@ export default function Home() {
 
   const handleResetPassword = async (data: { fullName: string, email: string }): Promise<boolean> => {
       const result = await requestPasswordReset(data);
-      if (result.success && result.newPassword) {
-        setNewPassword(result.newPassword);
-        setIsPasswordResetDialogOpen(true);
+      if (result.success) {
+        toast({ title: "ጥያቄ ተልኳል", description: result.message });
         return true;
       } else {
         toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
@@ -238,6 +227,40 @@ export default function Home() {
       const result = await deleteUser(userId);
       if (result.success) {
           toast({ title: "ተጠቃሚ ተሰርዟል", description: result.message });
+          fetchUsers();
+      } else {
+          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
+      }
+  }
+
+  const handleAddUser = async (data: any) => {
+      const result = await adminAddUser(data);
+      if (result.success) {
+          toast({ title: "ተጠቃሚ ተፈጥሯል", description: result.message });
+          fetchUsers();
+          return true;
+      } else {
+          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
+          return false;
+      }
+  }
+
+  const handleApprovePasswordReset = async (userId: string) => {
+      const result = await approvePasswordReset(userId);
+      if (result.success) {
+          toast({ title: "የይለፍ ቃል ዳግም ተጀምሯል", description: result.message });
+          fetchUsers();
+          return result.newPassword;
+      } else {
+          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
+          return null;
+      }
+  }
+
+  const handleDenyPasswordReset = async (userId: string) => {
+      const result = await denyPasswordReset(userId);
+       if (result.success) {
+          toast({ title: "ጥያቄ ውድቅ ተደርጓል", description: result.message });
           fetchUsers();
       } else {
           toast({ title: "ስህተት", description: result.message, variant: "destructive" });
@@ -273,6 +296,9 @@ export default function Home() {
             currentUser={loggedInUser}
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
+            onAddUser={handleAddUser}
+            onApprovePasswordReset={handleApprovePasswordReset}
+            onDenyPasswordReset={handleDenyPasswordReset}
         />;
 
       case 'analytics':
@@ -326,30 +352,6 @@ export default function Home() {
             {renderContent()}
         </div>
       </main>
-
-      <AlertDialog open={isPasswordResetDialogOpen} onOpenChange={setIsPasswordResetDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>የይለፍ ቃል ዳግም ማስጀመር ተሳክቷል</AlertDialogTitle>
-            <AlertDialogDescription>
-              የይለፍ ቃልዎ በተሳካ ሁኔታ ዳግም ተጀምሯል። አዲሱ ጊዜያዊ የይለፍ ቃልዎ ይኸውና። እባክዎ ደህንነቱ በተጠበቀ ቦታ ያስቀምጡት።
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="my-4 p-3 bg-muted rounded font-mono text-center text-lg tracking-wider">
-            {newPassword}
-          </div>
-          <p className="text-sm text-muted-foreground">
-             ከገቡ በኋላ የይለፍ ቃልዎን እንዲቀይሩ ይመከራል።
-          </p>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => {
-              setIsPasswordResetDialogOpen(false);
-              setNewPassword(null);
-              setView('approver-login');
-            }}>ገባኝ</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
