@@ -54,6 +54,9 @@ export default function Home() {
       setIsLoading(false);
     }
   }, [view, loggedInUser]);
+  
+  const pendingUsers = React.useMemo(() => users.filter(u => u.status === 'Pending'), [users]);
+  const notificationCount = loggedInUser?.role === 'Admin' ? pendingUsers.length : undefined;
 
   const fetchSubmissions = async () => {
     setIsLoading(true);
@@ -327,9 +330,6 @@ export default function Home() {
         </main>
     );
   }
-  
-  const pendingUsers = React.useMemo(() => users.filter(u => u.status === 'Pending'), [users]);
-  const notificationCount = loggedInUser?.role === 'Admin' ? pendingUsers.length : undefined;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
