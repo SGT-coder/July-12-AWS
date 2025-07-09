@@ -1,3 +1,4 @@
+
 import type { strategicPlanSchema } from "@/lib/schemas";
 import type { z } from "zod";
 
@@ -20,5 +21,7 @@ export type Role = "User" | "Approver" | null;
 export interface User {
   id: string;
   name: string;
-  role: Role;
+  email: string;
+  password?: string; // Keep optional on client-side types
+  role: "User" | "Approver";
 }

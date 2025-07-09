@@ -1,5 +1,14 @@
 
 {
+  "users": [
+    {
+      "id": "approver1",
+      "name": "Dr. Selamawit",
+      "email": "admin@example.com",
+      "password": "password",
+      "role": "Approver"
+    }
+  ],
   "submissions": [
     {
       "id": "sub1",

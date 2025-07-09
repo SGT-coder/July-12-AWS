@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -15,21 +16,21 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 interface ApproverLoginProps {
-  onLogin: (email: string, password: string) => boolean;
+  onLogin: (email: string, password: string) => Promise<boolean>;
   onBack: () => void;
   onGoToRegister: () => void;
   onGoToReset: () => void;
 }
 
 export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: ApproverLoginProps) {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = React.useState("admin@example.com");
+  const [password, setPassword] = React.useState("password");
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const success = onLogin(email, password);
+    const success = await onLogin(email, password);
     if (!success) {
       setIsLoading(false);
     }
@@ -75,7 +76,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
               {isLoading ? <Loader2 className="animate-spin" /> : "ይግቡ"}
             </Button>
              <div className="text-sm text-center">
-                اکاؤنٹ نہیں ہے؟{" "}
+                መለያ የለዎትም?{" "}
                 <Button variant="link" type="button" onClick={onGoToRegister} className="p-0 h-auto">ይመዝገቡ</Button>
             </div>
             <Button

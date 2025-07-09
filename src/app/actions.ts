@@ -4,22 +4,33 @@
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { users } from '@/lib/data';
+import { z } from 'zod';
 import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
-import type { Submission, SubmissionStatus } from '@/lib/types';
+import type { Submission, SubmissionStatus, User } from '@/lib/types';
 
 // Path to the local JSON database file
 const dbPath = path.join(process.cwd(), 'db.json');
 
+// Define the shape of the database
+interface Db {
+    submissions: Submission[];
+    users: User[];
+}
+
 // Helper function to read the database file
-async function readDb(): Promise<{ submissions: Submission[] }> {
+async function readDb(): Promise<Db> {
     try {
         const data = await fs.readFile(dbPath, 'utf-8');
-        return JSON.parse(data);
+        const dbContent = JSON.parse(data);
+        // Ensure both submissions and users arrays exist
+        return {
+            submissions: dbContent.submissions || [],
+            users: dbContent.users || [],
+        };
     } catch (error) {
-        // If the file doesn't exist, return an empty database structure
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-            return { submissions: [] };
+        // If the file doesn't exist or is empty, return an empty database structure
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
+            return { submissions: [], users: [] };
         }
         console.error("Error reading database: ", error);
         throw error;
@@ -27,7 +38,7 @@ async function readDb(): Promise<{ submissions: Submission[] }> {
 }
 
 // Helper function to write to the database file
-async function writeDb(data: { submissions: Submission[] }): Promise<void> {
+async function writeDb(data: Db): Promise<void> {
     try {
         await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
     } catch (error) {
@@ -36,6 +47,77 @@ async function writeDb(data: { submissions: Submission[] }): Promise<void> {
     }
 }
 
+
+// --- Auth Actions ---
+
+const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string(),
+});
+
+export async function loginUser(credentials: z.infer<typeof loginSchema>) {
+    const parsedCredentials = loginSchema.safeParse(credentials);
+    if (!parsedCredentials.success) {
+        return { success: false, message: 'Invalid credentials provided.' };
+    }
+
+    const { email, password } = parsedCredentials.data;
+    const db = await readDb();
+    const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.role === 'Approver');
+
+    if (!user) {
+        return { success: false, message: 'No approver account found with this email.' };
+    }
+
+    // In a real app, you would hash and compare passwords.
+    // For this project, we are using plaintext passwords for simplicity.
+    if (user.password !== password) {
+        return { success: false, message: 'Incorrect password.' };
+    }
+    
+    // Don't send password back to the client
+    const { password: _, ...userWithoutPassword } = user;
+    return { success: true, user: userWithoutPassword };
+}
+
+const registerSchema = z.object({
+    fullName: z.string().min(2, 'Full name is required.'),
+    email: z.string().email('Invalid email address.'),
+    password: z.string().min(6, 'Password must be at least 6 characters.'),
+});
+
+export async function registerUser(data: z.infer<typeof registerSchema>) {
+    const parsedData = registerSchema.safeParse(data);
+    if (!parsedData.success) {
+        const issues = parsedData.error.flatten().fieldErrors;
+        const message = Object.values(issues).flat().join(' ');
+        return { success: false, message: message || "Invalid data provided." };
+    }
+    
+    const { fullName, email, password } = parsedData.data;
+    const db = await readDb();
+
+    const existingUser = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (existingUser) {
+        return { success: false, message: 'An account with this email already exists.' };
+    }
+
+    const newUser: User = {
+        id: randomUUID(),
+        name: fullName,
+        email,
+        password, // Storing plaintext password for simplicity in this project
+        role: 'Approver',
+    };
+
+    db.users.push(newUser);
+    await writeDb(db);
+
+    return { success: true, message: 'Registration successful! You can now log in.' };
+}
+
+
+// --- Submission Actions ---
 
 export async function getSubmissions(): Promise<Submission[]> {
     try {
@@ -55,10 +137,8 @@ export async function addSubmission(data: StrategicPlanFormValues) {
         return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
 
-    const user = users.find(u => u.id === 'user1');
-    if (!user) {
-        return { success: false, message: "Default user not found." };
-    }
+    // For public user submissions, we can assign a default user
+    const user = { id: 'user1', name: "Public User" };
     
     const newId = randomUUID();
     const newSubmission: Submission = {

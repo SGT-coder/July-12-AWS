@@ -1,9 +1,10 @@
+
 "use client";
 
 import * as React from "react";
 import type { Role, Submission, SubmissionStatus, StrategicPlanFormValues } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission } from "@/app/actions";
+import { getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, loginUser, registerUser } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
 import { ApproverLogin } from "@/components/auth/approver-login";
@@ -54,15 +55,15 @@ export default function Home() {
     }
   };
 
-  const handleApproverLogin = (email: string, password: string):boolean => {
-    // Hardcoded credentials for demonstration
-    if (email.toLowerCase() === 'admin@example.com' && password === 'password') {
+  const handleApproverLogin = async (email: string, password: string): Promise<boolean> => {
+    const result = await loginUser({ email, password });
+    if (result.success) {
         setRole('Approver');
         setView('dashboard');
         toast({ title: "Login Successful", description: "Welcome, Approver!" });
         return true;
     } else {
-        toast({ title: "Login Failed", description: "Invalid email or password.", variant: "destructive" });
+        toast({ title: "Login Failed", description: result.message, variant: "destructive" });
         return false;
     }
   }
@@ -152,13 +153,20 @@ export default function Home() {
   };
 
   // --- Placeholder Auth Functions ---
-  const handleRegister = async (data: any) => {
-    toast({ title: "Registration Submitted", description: "In a real app, a confirmation email would be sent." });
-    setView('approver-login');
+  const handleRegister = async (data: any): Promise<boolean> => {
+    const result = await registerUser(data);
+    if (result.success) {
+      toast({ title: "Registration Submitted", description: result.message });
+      setView('approver-login');
+      return true;
+    } else {
+      toast({ title: "Registration Failed", description: result.message, variant: "destructive" });
+      return false;
+    }
   };
 
   const handleResetPassword = async (name: string, email: string) => {
-      toast({ title: "Password Reset Requested", description: `If an account exists for ${email}, a reset link will be sent.` });
+      toast({ title: "Password Reset Requested", description: `If an account exists for ${email}, a reset link would be sent.` });
       setView('approver-login');
   };
   // ------------------------------------
