@@ -7,14 +7,12 @@ import {
     BarChart,
     Pie,
     PieChart,
-    ResponsiveContainer,
     XAxis,
     YAxis,
     Cell,
     LineChart,
     Line,
     CartesianGrid,
-    Tooltip as RechartsTooltip,
 } from "recharts";
 import { format } from "date-fns";
 
@@ -250,15 +248,15 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
             <CardDescription>ማመልከቻዎች በጊዜ ሂደት እንዴት እንደተለወጡ ይመልከቱ።</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ChartContainer config={{}}>
                 <LineChart data={analyticsData.monthlyChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis allowDecimals={false} />
-                    <RechartsTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
                     <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} name="ማመልከቻዎች" />
                 </LineChart>
-            </ResponsiveContainer>
+            </ChartContainer>
         </CardContent>
       </Card>
 
@@ -298,7 +296,7 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
             <CardContent className="grid md:grid-cols-2 gap-6">
                  <div className="h-[300px]">
                     <h3 className="text-sm font-medium text-center mb-2">በዲፓርትመንት</h3>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ChartContainer config={{}}>
                          <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 20 }}>
                             <XAxis type="number" hide />
                             <YAxis
@@ -313,18 +311,18 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
                             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                             <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} name="ማመልከቻዎች" />
                         </BarChart>
-                    </ResponsiveContainer>
+                    </ChartContainer>
                  </div>
                  <div className="h-[300px]">
                     <h3 className="text-sm font-medium text-center mb-2">በሩብ ዓመት</h3>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ChartContainer config={{}}>
                          <BarChart data={analyticsData.quarterChartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
                             <XAxis dataKey="quarter" />
                             <YAxis allowDecimals={false} />
                             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                             <Bar dataKey="count" fill="hsl(var(--accent))" radius={4} name="ማመልከቻዎች" />
                         </BarChart>
-                    </ResponsiveContainer>
+                    </ChartContainer>
                  </div>
             </CardContent>
         </Card>
