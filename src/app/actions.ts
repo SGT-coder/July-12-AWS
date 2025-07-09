@@ -17,6 +17,12 @@ interface Db {
     users: User[];
 }
 
+const statusTranslations: Record<UserStatus, string> = {
+    Approved: "ጸድቋል",
+    Pending: "በመጠባበቅ ላይ",
+    Rejected: "ውድቅ ተደርጓል",
+};
+
 // Helper function to read the database file
 async function readDb(): Promise<Db> {
     try {
@@ -177,7 +183,8 @@ export async function updateUserStatus(userId: string, status: UserStatus) {
 
     db.users[userIndex].status = status;
     await writeDb(db);
-    return { success: true, message: `የተጠቃሚው ሁኔታ ወደ ${status} ተቀይሯል።`};
+    const translatedStatus = statusTranslations[status] || status;
+    return { success: true, message: `የተጠቃሚው ሁኔታ ወደ '${translatedStatus}' ተቀይሯል።`};
 }
 
 export async function deleteUser(userId: string) {
@@ -351,7 +358,8 @@ export async function updateSubmissionStatus(id: string, status: SubmissionStatu
 
         db.submissions[submissionIndex] = { ...db.submissions[submissionIndex], ...statusUpdate };
         await writeDb(db);
-        return { success: true, message: `ሁኔታው ወደ ${status} ተቀይሯል` };
+        const translatedStatus = statusTranslations[status] || status;
+        return { success: true, message: `ሁኔታው ወደ '${translatedStatus}' ተቀይሯል` };
 
     } catch (error) {
         console.error("Error updating status: ", error);

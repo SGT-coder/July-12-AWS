@@ -22,6 +22,7 @@ interface HeaderProps {
 
 export function AppHeader({ user, onLogout, onGoToSettings }: HeaderProps) {
   const getInitials = (name: string) => {
+    if (!name) return "";
     const names = name.split(' ');
     const initials = names.map(n => n[0]).join('');
     return initials.toUpperCase().slice(0, 2);
