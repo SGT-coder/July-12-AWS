@@ -16,19 +16,22 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 
 interface ResetPasswordFormProps {
-  onReset: (email: string) => void;
+  onReset: (data: { fullName: string; email: string }) => Promise<boolean>;
   onBack: () => void;
 }
 
 export function ResetPasswordForm({ onReset, onBack }: ResetPasswordFormProps) {
+  const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // The parent component will handle showing the toast.
-    onReset(email);
+    const success = await onReset({ fullName, email });
+    if (!success) {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -37,12 +40,23 @@ export function ResetPasswordForm({ onReset, onBack }: ResetPasswordFormProps) {
         <CardHeader className="text-center">
           <CardTitle className="font-headline text-2xl">የይለፍ ቃል ዳግም ያስጀምሩ</CardTitle>
           <CardDescription>
-            የይለፍ ቃልዎን ዳግም ለማስጀመር ጥያቄ ለማስገባት እባክዎ የኢሜይል አድራሻዎን ያስገቡ።
+            የይለፍ ቃልዎን ዳግም ለማስጀመር ጥያቄ ለማስገባት እባክዎ ሙሉ ስምዎን እና የኢሜይል አድራሻዎን ያስገቡ።
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-             <div className="space-y-2">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">ሙሉ ስም</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="ሙሉ ስም ያስገቡ"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">ኢሜይል</Label>
               <Input
                 id="email"

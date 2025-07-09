@@ -120,13 +120,28 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
     return { success: true, message: 'Registration successful! Your account is pending admin approval.' };
 }
 
-export async function requestPasswordReset(email: string) {
+const resetPasswordSchema = z.object({
+    fullName: z.string().min(1, 'Full name is required.'),
+    email: z.string().email('Invalid email address.'),
+});
+
+export async function requestPasswordReset(data: z.infer<typeof resetPasswordSchema>) {
+    const parsedData = resetPasswordSchema.safeParse(data);
+    if (!parsedData.success) {
+        const issues = parsedData.error.flatten().fieldErrors;
+        const message = Object.values(issues).flat().join(' ');
+        return { success: false, message: message || "Invalid data provided." };
+    }
+
+    const { fullName, email } = parsedData.data;
     const db = await readDb();
-    const userIndex = db.users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+    const userIndex = db.users.findIndex(u => 
+        u.email.toLowerCase() === email.toLowerCase() && 
+        u.name.trim().toLowerCase() === fullName.trim().toLowerCase()
+    );
 
     if (userIndex === -1) {
-        // To prevent user enumeration, we return success even if the email doesn't exist.
-        return { success: true, message: "If an account with that email exists, a password reset has been requested." };
+        return { success: false, message: "No account found with that name and email address." };
     }
     
     db.users[userIndex].passwordResetRequested = true;

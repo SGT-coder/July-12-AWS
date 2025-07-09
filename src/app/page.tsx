@@ -188,10 +188,16 @@ export default function Home() {
     }
   };
 
-  const handleResetPassword = async (email: string) => {
-      const result = await requestPasswordReset(email);
-      toast({ title: "Password Reset Request", description: result.message });
-      setView('approver-login');
+  const handleResetPassword = async (data: { fullName: string, email: string }): Promise<boolean> => {
+      const result = await requestPasswordReset(data);
+      if (result.success) {
+        toast({ title: "Password Reset Request", description: result.message });
+        setView('approver-login');
+        return true;
+      } else {
+        toast({ title: "Request Failed", description: result.message, variant: "destructive" });
+        return false;
+      }
   };
 
   // --- Admin actions handlers ---
