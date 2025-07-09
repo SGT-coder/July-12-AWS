@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -32,7 +33,7 @@ export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
             <div className="p-4 bg-primary/10 rounded-full mb-4">
               <User className="h-10 w-10 text-primary" />
             </div>
-            <CardTitle className="font-headline text-2xl">ተጠቃሚ</CardTitle>
+            <CardTitle className="font-headline text-2xl">የህዝብ ተጠቃሚ</CardTitle>
             <CardDescription>
               የስትራቴጂክ ዕቅድ እና የሥራ እንቅስቃሴ ቅጾችን ይሙሉ እና ያስገቡ።
             </CardDescription>
@@ -48,14 +49,14 @@ export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
             <div className="p-4 bg-accent/10 rounded-full mb-4">
               <Shield className="h-10 w-10 text-accent" />
             </div>
-            <CardTitle className="font-headline text-2xl">አጽዳቂ</CardTitle>
+            <CardTitle className="font-headline text-2xl">ባለሥልጣን</CardTitle>
             <CardDescription>
-              የገቡ ቅጾችን ይገምግሙ፣ ያጽድቁ ወይም ውድቅ ያድርጉ እና የሥራ ሂደቶችን ያስተዳድሩ።
+              ለመግባት፣ ቅጾችን ለመገምገም እና ተጠቃሚዎችን ለማስተዳደር እዚህ ይግቡ።
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center px-8 pb-8">
             <Button onClick={() => onSelectRole("Approver")} className="w-full" style={{backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))'}}>
-              እንደ አጽዳቂ ይቀጥሉ
+              እንደ ባለሥልጣን ይቀጥሉ
             </Button>
           </CardContent>
         </Card>

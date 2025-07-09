@@ -16,12 +16,16 @@ export interface Submission extends StrategicPlanFormValues {
   comments?: string;
 }
 
-export type Role = "User" | "Approver" | null;
+export type Role = "User" | "Approver" | "Admin" | null;
+
+export type UserStatus = "Pending" | "Approved" | "Rejected";
 
 export interface User {
   id: string;
   name: string;
   email: string;
   password?: string; // Keep optional on client-side types
-  role: "User" | "Approver";
+  role: "User" | "Approver" | "Admin";
+  status: UserStatus;
+  passwordResetRequested?: boolean;
 }

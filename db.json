@@ -1,14 +1,5 @@
 
 {
-  "users": [
-    {
-      "id": "approver1",
-      "name": "Dr. Selamawit",
-      "email": "admin@example.com",
-      "password": "password",
-      "role": "Approver"
-    }
-  ],
   "submissions": [
     {
       "id": "sub1",
@@ -35,55 +26,33 @@
       "budgetSource": "gov",
       "governmentBudgetAmount": "500000",
       "governmentBudgetCode": "code1"
+    }
+  ],
+  "users": [
+    {
+      "id": "admin-001",
+      "name": "Super Admin",
+      "email": "admin@example.com",
+      "password": "password",
+      "role": "Admin",
+      "status": "Approved"
     },
     {
-      "id": "sub2",
-      "userId": "user2",
-      "userName": "Fatima Yusuf",
+      "id": "approver-001",
+      "name": "Dr. Selamawit",
+      "email": "approver@example.com",
+      "password": "password",
+      "role": "Approver",
+      "status": "Approved"
+    },
+    {
+      "id": "pending-user-001",
+      "name": "Pending Approver",
+      "email": "pending@example.com",
+      "password": "password",
+      "role": "Approver",
       "status": "Pending",
-      "submittedAt": "2024-04-01T11:00:00.000Z",
-      "lastModifiedAt": "2024-04-01T11:00:00.000Z",
-      "projectTitle": "የቲቢ ስርጭት ትንተና",
-      "department": "finance",
-      "goal": "goal2",
-      "objective": "obj2",
-      "strategicAction": "የጄኔቲክ ካርታ መስራት",
-      "metric": "የተለያዩ ስርጭቶችን መለየት",
-      "mainTask": "ናሙና መሰብሰብ",
-      "mainTaskTarget": "500 ናሙናዎች",
-      "objectiveWeight": "4",
-      "strategicActionWeight": "5",
-      "metricWeight": "4",
-      "mainTaskWeight": "3",
-      "executingBody": "internal",
-      "executionTime": "q2",
-      "budgetSource": "grant",
-      "grantBudgetAmount": "120000"
-    },
-    {
-      "id": "sub3",
-      "userId": "user1",
-      "userName": "Dawit Abebe",
-      "status": "Rejected",
-      "submittedAt": "2024-04-10T16:20:00.000Z",
-      "lastModifiedAt": "2024-04-12T10:05:00.000Z",
-      "comments": "Budget exceeds department limits. Please revise and resubmit.",
-      "projectTitle": "የኤችአይቪ/ኤድስ ማህበረሰብ ግንዛቤ",
-      "department": "hr",
-      "goal": "goal1",
-      "objective": "obj1",
-      "strategicAction": "ግንዛቤ ማስጨበጥ",
-      "metric": "የምርመራ መጠን መጨመር",
-      "mainTask": "ዎርክሾፕ ማካሄድ",
-      "mainTaskTarget": "5 ዎርክሾፖች",
-      "objectiveWeight": "5",
-      "strategicActionWeight": "5",
-      "metricWeight": "5",
-      "mainTaskWeight": "5",
-      "executingBody": "external",
-      "executionTime": "q3",
-      "budgetSource": "sdg",
-      "sdgBudgetAmount": "75000"
+      "passwordResetRequested": true
     }
   ]
 }

@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { z } from 'zod';
 import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
-import type { Submission, SubmissionStatus, User } from '@/lib/types';
+import type { Submission, SubmissionStatus, User, UserStatus } from '@/lib/types';
 
 // Path to the local JSON database file
 const dbPath = path.join(process.cwd(), 'db.json');
@@ -63,16 +63,19 @@ export async function loginUser(credentials: z.infer<typeof loginSchema>) {
 
     const { email, password } = parsedCredentials.data;
     const db = await readDb();
-    const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.role === 'Approver');
+    const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
-    if (!user) {
-        return { success: false, message: 'No approver account found with this email.' };
+    if (!user || (user.role !== 'Approver' && user.role !== 'Admin')) {
+        return { success: false, message: 'No account found with this email.' };
     }
 
     // In a real app, you would hash and compare passwords.
-    // For this project, we are using plaintext passwords for simplicity.
     if (user.password !== password) {
         return { success: false, message: 'Incorrect password.' };
+    }
+
+    if (user.status !== 'Approved') {
+        return { success: false, message: 'This account is pending approval.' };
     }
     
     // Don't send password back to the client
@@ -106,14 +109,77 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
         id: randomUUID(),
         name: fullName,
         email,
-        password, // Storing plaintext password for simplicity in this project
+        password, // Storing plaintext password
         role: 'Approver',
+        status: 'Pending',
     };
 
     db.users.push(newUser);
     await writeDb(db);
 
-    return { success: true, message: 'Registration successful! You can now log in.' };
+    return { success: true, message: 'Registration successful! Your account is pending admin approval.' };
+}
+
+export async function requestPasswordReset(email: string) {
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (userIndex === -1) {
+        // To prevent user enumeration, we return success even if the email doesn't exist.
+        return { success: true, message: "If an account with that email exists, a password reset has been requested." };
+    }
+    
+    db.users[userIndex].passwordResetRequested = true;
+    await writeDb(db);
+
+    return { success: true, message: "Password reset has been requested. An admin will review it." };
+}
+
+// --- Admin Actions ---
+
+export async function getUsers(): Promise<User[]> {
+    const db = await readDb();
+    // Return all users without their passwords
+    return db.users.map(({ password, ...user }) => user);
+}
+
+export async function updateUserStatus(userId: string, status: UserStatus) {
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        return { success: false, message: "User not found." };
+    }
+
+    db.users[userIndex].status = status;
+    await writeDb(db);
+    return { success: true, message: `User status updated to ${status}.`};
+}
+
+export async function confirmPasswordReset(userId: string) {
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+     if (userIndex === -1) {
+        return { success: false, message: "User not found." };
+    }
+    
+    db.users[userIndex].passwordResetRequested = false;
+    await writeDb(db);
+    return { success: true, message: "Password reset request acknowledged." };
+}
+
+
+export async function deleteUser(userId: string) {
+    const db = await readDb();
+    const initialLength = db.users.length;
+    db.users = db.users.filter(u => u.id !== userId);
+
+    if (db.users.length === initialLength) {
+        return { success: false, message: "User not found." };
+    }
+
+    await writeDb(db);
+    return { success: true, message: "User deleted successfully."};
 }
 
 

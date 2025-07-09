@@ -2,13 +2,17 @@
 "use client";
 
 import * as React from "react";
-import type { Role, Submission, SubmissionStatus, StrategicPlanFormValues } from "@/lib/types";
+import type { Role, Submission, SubmissionStatus, StrategicPlanFormValues, User, UserStatus } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, loginUser, registerUser } from "@/app/actions";
+import { 
+    getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
+    loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser, confirmPasswordReset 
+} from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
 import { ApproverLogin } from "@/components/auth/approver-login";
 import { ApproverDashboard } from "@/components/dashboard/approver-dashboard";
+import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { StrategicPlanForm } from "@/components/forms/strategic-plan-form";
 import { SubmissionView } from "@/components/forms/submission-view";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,8 +21,10 @@ import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
-  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'form' | 'view-submission' | 'approver-login' | 'register' | 'reset-password'>('role-selector');
+  const [loggedInUser, setLoggedInUser] = React.useState<User | null>(null);
+  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'register' | 'reset-password'>('role-selector');
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
+  const [users, setUsers] = React.useState<User[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [currentSubmissionId, setCurrentSubmissionId] = React.useState<string | null>(null);
@@ -28,10 +34,11 @@ export default function Home() {
   React.useEffect(() => {
     if (view === 'dashboard') {
       fetchSubmissions();
+    } else if (view === 'admin-dashboard') {
+        fetchUsers();
     } else if (view === 'role-selector') {
         setIsLoading(false);
     } else {
-        // For other views like form, login, etc., we don't need to load all submissions initially.
         setIsLoading(false);
     }
   }, [view]);
@@ -42,6 +49,13 @@ export default function Home() {
     setSubmissions(fetchedSubmissions);
     setIsLoading(false);
   };
+  
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    const fetchedUsers = await getUsers();
+    setUsers(fetchedUsers);
+    setIsLoading(false);
+  };
 
   const handleSelectRole = (selectedRole: Role) => {
     if (selectedRole) {
@@ -49,18 +63,23 @@ export default function Home() {
         setRole('User');
         setView('form');
         setCurrentSubmissionId(null);
-      } else if (selectedRole === 'Approver') {
+      } else if (selectedRole === 'Approver') { // This path is now for both Approver and Admin
         setView('approver-login');
       }
     }
   };
 
-  const handleApproverLogin = async (email: string, password: string): Promise<boolean> => {
+  const handleLogin = async (email: string, password: string): Promise<boolean> => {
     const result = await loginUser({ email, password });
-    if (result.success) {
-        setRole('Approver');
-        setView('dashboard');
-        toast({ title: "Login Successful", description: "Welcome, Approver!" });
+    if (result.success && result.user) {
+        setLoggedInUser(result.user);
+        setRole(result.user.role);
+        if (result.user.role === 'Admin') {
+            setView('admin-dashboard');
+        } else {
+            setView('dashboard');
+        }
+        toast({ title: "Login Successful", description: `Welcome, ${result.user.role}!` });
         return true;
     } else {
         toast({ title: "Login Failed", description: result.message, variant: "destructive" });
@@ -70,6 +89,7 @@ export default function Home() {
 
   const handleLogout = () => {
     setRole(null);
+    setLoggedInUser(null);
     setView('role-selector');
     setCurrentSubmissionId(null);
   };
@@ -96,7 +116,12 @@ export default function Home() {
         handleLogout();
       }
       else {
-        setView('dashboard');
+        // Go back to the correct dashboard based on logged in user's role
+        if (loggedInUser?.role === 'Admin') {
+            setView('admin-dashboard');
+        } else {
+            setView('dashboard');
+        }
         setCurrentSubmissionId(null);
       }
   };
@@ -132,7 +157,7 @@ export default function Home() {
     setIsSubmitting(false);
   };
 
-  const handleUpdateStatus = async (id: string, status: SubmissionStatus, comments?: string) => {
+  const handleUpdateSubmissionStatus = async (id: string, status: SubmissionStatus, comments?: string) => {
     const result = await updateSubmissionStatus(id, status, comments);
     if(result.success) {
       toast({ title: "Status Updated", description: result.message });
@@ -142,7 +167,7 @@ export default function Home() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteSubmission = async (id: string) => {
     const result = await deleteSubmission(id);
     if(result.success) {
       toast({ title: "Submission Deleted", description: result.message });
@@ -152,7 +177,6 @@ export default function Home() {
     }
   };
 
-  // --- Placeholder Auth Functions ---
   const handleRegister = async (data: any): Promise<boolean> => {
     const result = await registerUser(data);
     if (result.success) {
@@ -165,12 +189,42 @@ export default function Home() {
     }
   };
 
-  const handleResetPassword = async (name: string, email: string) => {
-      toast({ title: "Password Reset Requested", description: `If an account exists for ${email}, a reset link would be sent.` });
+  const handleResetPassword = async (email: string) => {
+      const result = await requestPasswordReset(email);
+      toast({ title: "Password Reset Request", description: result.message });
       setView('approver-login');
   };
-  // ------------------------------------
 
+  // --- Admin actions handlers ---
+  const handleUpdateUserStatus = async (userId: string, status: UserStatus) => {
+      const result = await updateUserStatus(userId, status);
+      if (result.success) {
+          toast({ title: "User Status Updated", description: result.message });
+          fetchUsers();
+      } else {
+          toast({ title: "Error", description: result.message, variant: "destructive" });
+      }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+      const result = await deleteUser(userId);
+      if (result.success) {
+          toast({ title: "User Deleted", description: result.message });
+          fetchUsers();
+      } else {
+          toast({ title: "Error", description: result.message, variant: "destructive" });
+      }
+  }
+
+  const handleConfirmPasswordReset = async (userId: string) => {
+      const result = await confirmPasswordReset(userId);
+       if (result.success) {
+          toast({ title: "Password Reset Confirmed", description: result.message });
+          fetchUsers();
+      } else {
+          toast({ title: "Error", description: result.message, variant: "destructive" });
+      }
+  }
 
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
 
@@ -187,11 +241,17 @@ export default function Home() {
 
     switch(view) {
       case 'dashboard':
-        if (role === 'Approver') {
-          return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateStatus} onDelete={handleDelete} />;
-        }
-        return null;
+        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} />;
       
+      case 'admin-dashboard':
+        return <AdminDashboard 
+            users={users} 
+            currentUser={loggedInUser}
+            onUpdateUserStatus={handleUpdateUserStatus} 
+            onDeleteUser={handleDeleteUser}
+            onConfirmPasswordReset={handleConfirmPasswordReset}
+        />;
+
       case 'form':
         return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} onCancel={handleBack} isSubmitting={isSubmitting} />;
 
@@ -202,7 +262,7 @@ export default function Home() {
         return null;
 
       case 'approver-login':
-        return <ApproverLogin onLogin={handleApproverLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} />;
+        return <ApproverLogin onLogin={handleLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} />;
 
       case 'register':
         return <RegisterForm onRegister={handleRegister} onBack={handleBackToLogin} />;

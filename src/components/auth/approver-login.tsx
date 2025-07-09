@@ -40,7 +40,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
     <div className="flex justify-center items-center h-full">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="font-headline text-2xl">የአጽዳቂ መግቢያ</CardTitle>
+          <CardTitle className="font-headline text-2xl">የባለሥልጣን መግቢያ</CardTitle>
           <CardDescription>ለመቀጠል እባክዎ ይግቡ</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

@@ -39,6 +39,15 @@ export function RegisterForm({ onRegister, onBack }: RegisterFormProps) {
       });
       return;
     }
+    if (password.length < 6) {
+        toast({
+            title: "ደካማ የይለፍ ቃል",
+            description: "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።",
+            variant: "destructive",
+        });
+        return;
+    }
+
     setIsLoading(true);
     const success = await onRegister({ fullName, email, password });
     if (!success) {
@@ -51,7 +60,7 @@ export function RegisterForm({ onRegister, onBack }: RegisterFormProps) {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="font-headline text-2xl">አዲስ መለያ ይፍጠሩ</CardTitle>
-          <CardDescription>ለመጀመር ዝርዝሮችዎን ይሙሉ</CardDescription>
+          <CardDescription>የአጽዳቂ መለያ ለመጠየቅ ዝርዝሮችዎን ይሙሉ</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
