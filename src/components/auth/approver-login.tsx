@@ -13,16 +13,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Shield } from "lucide-react";
 
 interface ApproverLoginProps {
   onLogin: (email: string, password: string) => Promise<boolean>;
   onBack: () => void;
   onGoToRegister: () => void;
   onGoToReset: () => void;
+  onGoToAdminLogin: () => void;
 }
 
-export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: ApproverLoginProps) {
+export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset, onGoToAdminLogin }: ApproverLoginProps) {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -40,7 +41,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
     <div className="flex justify-center items-center h-full">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="font-headline text-2xl">የአጽዳቂ መግቢያ</CardTitle>
+          <CardTitle className="font-headline text-2xl">የሰራተኛ መግቢያ</CardTitle>
           <CardDescription>ለመቀጠል እባክዎ ይግቡ</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -50,7 +51,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
               <Input
                 id="email"
                 type="email"
-                placeholder="approver@example.com"
+                placeholder="email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -79,6 +80,15 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
                 መለያ የለዎትም?{" "}
                 <Button variant="link" type="button" onClick={onGoToRegister} className="p-0 h-auto">ይመዝገቡ</Button>
             </div>
+            <Button
+              type="button"
+              variant="link"
+              onClick={onGoToAdminLogin}
+              className="text-muted-foreground"
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              የአስተዳዳሪ መግቢያ
+            </Button>
             <Button
               type="button"
               variant="outline"

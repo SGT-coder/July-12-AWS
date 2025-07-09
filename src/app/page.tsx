@@ -20,10 +20,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RegisterForm } from "@/components/auth/register-form";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
+type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password';
+
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
   const [loggedInUser, setLoggedInUser] = React.useState<User | null>(null);
-  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password'>('role-selector');
+  const [view, setView] = React.useState<AppView>('role-selector');
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -58,7 +60,7 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  const handleViewChange = (newView: 'form' | 'approver-login' | 'admin-login') => {
+  const handleSelectView = (newView: 'form' | 'approver-login') => {
     if (newView === 'form') {
         setRole('User');
     }
@@ -259,10 +261,10 @@ export default function Home() {
         return null;
 
       case 'approver-login':
-        return <ApproverLogin onLogin={handleLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} />;
+        return <ApproverLogin onLogin={handleLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} onGoToAdminLogin={() => setView('admin-login')} />;
       
       case 'admin-login':
-        return <AdminLogin onLogin={handleLogin} onBack={handleBack} />;
+        return <AdminLogin onLogin={handleLogin} onBack={() => setView('approver-login')} />;
 
       case 'register':
         return <RegisterForm onRegister={handleRegister} onBack={handleBackToLogin} />;
@@ -271,14 +273,14 @@ export default function Home() {
         return <ResetPasswordForm onReset={handleResetPassword} onBack={handleBackToLogin} />;
 
       default:
-        return <RoleSelector onSelectView={handleViewChange} />;
+        return <RoleSelector onSelectView={handleSelectView} />;
     }
   };
   
   if (view === 'role-selector') {
     return (
         <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-            <RoleSelector onSelectView={handleViewChange} />
+            <RoleSelector onSelectView={handleSelectView} />
         </main>
     );
   }

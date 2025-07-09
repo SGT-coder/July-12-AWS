@@ -1,4 +1,3 @@
-
 {
   "submissions": [
     {
@@ -53,6 +52,14 @@
       "role": "Approver",
       "status": "Pending",
       "passwordResetRequested": true
+    },
+    {
+      "id": "4660f17d-d212-47e7-8bfc-43cd1c31b5c0",
+      "name": "Samuel ",
+      "email": "s@gmail.com",
+      "password": "zxcvbnm",
+      "role": "Approver",
+      "status": "Pending"
     }
   ]
 }
