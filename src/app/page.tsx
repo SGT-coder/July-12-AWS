@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
     loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
-    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset
+    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset, getSubmissionById
 } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
@@ -25,8 +25,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
+import { SubmissionTracking } from "@/components/tracking/submission-tracking";
 
-type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings';
+type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings' | 'track-submission';
 
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
@@ -42,6 +43,8 @@ export default function Home() {
   const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = React.useState(false);
   const [approvedPassword, setApprovedPassword] = React.useState<string | null>(null);
   const [isApprovedPasswordDialogOpen, setIsApprovedPasswordDialogOpen] = React.useState(false);
+  const [newSubmissionId, setNewSubmissionId] = React.useState<string | null>(null);
+  const [isTrackingIdDialogOpen, setIsTrackingIdDialogOpen] = React.useState(false);
 
   const { toast } = useToast();
 
@@ -89,7 +92,7 @@ export default function Home() {
     setUsers(fetchedUsers);
   };
 
-  const handleSelectView = (newView: 'form' | 'approver-login') => {
+  const handleSelectView = (newView: 'form' | 'approver-login' | 'track-submission') => {
     if (newView === 'form') {
         setRole('User');
         setCurrentSubmissionId(null);
@@ -154,7 +157,7 @@ export default function Home() {
   const handleBack = () => {
       if (view === 'form' && role === 'User') {
         handleLogout();
-      } else if (view === 'approver-login' || view === 'admin-login' || view === 'register' || view === 'reset-password') {
+      } else if (view === 'approver-login' || view === 'admin-login' || view === 'register' || view === 'reset-password' || view === 'track-submission') {
         handleLogout();
       }
       else {
@@ -179,14 +182,23 @@ export default function Home() {
     const result = id ? await updateSubmission(id, data) : await addSubmission(data);
     
     if (result.success) {
-      toast({
-        title: id ? "ዕቅድ ተስተካክሏል" : "ዕቅድ ገብቷል",
-        description: `"${data.projectTitle}" ${id ? 'የተሰኘው እቅድዎ ተስተካክሎ እንደገና ለግምገማ ተልኳል።' : 'የተሰኘው እቅድዎ ለግምገማ ተልኳል።'}`,
-      });
+      if (!id && result.submission) {
+         setNewSubmissionId(result.submission.id);
+         setIsTrackingIdDialogOpen(true);
+      } else {
+          toast({
+            title: "ዕቅድ ተስተካክሏል",
+            description: `"${data.projectTitle}" ${'የተሰኘው እቅድዎ ተስተካክሎ እንደገና ለግምገማ ተልኳል።'}`,
+          });
+      }
       
       if (role === 'User') {
         setFormKey(Date.now());
-        handleBack();
+        if (!id) {
+          // Stay on the page to show dialog, user will click done to go back
+        } else {
+          handleBack();
+        }
       } else {
         setView(loggedInUser?.role === 'Admin' ? 'admin-dashboard' : 'dashboard');
         fetchSubmissions();
@@ -322,7 +334,7 @@ export default function Home() {
   const shouldShowHeaderButton = ['form', 'view-submission', 'analytics', 'settings'].includes(view);
 
   const renderContent = () => {
-    if (isLoading && view !== 'role-selector' && view !== 'form') {
+    if (isLoading && view !== 'role-selector' && view !== 'form' && view !== 'track-submission') {
         return (
             <div className="space-y-4">
                 <Skeleton className="h-16 w-1/2" />
@@ -355,7 +367,7 @@ export default function Home() {
         return <AnalyticsDashboard submissions={submissions} />;
 
       case 'form':
-        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} onBack={handleBack} />;
+        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} />;
 
       case 'view-submission':
         if (currentSubmission) {
@@ -383,6 +395,9 @@ export default function Home() {
           return <SettingsPage user={loggedInUser} onUserUpdate={handleUserUpdate} />;
         }
         return null;
+        
+      case 'track-submission':
+          return <SubmissionTracking onEdit={handleEdit} />;
 
       default:
         return <RoleSelector onSelectView={handleSelectView} />;
@@ -457,6 +472,29 @@ export default function Home() {
             </div>
             <DialogFooter>
                 <Button onClick={() => setIsApprovedPasswordDialogOpen(false)}>ተከናውኗል</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+       <Dialog open={isTrackingIdDialogOpen} onOpenChange={setIsTrackingIdDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>ዕቅድ በተሳካ ሁኔታ ገብቷል!</DialogTitle>
+                <DialogDescription>
+                    ለግምገማ እና ለክትትል ይህንን የመከታተያ መታወቂያ ይጠቀሙ። እባክዎ ገልብጠው ደህንነቱ በተጠበቀ ቦታ ያስቀምጡት።
+                </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center space-x-2 my-4">
+                <Input value={newSubmissionId || ''} readOnly className="font-mono text-lg tracking-wider bg-primary/10" />
+                <Button variant="outline" size="icon" onClick={() => {
+                    if(newSubmissionId) navigator.clipboard.writeText(newSubmissionId)
+                    toast({ title: "ተቀድቷል!", description: "የመከታተያ መታወቂያ ወደ ቅንጥብ ሰሌዳ ተቀድቷል።" });
+                }}><Copy className="h-4 w-4" /></Button>
+            </div>
+            <DialogFooter>
+                <Button onClick={() => {
+                    setIsTrackingIdDialogOpen(false);
+                    handleBack();
+                }}>ተከናውኗል</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

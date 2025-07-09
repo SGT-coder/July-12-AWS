@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, Briefcase } from "lucide-react";
+import { User, Briefcase, Search } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/carousel";
 
 interface RoleSelectorProps {
-  onSelectView: (view: 'form' | 'approver-login') => void;
+  onSelectView: (view: 'form' | 'approver-login' | 'track-submission') => void;
 }
 
 const images = [
@@ -65,7 +65,7 @@ export function RoleSelector({ onSelectView }: RoleSelectorProps) {
       <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
 
       <div className="relative z-10 flex flex-col items-center justify-center h-full min-h-screen overflow-y-auto p-4 md:p-8">
-        <div className="flex flex-col items-center justify-center w-full max-w-3xl">
+        <div className="flex flex-col items-center justify-center w-full max-w-4xl">
             <div className="text-center mb-12">
                 <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-5xl drop-shadow-md">
                 ወደ አህሪ የስራ ፍሰት እንኳን በደህና መጡ
@@ -74,30 +74,47 @@ export function RoleSelector({ onSelectView }: RoleSelectorProps) {
                 ለበለጠ ውጤታማነት ስትራቴጂካዊ ዕቅድን በዲጂታል መልክ ማደራጀት።
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                 <Card className="hover:shadow-xl transition-shadow duration-300 flex flex-col bg-card/80">
                 <CardHeader className="items-center text-center p-6 flex-grow">
                     <div className="p-4 bg-primary/10 rounded-full mb-4">
                     <User className="h-10 w-10 text-primary" />
                     </div>
-                    <CardTitle className="font-headline text-2xl">የሰራተኛ ተጠቃሚ</CardTitle>
+                    <CardTitle className="font-headline text-2xl">አዲስ ቅጽ ያስገቡ</CardTitle>
                     <CardDescription>
                     የስትራቴጂክ ዕቅድ እና የሥራ እንቅስቃሴ ቅጾችን ይሙሉ እና ያስገቡ።
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center px-6 pb-6">
                     <Button onClick={() => onSelectView("form")} className="w-full">
-                    እንደ ተጠቃሚ ይቀጥሉ
+                    አዲስ ቅጽ ይጀምሩ
                     </Button>
                 </CardContent>
                 </Card>
                 
                 <Card className="hover:shadow-xl transition-shadow duration-300 flex flex-col bg-card/80">
                 <CardHeader className="items-center text-center p-6 flex-grow">
+                    <div className="p-4 bg-green-500/10 rounded-full mb-4">
+                    <Search className="h-10 w-10 text-green-500" />
+                    </div>
+                    <CardTitle className="font-headline text-2xl">የእርስዎን ማመልከቻ ይከታተሉ</CardTitle>
+                    <CardDescription>
+                    የማመልከቻዎን ሁኔታ ለማየት የመከታተያ መታወቂያዎን ያስገቡ።
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center px-6 pb-6">
+                    <Button onClick={() => onSelectView("track-submission")} className="w-full bg-green-500 hover:bg-green-600">
+                    ሁኔታን ይፈትሹ
+                    </Button>
+                </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-xl transition-shadow duration-300 flex flex-col bg-card/80 md:col-span-2 lg:col-span-1">
+                <CardHeader className="items-center text-center p-6 flex-grow">
                     <div className="p-4 bg-accent/10 rounded-full mb-4">
                     <Briefcase className="h-10 w-10 text-accent" />
                     </div>
-                    <CardTitle className="font-headline text-2xl">የባለሙያ መግቢያ</CardTitle>
+                    <CardTitle className="font-headline text-2xl">ባለሙያ እና አስተዳዳሪ</CardTitle>
                     <CardDescription>
                     ገምጋሚዎች እና አስተዳዳሪዎች ለመግባት እዚህ ይጫኑ።
                     </CardDescription>
@@ -114,5 +131,3 @@ export function RoleSelector({ onSelectView }: RoleSelectorProps) {
     </div>
   );
 }
-
-    

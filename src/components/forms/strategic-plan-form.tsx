@@ -103,7 +103,7 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting }: Strategi
             <CardHeader>
                 <CardTitle className="text-3xl font-bold text-center font-headline">{submission ? "ዕቅድ አርትዕ" : "ስትራቴጂ ጉዳዮች ዕቅድ ማስገቢያ ቅጽ"}</CardTitle>
                 <CardDescription className="text-center text-lg">
-                ለግምገማ አዲስ ስልታዊ ዕቅድ ለማስገባት እባክዎ ከታች ያሉትን መስኮች ይሙሉ
+                {submission ? 'ለውጦችዎን ያስገቡ እና ለድጋሚ ግምገማ ያስገቡ።' : 'ለግምገማ አዲስ ስልታዊ ዕቅድ ለማስገባት እባክዎ ከታች ያሉትን መስኮች ይሙሉ'}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
@@ -209,33 +209,36 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting }: Strategi
                 </Card>
                 
                 <Card>
-                    <CardHeader><CardTitle className="text-xl">ክብደቶች</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle className="text-xl">ክብደቶች</CardTitle>
+                        <CardDescription>እባክዎ ከ 0 እስከ 5 ያለውን የችግር መጠን በቁጥር ያስገቡ (5 በጣም አስቸጋሪ ነው)።</CardDescription>
+                    </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <FormField control={form.control} name="objectiveWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>ዓላማ ክብደት</FormLabel>
-                                <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
+                                <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="strategicActionWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>ስትራቴጂክ እርምጃ ክብደት</FormLabel>
-                                <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
+                                <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="metricWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>የመለኪያ ክብደት</FormLabel>
-                                <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
+                                <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="mainTaskWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>የዋና ተግባር ክብደት</FormLabel>
-                               <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
+                               <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
@@ -334,9 +337,9 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting }: Strategi
 
             </CardContent>
             <CardFooter className="flex justify-end gap-4 p-6">
-                <Button type="button" variant="ghost" onClick={handleReset} disabled={isSubmitting}>አጽዳ</Button>
+                {!submission && <Button type="button" variant="ghost" onClick={handleReset} disabled={isSubmitting}>አጽዳ</Button>}
                 <Button type="submit" disabled={isSubmitting} className="text-lg px-6 py-4">
-                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (submission ? 'ለውጦችን አስቀምጥ' : 'ዕቅድ አስገባ')}
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (submission ? 'አርትዕ እና እንደገና አስገባ' : 'ዕቅድ አስገባ')}
                 </Button>
             </CardFooter>
             </Card>

@@ -370,6 +370,25 @@ export async function getSubmissions(): Promise<Submission[]> {
     }
 }
 
+export async function getSubmissionById(id: string): Promise<{ success: boolean; submission?: Submission; message?: string }> {
+    if (!id || typeof id !== 'string' || id.trim() === '') {
+        return { success: false, message: "የመከታተያ መታወቂያ ያስፈልጋል።" };
+    }
+    try {
+        const db = await readDb();
+        const submission = db.submissions.find(s => s.id.toLowerCase() === id.toLowerCase());
+
+        if (submission) {
+            return { success: true, submission };
+        } else {
+            return { success: false, message: "በዚህ መታወቂያ ምንም ማመልከቻ አልተገኘም።" };
+        }
+    } catch (error) {
+        console.error("Error fetching submission by ID: ", error);
+        return { success: false, message: "ማመልከቻውን በማምጣት ላይ ሳለ ስህተት ተፈጥሯል።" };
+    }
+}
+
 export async function addSubmission(data: StrategicPlanFormValues) {
     const parsedData = strategicPlanSchema.safeParse(data);
 
