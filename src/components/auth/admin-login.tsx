@@ -14,14 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import type { Role } from "@/lib/types";
 
 interface AdminLoginProps {
   onLogin: (email: string, password: string, role: 'Admin' | 'Approver') => Promise<boolean>;
   onBack: () => void;
+  onGoToReset: () => void;
 }
 
-export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
+export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -65,6 +65,9 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </div>
+            <div className="text-sm">
+                <Button variant="link" type="button" onClick={onGoToReset} className="p-0 h-auto">የይለፍ ቃል ረሱ?</Button>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">

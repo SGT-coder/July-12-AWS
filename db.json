@@ -60,6 +60,15 @@
       "password": "zxcvbnm",
       "role": "Approver",
       "status": "Pending"
+    },
+    {
+      "id": "d412e84c-5dfe-4366-918f-8d8be17edd70",
+      "name": "habta",
+      "email": "habta@gmail.com",
+      "password": "asdfghjkl",
+      "role": "Approver",
+      "status": "Approved",
+      "passwordResetRequested": true
     }
   ]
 }

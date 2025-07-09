@@ -270,7 +270,7 @@ export default function Home() {
         return <ApproverLogin onLogin={handleLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} onGoToAdminLogin={() => setView('admin-login')} />;
       
       case 'admin-login':
-        return <AdminLogin onLogin={handleLogin} onBack={() => setView('approver-login')} />;
+        return <AdminLogin onLogin={handleLogin} onBack={() => setView('approver-login')} onGoToReset={() => setView('reset-password')} />;
 
       case 'register':
         return <RegisterForm onRegister={handleRegister} onBack={handleBackToLogin} />;
@@ -302,4 +302,3 @@ export default function Home() {
     </div>
   );
 }
-
