@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { z } from 'zod';
-import { strategicPlanSchema, type StrategicPlanFormValues, updateProfileSchema, changePasswordSchema, adminAddUserSchema, type AdminAddUserFormValues } from '@/lib/schemas';
+import { strategicPlanSchema, type StrategicPlanFormValues, updateProfileSchema, changePasswordSchema, adminAddUserSchema, type AdminAddUserFormValues, resetPasswordSchema } from '@/lib/schemas';
 import type { Submission, SubmissionStatus, User, UserStatus, Role } from '@/lib/types';
 
 // Path to the local JSON database file
@@ -17,7 +17,7 @@ interface Db {
     users: User[];
 }
 
-const statusTranslations: Record<UserStatus, string> = {
+const statusTranslations: Record<UserStatus | SubmissionStatus, string> = {
     Approved: "ጸድቋል",
     Pending: "በመጠባበቅ ላይ",
     Rejected: "ውድቅ ተደርጓል",
@@ -126,7 +126,6 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
         status: 'Pending',
         createdAt: new Date().toISOString(),
         statusUpdatedAt: new Date().toISOString(),
-        passwordResetRequested: false,
     };
 
     db.users.push(newUser);
@@ -134,11 +133,6 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
 
     return { success: true, message: 'ምዝገባው ተሳክቷል! መለያዎ የአስተዳዳሪ ይሁንታ በመጠበቅ ላይ ነው።' };
 }
-
-const resetPasswordSchema = z.object({
-    fullName: z.string().min(1, 'ሙሉ ስም ያስፈልጋል።'),
-    email: z.string().email('የተሳሳተ የኢሜይል አድራሻ።'),
-});
 
 export async function requestPasswordReset(data: z.infer<typeof resetPasswordSchema>) {
     const parsedData = resetPasswordSchema.safeParse(data);
@@ -159,12 +153,13 @@ export async function requestPasswordReset(data: z.infer<typeof resetPasswordSch
         return { success: false, message: "በዚያ ስም እና የኢሜይል አድራሻ የተመዘገበ መለያ የለም።" };
     }
     
-    db.users[userIndex].passwordResetRequested = true;
+    const newPassword = Math.random().toString(36).substring(2, 10);
+    db.users[userIndex].password = newPassword;
     db.users[userIndex].statusUpdatedAt = new Date().toISOString();
     
     await writeDb(db);
 
-    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎ ለአስተዳዳሪ ተልኳል።" };
+    return { success: true, newPassword, message: "አዲስ የይለፍ ቃል ተፈጥሯል።" };
 }
 
 // --- Admin Actions ---
@@ -200,7 +195,6 @@ export async function adminAddUser(data: AdminAddUserFormValues) {
         status: 'Approved',
         createdAt: new Date().toISOString(),
         statusUpdatedAt: new Date().toISOString(),
-        passwordResetRequested: false,
     };
 
     db.users.push(newUser);
@@ -224,38 +218,6 @@ export async function updateUserStatus(userId: string, status: UserStatus) {
     await writeDb(db);
     const translatedStatus = statusTranslations[status] || status;
     return { success: true, message: `የተጠቃሚው ሁኔታ ወደ '${translatedStatus}' ተቀይሯል።`};
-}
-
-export async function approvePasswordReset(userId: string) {
-    const db = await readDb();
-    const userIndex = db.users.findIndex(u => u.id === userId);
-
-    if (userIndex === -1) {
-        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
-    }
-
-    const newPassword = Math.random().toString(36).substring(2, 10);
-    db.users[userIndex].password = newPassword;
-    db.users[userIndex].passwordResetRequested = false;
-    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
-    
-    await writeDb(db);
-
-    return { success: true, newPassword, message: `ለ ${db.users[userIndex].name} አዲስ የይለፍ ቃል ተፈጥሯል።` };
-}
-
-export async function denyPasswordReset(userId: string) {
-    const db = await readDb();
-    const userIndex = db.users.findIndex(u => u.id === userId);
-     if (userIndex === -1) {
-        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
-    }
-
-    db.users[userIndex].passwordResetRequested = false;
-    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
-    await writeDb(db);
-
-    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ ውድቅ ተደርጓል።" };
 }
 
 export async function deleteUser(userId: string) {

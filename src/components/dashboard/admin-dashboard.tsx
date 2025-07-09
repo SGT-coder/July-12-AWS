@@ -2,29 +2,23 @@
 "use client";
 
 import * as React from "react";
-import {
-  UserCheck, UserX, ShieldCheck, Trash2, FileWarning, UserPlus, KeyRound, Copy
-} from "lucide-react";
+import { UserCheck, UserX, Trash2, UserPlus, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@/hooks/use-toast";
-
 import type { User, UserStatus } from "@/lib/types";
 import { DateDisplay } from "@/components/shared/date-display";
 import { adminAddUserSchema, type AdminAddUserFormValues } from "@/lib/schemas";
 import { Loader2 } from "lucide-react";
-
 
 interface AdminDashboardProps {
   users: User[];
@@ -32,15 +26,20 @@ interface AdminDashboardProps {
   onUpdateUserStatus: (userId: string, status: UserStatus) => void;
   onDeleteUser: (userId: string) => void;
   onAddUser: (data: AdminAddUserFormValues) => Promise<boolean>;
-  onApprovePasswordReset: (userId: string) => Promise<string | null>;
-  onDenyPasswordReset: (userId: string) => void;
 }
+
+type SortableUserColumn = keyof Pick<User, 'name' | 'email' | 'role' | 'status' | 'createdAt' | 'statusUpdatedAt'>;
 
 const statusTranslations: Record<UserStatus, string> = {
     Approved: "ጸድቋል",
     Pending: "በመጠባበቅ ላይ",
     Rejected: "ውድቅ ተደርጓል",
 };
+
+const roleTranslations: Record<User['role'], string> = {
+    Admin: "አስተዳዳሪ",
+    Approver: "አጽዳቂ",
+}
 
 const StatusBadge = ({ status }: { status: UserStatus }) => {
     const config = {
@@ -114,59 +113,97 @@ const AddUserDialog = ({ onAddUser }: { onAddUser: (data: AdminAddUserFormValues
     )
 }
 
-const ApproveResetDialog = ({ onConfirm }: { onConfirm: () => void }) => (
-    <AlertDialogContent>
-        <AlertDialogHeader>
-            <AlertDialogTitle>የይለፍ ቃል ዳግም ማስጀመርን አጽድቅ?</AlertDialogTitle>
-            <AlertDialogDescription>
-                ይህ ለተጠቃሚው አዲስ የይለፍ ቃል ይፈጥራል። አዲሱን የይለፍ ቃል ለተጠቃሚው ማሳወቅ ይኖርብዎታል።
-            </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-            <AlertDialogCancel>ይቅር</AlertDialogCancel>
-            <AlertDialogAction onClick={onConfirm}>አዎ፣ አጽድቅ</AlertDialogAction>
-        </AlertDialogFooter>
-    </AlertDialogContent>
-);
+export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDeleteUser, onAddUser }: AdminDashboardProps) {
 
-const NewPasswordDialog = ({ password, onDone }: { password: string, onDone: () => void }) => {
-    const { toast } = useToast();
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(password);
-        toast({ title: "ተቀድቷል!", description: "አዲስ የይለፍ ቃል ወደ ቅንጥብ ሰሌዳ ተቀድቷል።" });
-    }
-    return (
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>አዲስ የይለፍ ቃል ተፈጥሯል</DialogTitle>
-                <DialogDescription>እባክዎ ይህን አዲስ የይለፍ ቃል ገልብጠው ለተጠቃሚው በአስተማማኝ ሁኔታ ያጋሩ።</DialogDescription>
-            </DialogHeader>
-            <div className="flex items-center space-x-2 my-4">
-                <Input value={password} readOnly className="font-mono text-lg tracking-wider" />
-                <Button variant="outline" size="icon" onClick={copyToClipboard}><Copy className="h-4 w-4" /></Button>
-            </div>
-            <DialogFooter>
-                <DialogClose asChild><Button onClick={onDone}>ተከናውኗል</Button></DialogClose>
-            </DialogFooter>
-        </DialogContent>
-    )
-}
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [roleFilter, setRoleFilter] = React.useState<User['role'] | "all">("all");
+  const [statusFilter, setStatusFilter] = React.useState<UserStatus | "all">("all");
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const ITEMS_PER_PAGE = 5;
 
-export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDeleteUser, onAddUser, onApprovePasswordReset, onDenyPasswordReset }: AdminDashboardProps) {
-
-  const [newlyGeneratedPassword, setNewlyGeneratedPassword] = React.useState<string | null>(null);
-
-  const handleApproveReset = async (userId: string) => {
-    const newPassword = await onApprovePasswordReset(userId);
-    if (newPassword) {
-        setNewlyGeneratedPassword(newPassword);
-    }
-  }
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableUserColumn; direction: 'ascending' | 'descending' }>({
+    key: 'createdAt',
+    direction: 'descending',
+  });
 
   const pendingRegistrations = users.filter(u => u.status === 'Pending');
-  const passwordResetRequests = users.filter(u => u.passwordResetRequested);
-  const activeUsers = users.filter(u => u.status === 'Approved' && u.id !== currentUser?.id);
-  const registrationHistory = users.filter(u => u.status === 'Approved' || u.status === 'Rejected');
+
+  const filteredUsers = React.useMemo(() => {
+    return users
+      .filter((user) =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter((user) =>
+        roleFilter === "all" ? true : user.role === roleFilter
+      )
+      .filter((user) =>
+        statusFilter === "all" ? true : user.status === statusFilter
+      );
+  }, [users, searchTerm, roleFilter, statusFilter]);
+
+  const sortedUsers = React.useMemo(() => {
+    const sortableItems = [...filteredUsers];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (['createdAt', 'statusUpdatedAt'].includes(sortConfig.key)) {
+            const dateA = new Date(aValue).getTime();
+            const dateB = new Date(bValue).getTime();
+            if (dateA < dateB) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (dateA > dateB) return sortConfig.direction === 'ascending' ? 1 : -1;
+            return 0;
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredUsers, sortConfig]);
+
+  const requestSort = (key: SortableUserColumn) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortIcon = (columnKey: SortableUserColumn) => {
+    if (!sortConfig || sortConfig.key !== columnKey) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/70" />;
+    }
+    if (sortConfig.direction === 'ascending') {
+      return <ArrowUp className="ml-2 h-4 w-4" />;
+    }
+    return <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, roleFilter, statusFilter]);
+  
+  const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
+  const paginatedUsers = sortedUsers.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
+  const SortableHeader = ({ column, label, className }: { column: SortableUserColumn, label: string, className?: string }) => (
+    <TableHead className={className}>
+        <Button variant="ghost" onClick={() => requestSort(column)} className="px-2">
+            {label}
+            {getSortIcon(column)}
+        </Button>
+    </TableHead>
+  );
 
   return (
     <div className="space-y-8">
@@ -176,13 +213,11 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
       </div>
 
       <Tabs defaultValue="requests">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="requests">ጥያቄዎች</TabsTrigger>
-          <TabsTrigger value="users">ተጠቃሚዎች</TabsTrigger>
-          <TabsTrigger value="history">ታሪክ</TabsTrigger>
+          <TabsTrigger value="users">ሁሉም ተጠቃሚዎች</TabsTrigger>
         </TabsList>
         
-        {/* REQUESTS TAB */}
         <TabsContent value="requests" className="space-y-6">
             <Card>
                 <CardHeader>
@@ -204,33 +239,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                                     </TableCell>
                                 </TableRow>
                             )) : (
-                                <TableRow><TableCell colSpan={4} className="h-24 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-muted-foreground mb-2" />በመጠባበቅ ላይ ያሉ ምዝገባዎች የሉም።</TableCell></TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎች</CardTitle>
-                    <CardDescription>የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎችን አጽድቅ ወይም ውድቅ አድርግ።</CardDescription>
-                </CardHeader>
-                <CardContent>
-                   <Table>
-                        <TableHeader><TableRow><TableHead>ስም</TableHead><TableHead>ኢሜይል</TableHead><TableHead>የተጠየቀበት ቀን</TableHead><TableHead className="text-right">ድርጊቶች</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                            {passwordResetRequests.length > 0 ? passwordResetRequests.map(user => (
-                                <TableRow key={user.id}>
-                                    <TableCell className="font-medium">{user.name}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell><DateDisplay dateString={user.statusUpdatedAt} /></TableCell>
-                                    <TableCell className="text-right space-x-2">
-                                        <AlertDialog><AlertDialogTrigger asChild><Button size="sm" variant="outline"><KeyRound className="mr-2 h-4 w-4" /> አጽድቅ</Button></AlertDialogTrigger><ApproveResetDialog onConfirm={() => handleApproveReset(user.id)} /></AlertDialog>
-                                        <Button size="sm" variant="destructive" onClick={() => onDenyPasswordReset(user.id)}><UserX className="mr-2 h-4 w-4" /> ውድቅ አድርግ</Button>
-                                    </TableCell>
-                                </TableRow>
-                            )) : (
-                                <TableRow><TableCell colSpan={4} className="h-24 text-center"><ShieldCheck className="mx-auto h-8 w-8 text-muted-foreground mb-2" />የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎች የሉም።</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={4} className="h-24 text-center">በመጠባበቅ ላይ ያሉ ምዝገባዎች የሉም።</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
@@ -238,75 +247,97 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
             </Card>
         </TabsContent>
 
-        {/* USERS TAB */}
         <TabsContent value="users">
             <Card>
                 <CardHeader className="flex-row items-center justify-between">
                     <div>
-                        <CardTitle>ሁሉም ንቁ ተጠቃሚዎች</CardTitle>
-                        <CardDescription>በስርዓቱ ውስጥ ያሉትን ሁሉንም ንቁ የአስተዳዳሪ እና የአጽዳቂ ተጠቃሚዎችን ያስተዳድሩ።</CardDescription>
+                        <CardTitle>የተጠቃሚ አስተዳደር</CardTitle>
+                        <CardDescription>ሁሉንም ተጠቃሚዎች ፈልግ፣ አጣራ እና አስተዳድር።</CardDescription>
                     </div>
                     <AddUserDialog onAddUser={onAddUser} />
                 </CardHeader>
                 <CardContent>
-                   <Table>
-                        <TableHeader><TableRow><TableHead>ስም</TableHead><TableHead>ኢሜይል</TableHead><TableHead>ሚና</TableHead><TableHead>የተቀላቀለበት ቀን</TableHead><TableHead className="text-right">ድርጊቶች</TableHead></TableRow></TableHeader>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="በስም ወይም በኢሜይል ይፈልጉ..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10 w-full"
+                            />
+                        </div>
+                        <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as User['role'] | "all")}>
+                            <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሚና ማጣሪያ" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">ሁሉም ሚናዎች</SelectItem>
+                                <SelectItem value="Admin">አስተዳዳሪ</SelectItem>
+                                <SelectItem value="Approver">አጽዳቂ</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as UserStatus | "all")}>
+                            <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሁኔታ ማጣሪያ" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">ሁሉም ሁኔታዎች</SelectItem>
+                                <SelectItem value="Approved">ጸድቋል</SelectItem>
+                                <SelectItem value="Pending">በመጠባበቅ ላይ</SelectItem>
+                                <SelectItem value="Rejected">ውድቅ ተደርጓል</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                   <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <SortableHeader column="name" label="ስም" />
+                                <SortableHeader column="email" label="ኢሜይል" />
+                                <SortableHeader column="role" label="ሚና" />
+                                <SortableHeader column="status" label="ሁኔታ" />
+                                <SortableHeader column="statusUpdatedAt" label="የነቃበት ቀን" />
+                                <TableHead className="text-right">ድርጊቶች</TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
-                            {activeUsers.length > 0 ? activeUsers.map(user => (
+                            {paginatedUsers.length > 0 ? paginatedUsers.map(user => (
                                 <TableRow key={user.id}>
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
-                                    <TableCell><Badge variant="secondary">{user.role}</Badge></TableCell>
-                                    <TableCell><DateDisplay dateString={user.createdAt} /></TableCell>
+                                    <TableCell><Badge variant={user.role === 'Admin' ? "default" : "secondary"}>{roleTranslations[user.role]}</Badge></TableCell>
+                                    <TableCell><StatusBadge status={user.status} /></TableCell>
+                                    <TableCell><DateDisplay dateString={user.statusUpdatedAt} /></TableCell>
                                     <TableCell className="text-right space-x-2">
-                                       <AlertDialog>
-                                            <AlertDialogTrigger asChild><Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-red-50"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader><AlertDialogTitle>እርግጠኛ ነዎት?</AlertDialogTitle><AlertDialogDescription>ይህ ተጠቃሚውን እስከመጨረሻው ይሰርዘዋል። ይህን እርምጃ መቀልበስ አይቻልም።</AlertDialogDescription></AlertDialogHeader>
-                                                <AlertDialogFooter><AlertDialogCancel>ይቅር</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteUser(user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">አዎ، ተጠቃሚውን ሰርዝ</AlertDialogAction></AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+                                       {currentUser?.id !== user.id && (
+                                         <AlertDialog>
+                                              <AlertDialogTrigger asChild><Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-red-50"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                              <AlertDialogContent>
+                                                  <AlertDialogHeader><AlertDialogTitle>እርግጠኛ ነዎት?</AlertDialogTitle><AlertDialogDescription>ይህ ተጠቃሚውን እስከመጨረሻው ይሰርዘዋል። ይህን እርምጃ መቀልበስ አይቻልም።</AlertDialogDescription></AlertDialogHeader>
+                                                  <AlertDialogFooter><AlertDialogCancel>ይቅር</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteUser(user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">አዎ، ተጠቃሚውን ሰርዝ</AlertDialogAction></AlertDialogFooter>
+                                              </AlertDialogContent>
+                                          </AlertDialog>
+                                       )}
                                     </TableCell>
                                 </TableRow>
                             )) : (
-                                <TableRow><TableCell colSpan={5} className="h-24 text-center"><FileWarning className="mx-auto h-8 w-8 text-muted-foreground mb-2" />ሌሎች ንቁ ተጠቃሚዎች አልተገኙም።</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={6} className="h-24 text-center">ምንም ተጠቃሚዎች አልተገኙም።</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
+                   </div>
                 </CardContent>
-            </Card>
-        </TabsContent>
-        
-        {/* HISTORY TAB */}
-        <TabsContent value="history">
-            <Card>
-                <CardHeader>
-                    <CardTitle>የተጠቃሚ አስተዳደር ታሪክ</CardTitle>
-                    <CardDescription>የጸደቁ እና ውድቅ የተደረጉ የተጠቃሚ ምዝገባዎች መዝገብ።</CardDescription>
-                </CardHeader>
-                <CardContent>
-                   <Table>
-                        <TableHeader><TableRow><TableHead>ስም</TableHead><TableHead>ኢሜይል</TableHead><TableHead>ሁኔታ</TableHead><TableHead>ቀን</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                             {registrationHistory.length > 0 ? registrationHistory.map(user => (
-                                <TableRow key={user.id}>
-                                    <TableCell className="font-medium">{user.name}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell><StatusBadge status={user.status} /></TableCell>
-                                    <TableCell><DateDisplay dateString={user.statusUpdatedAt} /></TableCell>
-                                </TableRow>
-                            )) : (
-                                <TableRow><TableCell colSpan={4} className="h-24 text-center"><FileWarning className="mx-auto h-8 w-8 text-muted-foreground mb-2" />ምንም ታሪክ አልተገኘም።</TableCell></TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
+                {totalPages > 1 && (
+                    <CardFooter className="flex items-center justify-between border-t pt-6">
+                        <div className="text-sm text-muted-foreground">
+                            ከ <strong>{sortedUsers.length}</strong> ተጠቃሚዎች ውስጥ <strong>{Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, sortedUsers.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, sortedUsers.length)}</strong> በማሳየት ላይ
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={handlePreviousPage} disabled={currentPage === 1}>የቀድሞ</Button>
+                            <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>ቀጣይ</Button>
+                        </div>
+                    </CardFooter>
+                )}
             </Card>
         </TabsContent>
       </Tabs>
-      <Dialog open={!!newlyGeneratedPassword} onOpenChange={(open) => !open && setNewlyGeneratedPassword(null)}>
-          {newlyGeneratedPassword && <NewPasswordDialog password={newlyGeneratedPassword} onDone={() => setNewlyGeneratedPassword(null)} />}
-      </Dialog>
     </div>
   );
 }

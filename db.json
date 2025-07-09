@@ -64,8 +64,7 @@
       "role": "Admin",
       "status": "Approved",
       "createdAt": "2024-01-01T10:00:00.000Z",
-      "statusUpdatedAt": "2024-01-01T10:00:00.000Z",
-      "passwordResetRequested": false
+      "statusUpdatedAt": "2024-01-01T10:00:00.000Z"
     },
     {
       "id": "approver-001",
@@ -75,8 +74,7 @@
       "role": "Approver",
       "status": "Approved",
       "createdAt": "2024-01-02T11:00:00.000Z",
-      "statusUpdatedAt": "2024-01-02T11:00:00.000Z",
-      "passwordResetRequested": true
+      "statusUpdatedAt": "2024-01-02T11:00:00.000Z"
     },
     {
       "id": "pending-user-001",
@@ -86,8 +84,7 @@
       "role": "Approver",
       "status": "Pending",
       "createdAt": "2024-07-10T12:00:00.000Z",
-      "statusUpdatedAt": "2024-07-10T12:00:00.000Z",
-      "passwordResetRequested": false
+      "statusUpdatedAt": "2024-07-10T12:00:00.000Z"
     },
     {
       "id": "4660f17d-d212-47e7-8bfc-43cd1c31b5c0",
@@ -97,8 +94,7 @@
       "role": "Approver",
       "status": "Rejected",
       "createdAt": "2024-07-09T10:00:00.000Z",
-      "statusUpdatedAt": "2024-07-10T14:00:00.000Z",
-      "passwordResetRequested": false
+      "statusUpdatedAt": "2024-07-10T14:00:00.000Z"
     },
     {
       "id": "d412e84c-5dfe-4366-918f-8d8be17edd70",
@@ -108,8 +104,7 @@
       "role": "Approver",
       "status": "Approved",
       "createdAt": "2024-06-15T09:00:00.000Z",
-      "statusUpdatedAt": "2024-06-15T09:00:00.000Z",
-      "passwordResetRequested": false
+      "statusUpdatedAt": "2024-06-15T09:00:00.000Z"
     }
   ]
 }

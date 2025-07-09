@@ -29,5 +29,4 @@ export interface User {
   status: UserStatus;
   createdAt: string;
   statusUpdatedAt: string;
-  passwordResetRequested: boolean;
 }

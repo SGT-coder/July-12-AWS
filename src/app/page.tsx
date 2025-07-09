@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
     loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
-    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, denyPasswordReset
+    updateUserProfile, changeUserPassword, adminAddUser
 } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
@@ -22,6 +22,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RegisterForm } from "@/components/auth/register-form";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { SettingsPage } from "@/components/settings/settings-page";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Copy } from "lucide-react";
 
 type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings';
 
@@ -35,6 +39,8 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [currentSubmissionId, setCurrentSubmissionId] = React.useState<string | null>(null);
   const [formKey, setFormKey] = React.useState(Date.now());
+  const [newPassword, setNewPassword] = React.useState<string | null>(null);
+  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = React.useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -76,12 +82,19 @@ export default function Home() {
     if (result.success && result.user) {
         setLoggedInUser(result.user);
         setRole(result.user.role);
+        
+        const roleTranslations = {
+          Admin: "አስተዳዳሪ",
+          Approver: "አጽዳቂ"
+        };
+        const translatedRole = roleTranslations[result.user.role];
+
         if (result.user.role === 'Admin') {
             setView('admin-dashboard');
         } else {
             setView('dashboard');
         }
-        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${result.user.role}!` });
+        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${translatedRole}!` });
         return true;
     } else {
         toast({ title: "መግባት አልተቻለም", description: result.message, variant: "destructive" });
@@ -201,10 +214,11 @@ export default function Home() {
     }
   };
 
-  const handleResetPassword = async (data: { fullName: string, email: string }): Promise<boolean> => {
+  const handleResetPassword = async (data: { fullName: string; email: string }): Promise<boolean> => {
       const result = await requestPasswordReset(data);
-      if (result.success) {
-        toast({ title: "ጥያቄ ተልኳል", description: result.message });
+      if (result.success && result.newPassword) {
+        setNewPassword(result.newPassword);
+        setIsPasswordResetDialogOpen(true);
         return true;
       } else {
         toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
@@ -245,28 +259,6 @@ export default function Home() {
       }
   }
 
-  const handleApprovePasswordReset = async (userId: string) => {
-      const result = await approvePasswordReset(userId);
-      if (result.success) {
-          toast({ title: "የይለፍ ቃል ዳግም ተጀምሯል", description: result.message });
-          fetchUsers();
-          return result.newPassword;
-      } else {
-          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
-          return null;
-      }
-  }
-
-  const handleDenyPasswordReset = async (userId: string) => {
-      const result = await denyPasswordReset(userId);
-       if (result.success) {
-          toast({ title: "ጥያቄ ውድቅ ተደርጓል", description: result.message });
-          fetchUsers();
-      } else {
-          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
-      }
-  }
-
   // --- User Profile Handlers ---
   const handleUserUpdate = (updatedUser: User) => {
       setLoggedInUser(updatedUser);
@@ -297,8 +289,6 @@ export default function Home() {
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
             onAddUser={handleAddUser}
-            onApprovePasswordReset={handleApprovePasswordReset}
-            onDenyPasswordReset={handleDenyPasswordReset}
         />;
 
       case 'analytics':
@@ -352,6 +342,27 @@ export default function Home() {
             {renderContent()}
         </div>
       </main>
+
+      <Dialog open={isPasswordResetDialogOpen} onOpenChange={setIsPasswordResetDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>የይለፍ ቃል በተሳካ ሁኔታ ዳግም ተጀምሯል</DialogTitle>
+                <DialogDescription>
+                    እባክዎ ይህን አዲስ ጊዜያዊ የይለፍ ቃል ገልብጠው ደህንነቱ በተጠበቀ ቦታ ያስቀምጡት። ከገቡ በኋላ እንዲቀይሩት ይመከራል።
+                </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center space-x-2 my-4">
+                <Input value={newPassword || ''} readOnly className="font-mono text-lg tracking-wider" />
+                <Button variant="outline" size="icon" onClick={() => {
+                    if(newPassword) navigator.clipboard.writeText(newPassword)
+                    toast({ title: "ተቀድቷል!", description: "አዲስ የይለፍ ቃል ወደ ቅንጥብ ሰሌዳ ተቀድቷል።" });
+                }}><Copy className="h-4 w-4" /></Button>
+            </div>
+            <DialogFooter>
+                <Button onClick={() => setIsPasswordResetDialogOpen(false)}>ተከናውኗል</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

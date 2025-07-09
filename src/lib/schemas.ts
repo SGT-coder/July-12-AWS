@@ -26,6 +26,10 @@ export const strategicPlanSchema = z.object({
 
 export type StrategicPlanFormValues = z.infer<typeof strategicPlanSchema>;
 
+export const resetPasswordSchema = z.object({
+    fullName: z.string().min(1, 'ሙሉ ስም ያስፈልጋል።'),
+    email: z.string().email('የተሳሳተ የኢሜይል አድራሻ።'),
+});
 
 // --- User Settings Schemas ---
 export const updateProfileSchema = z.object({
