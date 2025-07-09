@@ -10,6 +10,9 @@ import {
   Trash2,
   FileWarning,
   Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,6 +63,8 @@ import {
 import type { Submission, SubmissionStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { DateDisplay } from "@/components/shared/date-display";
+
+type SortableColumn = keyof Pick<Submission, 'id' | 'projectTitle' | 'userName' | 'department' | 'submittedAt' | 'status'>;
 
 interface ApproverDashboardProps {
   submissions: Submission[];
@@ -126,10 +131,16 @@ export function ApproverDashboard({
   const [currentPage, setCurrentPage] = React.useState(1);
   const ITEMS_PER_PAGE = 5;
 
-  const filteredSubmissions = React.useMemo(() => {
-    return submissions
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableColumn; direction: 'ascending' | 'descending' }>({
+    key: 'submittedAt',
+    direction: 'descending',
+  });
+
+  const sortedAndFilteredSubmissions = React.useMemo(() => {
+    let filtered = submissions
       .filter((submission) =>
-        submission.projectTitle.toLowerCase().includes(searchTerm.toLowerCase())
+        submission.projectTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        submission.id.toLowerCase().includes(searchTerm.toLowerCase())
       )
       .filter((submission) =>
         departmentFilter === "all" ? true : submission.department === departmentFilter
@@ -137,14 +148,54 @@ export function ApproverDashboard({
       .filter((submission) =>
         statusFilter === "all" ? true : submission.status === statusFilter
       );
-  }, [submissions, searchTerm, departmentFilter, statusFilter]);
+    
+    const sortableItems = [...filtered];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (sortConfig.key === 'submittedAt') {
+            const dateA = new Date(aValue).getTime();
+            const dateB = new Date(bValue).getTime();
+            if (dateA < dateB) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (dateA > dateB) return sortConfig.direction === 'ascending' ? 1 : -1;
+            return 0;
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+    }
+    
+    return sortableItems;
+  }, [submissions, searchTerm, departmentFilter, statusFilter, sortConfig]);
+
+  const requestSort = (key: SortableColumn) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortIcon = (columnKey: SortableColumn) => {
+    if (!sortConfig || sortConfig.key !== columnKey) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/70" />;
+    }
+    if (sortConfig.direction === 'ascending') {
+      return <ArrowUp className="ml-2 h-4 w-4" />;
+    }
+    return <ArrowDown className="ml-2 h-4 w-4" />;
+  };
 
   React.useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, departmentFilter, statusFilter]);
   
-  const totalPages = Math.ceil(filteredSubmissions.length / ITEMS_PER_PAGE);
-  const paginatedSubmissions = filteredSubmissions.slice(
+  const totalPages = Math.ceil(sortedAndFilteredSubmissions.length / ITEMS_PER_PAGE);
+  const paginatedSubmissions = sortedAndFilteredSubmissions.slice(
       (currentPage - 1) * ITEMS_PER_PAGE,
       currentPage * ITEMS_PER_PAGE
   );
@@ -167,6 +218,14 @@ export function ApproverDashboard({
       return [...new Set(submissions.map(s => s.department))];
   }, [submissions]);
 
+  const SortableHeader = ({ column, label }: { column: SortableColumn, label: string }) => (
+    <TableHead>
+        <Button variant="ghost" onClick={() => requestSort(column)} className="px-2">
+            {label}
+            {getSortIcon(column)}
+        </Button>
+    </TableHead>
+  );
 
   return (
     <Card>
@@ -181,7 +240,7 @@ export function ApproverDashboard({
             <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                    placeholder="በፕሮጀክት ርዕስ ይፈልጉ..."
+                    placeholder="በፕሮጀክት ርዕስ ወይም ID ይፈልጉ..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 w-full"
@@ -210,16 +269,16 @@ export function ApproverDashboard({
                 </SelectContent>
             </Select>
         </div>
+        <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>የፕሮጀክት ርዕስ</TableHead>
-              <TableHead>ያስገባው</TableHead>
-              <TableHead>ዲፓርትመንት</TableHead>
-              <TableHead className="hidden md:table-cell">
-                የገባበት ቀን
-              </TableHead>
-              <TableHead>ሁኔታ</TableHead>
+              <SortableHeader column="id" label="ID" />
+              <SortableHeader column="projectTitle" label="የፕሮጀክት ርዕስ" />
+              <SortableHeader column="userName" label="ያስገባው" />
+              <SortableHeader column="department" label="ዲፓርትመንት" />
+              <SortableHeader column="submittedAt" label="የገባበት ቀን" />
+              <SortableHeader column="status" label="ሁኔታ" />
               <TableHead>
                 <span className="sr-only">ድርጊቶች</span>
               </TableHead>
@@ -229,6 +288,7 @@ export function ApproverDashboard({
             {paginatedSubmissions.length > 0 ? (
               paginatedSubmissions.map((submission) => (
                 <TableRow key={submission.id}>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{submission.id}</TableCell>
                   <TableCell className="font-medium">
                     {submission.projectTitle}
                   </TableCell>
@@ -296,7 +356,7 @@ export function ApproverDashboard({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   <FileWarning className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                   ከፍለጋዎ ጋር የሚዛመድ ማመልከቻ አልተገኘም።
                 </TableCell>
@@ -304,14 +364,15 @@ export function ApproverDashboard({
             )}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
       {totalPages > 1 && (
          <CardFooter className="flex items-center justify-between border-t pt-6">
             <div className="text-sm text-muted-foreground">
                 ከ{' '}
-                <strong>{filteredSubmissions.length}</strong> ማመልከቻዎች ውስጥ{' '}
+                <strong>{sortedAndFilteredSubmissions.length}</strong> ማመልከቻዎች ውስጥ{' '}
                 <strong>
-                    {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredSubmissions.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredSubmissions.length)}
+                    {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, sortedAndFilteredSubmissions.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, sortedAndFilteredSubmissions.length)}
                 </strong>
                 {' '}በማሳየት ላይ
             </div>

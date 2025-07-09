@@ -196,6 +196,16 @@ export async function deleteUser(userId: string) {
 
 // --- Submission Actions ---
 
+// Helper function to generate a unique tracking ID
+function generateTrackingId(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const randomPart = Math.random().toString(36).substring(2, 7).toUpperCase();
+    return `TRX-${year}-${month}${day}-${randomPart}`;
+}
+
 export async function getSubmissions(): Promise<Submission[]> {
     try {
         const db = await readDb();
@@ -217,7 +227,7 @@ export async function addSubmission(data: StrategicPlanFormValues) {
     // For public user submissions, we can assign a default user
     const user = { id: 'user1', name: "የህዝብ ተጠቃሚ" };
     
-    const newId = randomUUID();
+    const newId = generateTrackingId();
     const newSubmission: Submission = {
         id: newId,
         userId: user.id,
@@ -314,5 +324,3 @@ export async function deleteSubmission(id: string) {
         return { success: false, message: "ማመልከቻውን በመሰረዝ ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
-
-

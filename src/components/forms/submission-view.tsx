@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Submission } from "@/lib/types";
@@ -19,11 +20,11 @@ interface SubmissionViewProps {
   onBack: () => void;
 }
 
-const DescriptionListItem = ({ term, children }: { term: string, children: React.ReactNode }) => (
+const DescriptionListItem = ({ term, children, isMono=false }: { term: string, children: React.ReactNode, isMono?: boolean }) => (
     !children || children === '' ? null :
     <div className="grid grid-cols-1 md:grid-cols-3 gap-1 py-3">
       <dt className="font-medium text-muted-foreground">{term}</dt>
-      <dd className="md:col-span-2">{children}</dd>
+      <dd className={`md:col-span-2 ${isMono ? 'font-mono text-sm' : ''}`}>{children}</dd>
     </div>
 );
 
@@ -53,6 +54,7 @@ export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
         </CardHeader>
         <CardContent>
           <dl className="divide-y">
+            <DescriptionListItem term="ID" isMono>{submission.id}</DescriptionListItem>
             <DescriptionListItem term="ዲፓርትመንት">{submission.department}</DescriptionListItem>
             <DescriptionListItem term="ግብ">{submission.goal}</DescriptionListItem>
             <DescriptionListItem term="ዓላማ">{submission.objective}</DescriptionListItem>
