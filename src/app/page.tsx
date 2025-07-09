@@ -9,7 +9,7 @@ import {
     loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
     updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset, getSubmissionById,
     trackSubmission
-} from "@/app/actions";
+} from "@/app/client-actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
 import { ApproverLogin } from "@/components/auth/approver-login";
