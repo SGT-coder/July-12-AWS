@@ -25,6 +25,16 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { strategicPlanSchema, type StrategicPlanFormValues } from "@/lib/schemas";
+import {
+    goalOptions,
+    objectiveOptions,
+    executionTimeOptions,
+    executingBodyOptions,
+    departmentOptions,
+    budgetSourceOptions,
+    govBudgetCodeOptions,
+    weightOptions
+} from "@/lib/options";
 import type { Submission } from "@/lib/types";
 
 const defaultFormValues: StrategicPlanFormValues = {
@@ -124,9 +134,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                     <SelectTrigger><SelectValue placeholder="ዲፓርትመንት ይምረጡ" /></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="hr">የሰው ሃይል</SelectItem>
-                                    <SelectItem value="finance">ፋይናንስ</SelectItem>
-                                    <SelectItem value="it">የመረጃ ቴክኖሎጂ</SelectItem>
+                                    {departmentOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -140,8 +148,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                     <SelectTrigger><SelectValue placeholder="ግብ ይምረጡ" /></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="goal1">ግብ 1</SelectItem>
-                                    <SelectItem value="goal2">ግብ 2</SelectItem>
+                                    {goalOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -155,8 +162,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                     <SelectTrigger><SelectValue placeholder="ዓላማ ይምረጡ" /></SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="obj1">ዓላማ 1</SelectItem>
-                                    <SelectItem value="obj2">ዓላማ 2</SelectItem>
+                                    {objectiveOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -212,7 +218,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    <SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem><SelectItem value="5">5</SelectItem>
+                                    {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -224,7 +230,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    <SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem><SelectItem value="5">5</SelectItem>
+                                    {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -236,7 +242,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    <SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem><SelectItem value="5">5</SelectItem>
+                                    {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -248,7 +254,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    <SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem><SelectItem value="5">5</SelectItem>
+                                    {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -267,8 +273,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="ፈጻሚ አካል ይምረጡ" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        <SelectItem value="internal">ውስጣዊ</SelectItem>
-                                        <SelectItem value="external">ውጫዊ</SelectItem>
+                                        {executingBodyOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -280,10 +285,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="የሚከናወንበትን ጊዜ ይምረጡ" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        <SelectItem value="q1">ሩብ 1</SelectItem>
-                                        <SelectItem value="q2">ሩብ 2</SelectItem>
-                                        <SelectItem value="q3">ሩብ 3</SelectItem>
-                                        <SelectItem value="q4">ሩብ 4</SelectItem>
+                                        {executionTimeOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -295,9 +297,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="የበጀት ምንጭ ይምረጡ" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        <SelectItem value="gov">መንግስት</SelectItem>
-                                        <SelectItem value="grant">ግራንት</SelectItem>
-                                        <SelectItem value="sdg">ኢስዲጂ</SelectItem>
+                                        {budgetSourceOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -307,7 +307,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                     
                     {budgetSource && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t">
-                            {budgetSource === 'gov' && (
+                            {budgetSource === 'መንግስት' && (
                                 <>
                                     <FormField control={form.control} name="governmentBudgetAmount" render={({ field }) => (
                                         <FormItem>
@@ -322,8 +322,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                             <Select onValueChange={field.onChange} value={field.value || ''}>
                                                 <FormControl><SelectTrigger><SelectValue placeholder="ኮድ ይምረጡ" /></SelectTrigger></FormControl>
                                                 <SelectContent>
-                                                    <SelectItem value="code1">ኮድ 100</SelectItem>
-                                                    <SelectItem value="code2">ኮድ 200</SelectItem>
+                                                    {govBudgetCodeOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -331,7 +330,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                     )} />
                                 </>
                             )}
-                             {budgetSource === 'grant' && (
+                             {budgetSource === 'ግራንት' && (
                                 <FormField control={form.control} name="grantBudgetAmount" render={({ field }) => (
                                     <FormItem className="md:col-span-1">
                                         <FormLabel>ከግራንት በጀት በብር</FormLabel>
@@ -340,7 +339,7 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
                                     </FormItem>
                                 )} />
                             )}
-                            {budgetSource === 'sdg' && (
+                            {budgetSource === 'ኢስዲጂ' && (
                                 <FormField control={form.control} name="sdgBudgetAmount" render={({ field }) => (
                                     <FormItem className="md:col-span-1">
                                         <FormLabel>ከኢስ ዲ ጂ በጀት በብር</FormLabel>

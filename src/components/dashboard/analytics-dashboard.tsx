@@ -46,19 +46,6 @@ const COLORS = {
     Rejected: "hsl(0 84.2% 60.2%)",   // red-500
 };
 
-const departmentTranslations: { [key: string]: string } = {
-    hr: "የሰው ሃይል",
-    finance: "ፋይናንስ",
-    it: "የመረጃ ቴክኖሎጂ",
-};
-
-const quarterTranslations: { [key: string]: string } = {
-    q1: "ሩብ 1",
-    q2: "ሩብ 2",
-    q3: "ሩብ 3",
-    q4: "ሩብ 4",
-};
-
 const statusTranslations: Record<SubmissionStatus, string> = {
     Approved: "ጸድቋል",
     Pending: "በመጠባበቅ ላይ",
@@ -80,7 +67,7 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
 
     const departmentCounts = submissions.reduce(
         (acc, s) => {
-          const deptName = departmentTranslations[s.department] || s.department;
+          const deptName = s.department;
           acc[deptName] = (acc[deptName] || 0) + 1;
           return acc;
         },
@@ -89,7 +76,7 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
 
     const quarterCounts = submissions.reduce(
         (acc, s) => {
-            const quarterName = quarterTranslations[s.executionTime] || s.executionTime;
+            const quarterName = s.executionTime;
             acc[quarterName] = (acc[quarterName] || 0) + 1;
             return acc;
         }, {} as Record<string, number>
@@ -162,11 +149,11 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
     };
 
     const rows = submissions.map(s => [
-        s.id, s.projectTitle, s.userName, departmentTranslations[s.department] || s.department, statusTranslations[s.status],
+        s.id, s.projectTitle, s.userName, s.department, statusTranslations[s.status],
         format(new Date(s.submittedAt), 'yyyy-MM-dd HH:mm'), format(new Date(s.lastModifiedAt), 'yyyy-MM-dd HH:mm'),
         s.goal, s.objective, s.strategicAction, s.metric, s.mainTask, s.mainTaskTarget,
         s.objectiveWeight, s.strategicActionWeight, s.metricWeight, s.mainTaskWeight,
-        s.executingBody, quarterTranslations[s.executionTime] || s.executionTime, s.budgetSource,
+        s.executingBody, s.executionTime, s.budgetSource,
         s.governmentBudgetAmount, s.governmentBudgetCode, s.grantBudgetAmount, s.sdgBudgetAmount,
         s.comments
     ].map(escapeCsvCell).join(','));
@@ -310,7 +297,7 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
                                 tickMargin={5}
                                 axisLine={false}
                                 tickFormatter={(value) => value.length > 15 ? `${value.slice(0, 15)}...` : value}
-                                width={80}
+                                width={120}
                             />
                             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                             <Bar dataKey="count" radius={4} name="ማመልከቻዎች">
