@@ -6,7 +6,8 @@ import type { Role, Submission, SubmissionStatus, StrategicPlanFormValues, User,
 import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
-    loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser
+    loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
+    updateUserProfile, changeUserPassword
 } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
@@ -20,6 +21,7 @@ import { SubmissionView } from "@/components/forms/submission-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RegisterForm } from "@/components/auth/register-form";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { SettingsPage } from "@/components/settings/settings-page";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics';
+type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings';
 
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
@@ -105,6 +107,10 @@ export default function Home() {
     setView('role-selector');
     setCurrentSubmissionId(null);
   };
+
+  const handleGoToSettings = () => {
+      setView('settings');
+  }
 
   const handleCreateNew = () => {
     setCurrentSubmissionId(null);
@@ -238,6 +244,12 @@ export default function Home() {
       }
   }
 
+  // --- User Profile Handlers ---
+  const handleUserUpdate = (updatedUser: User) => {
+      setLoggedInUser(updatedUser);
+      handleBack();
+  }
+
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
 
   const renderContent = () => {
@@ -287,6 +299,12 @@ export default function Home() {
       case 'reset-password':
         return <ResetPasswordForm onReset={handleResetPassword} onBack={handleBackToLogin} />;
 
+      case 'settings':
+        if (loggedInUser) {
+          return <SettingsPage user={loggedInUser} onBack={handleBack} onUserUpdate={handleUserUpdate} />;
+        }
+        return null;
+
       default:
         return <RoleSelector onSelectView={handleSelectView} />;
     }
@@ -302,7 +320,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader role={role} onLogout={handleLogout} />
+      <AppHeader user={loggedInUser} onLogout={handleLogout} onGoToSettings={handleGoToSettings} />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-in fade-in duration-500">
             {renderContent()}

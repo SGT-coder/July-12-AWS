@@ -25,3 +25,21 @@ export const strategicPlanSchema = z.object({
 });
 
 export type StrategicPlanFormValues = z.infer<typeof strategicPlanSchema>;
+
+
+// --- User Settings Schemas ---
+export const updateProfileSchema = z.object({
+    name: z.string().min(2, "ስም ቢያንስ 2 ቁምፊዎች መሆን አለበት።"),
+    email: z.string().email("የተሳሳተ የኢሜይል አድራሻ።"),
+});
+export type UpdateProfileFormValues = z.infer<typeof updateProfileSchema>;
+
+export const changePasswordSchema = z.object({
+    oldPassword: z.string().min(1, "የድሮ የይለፍ ቃል ያስፈልጋል።"),
+    newPassword: z.string().min(6, "አዲስ የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።"),
+    confirmPassword: z.string(),
+}).refine(data => data.newPassword === data.confirmPassword, {
+    message: "አዲስ የይለፍ ቃሎች አይዛመዱም።",
+    path: ["confirmPassword"],
+});
+export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;

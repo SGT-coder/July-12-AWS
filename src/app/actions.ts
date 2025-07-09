@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { z } from 'zod';
-import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
+import { strategicPlanSchema, type StrategicPlanFormValues, updateProfileSchema, changePasswordSchema } from '@/lib/schemas';
 import type { Submission, SubmissionStatus, User, UserStatus, Role } from '@/lib/types';
 
 // Path to the local JSON database file
@@ -191,6 +191,62 @@ export async function deleteUser(userId: string) {
 
     await writeDb(db);
     return { success: true, message: "ተጠቃሚው በተሳካ ሁኔታ ተሰርዟል።"};
+}
+
+// --- User Profile Actions ---
+
+export async function updateUserProfile(userId: string, data: z.infer<typeof updateProfileSchema>) {
+    const parsedData = updateProfileSchema.safeParse(data);
+    if (!parsedData.success) {
+        return { success: false, message: 'የተሳሳተ መረጃ ቀርቧል።' };
+    }
+
+    const { name, email } = parsedData.data;
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
+    }
+
+    // Check if another user already has the new email
+    if (db.users.some(u => u.email.toLowerCase() === email.toLowerCase() && u.id !== userId)) {
+        return { success: false, message: "ይህ ኢሜይል አስቀድሞ በሌላ መለያ ጥቅም ላይ ውሏል።" };
+    }
+
+    db.users[userIndex].name = name;
+    db.users[userIndex].email = email;
+
+    await writeDb(db);
+    const { password, ...updatedUser } = db.users[userIndex];
+    return { success: true, message: "መረጃዎ በተሳካ ሁኔታ ተቀይሯል።", user: updatedUser };
+}
+
+
+export async function changeUserPassword(userId: string, data: z.infer<typeof changePasswordSchema>) {
+    const parsedData = changePasswordSchema.safeParse(data);
+    if (!parsedData.success) {
+        const issues = parsedData.error.flatten().fieldErrors;
+        const message = Object.values(issues).flat().join(' ');
+        return { success: false, message: message || "የተሳሳተ መረጃ ቀርቧል።" };
+    }
+
+    const { oldPassword, newPassword } = parsedData.data;
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
+    }
+
+    if (db.users[userIndex].password !== oldPassword) {
+        return { success: false, message: "የድሮ የይለፍ ቃልዎ ትክክል አይደለም።" };
+    }
+
+    db.users[userIndex].password = newPassword;
+    await writeDb(db);
+
+    return { success: true, message: "የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል።" };
 }
 
 
