@@ -58,12 +58,12 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, p
              {logoError ? (
                 <span className="font-headline text-lg font-bold">አህሪ የስራ ፍሰት</span>
              ) : (
-                <Image 
-                  src="https://ahri.gov.et/wp-content/uploads/2022/08/AHRI-UPDATED-LOGO1.jpg" 
+                <Image
+                  src="https://ahri.gov.et/wp-content/uploads/2022/08/AHRI-UPDATED-LOGO1.jpg"
                   alt="አህሪ የስራ ፍሰት"
-                  width={100} 
-                  height={40} 
-                  className="object-contain"
+                  width={140}
+                  height={56}
+                  className="h-14 w-auto object-contain"
                   onError={() => setLogoError(true)}
                   priority
                 />

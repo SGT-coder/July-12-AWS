@@ -378,7 +378,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       <AppHeader 
         user={loggedInUser} 
         onLogout={handleLogout} 
@@ -389,7 +389,7 @@ export default function Home() {
         pendingSubmissions={pendingSubmissions}
         onNotificationClick={(targetView) => setView(targetView)}
       />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
         <div className="animate-in fade-in duration-500">
             {renderContent()}
         </div>
