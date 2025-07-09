@@ -307,12 +307,14 @@ export default function Home() {
             <AlertDialogTitle>የይለፍ ቃል ዳግም ማስጀመር ተሳክቷል</AlertDialogTitle>
             <AlertDialogDescription>
               የይለፍ ቃልዎ በተሳካ ሁኔታ ዳግም ተጀምሯል። አዲሱ ጊዜያዊ የይለፍ ቃልዎ ይኸውና። እባክዎ ደህንነቱ በተጠበቀ ቦታ ያስቀምጡት።
-              <div className="my-4 p-3 bg-muted rounded font-mono text-center text-lg tracking-wider">
-                {newPassword}
-              </div>
-               ከገቡ በኋላ የይለፍ ቃልዎን እንዲቀይሩ ይመከራል።
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="my-4 p-3 bg-muted rounded font-mono text-center text-lg tracking-wider">
+            {newPassword}
+          </div>
+          <p className="text-sm text-muted-foreground">
+             ከገቡ በኋላ የይለፍ ቃልዎን እንዲቀይሩ ይመከራል።
+          </p>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => {
               setIsPasswordResetDialogOpen(false);
