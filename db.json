@@ -133,6 +133,33 @@
       "governmentBudgetCode": "",
       "grantBudgetAmount": "12335",
       "sdgBudgetAmount": ""
+    },
+    {
+      "id": "TRX-2025-0709-KE2YY",
+      "userId": "user1",
+      "status": "Pending",
+      "submittedAt": "2025-07-09T14:27:39.640Z",
+      "lastModifiedAt": "2025-07-09T14:27:39.640Z",
+      "userName": "Test",
+      "projectTitle": "Test",
+      "department": "ተላላፊ በሽታዎች ምርምር",
+      "goal": "በማስረጃ ላይ የተመሰረተ ዉሳኔ አሰጣጥን ማሳደግ",
+      "objective": "የሳይንሳዊ ዕውቀትን፣ ቴክኖሎጂ እና ማስረጃዎችን ለውሳኔ አሰጣጥ አጠቃቀምን ማሻሻል",
+      "strategicAction": "Test",
+      "metric": "Test",
+      "mainTask": "t",
+      "mainTaskTarget": "t",
+      "objectiveWeight": "2",
+      "strategicActionWeight": "2",
+      "metricWeight": "1",
+      "mainTaskWeight": "3",
+      "executingBody": "ምርምር ስልጠና ዳይሬክቶሬት",
+      "executionTime": "2ኛ ሩብ ዓመት",
+      "budgetSource": "መንግስት",
+      "governmentBudgetAmount": "455645",
+      "governmentBudgetCode": "6114 የቀን ሠራተኞች ምንዳ",
+      "grantBudgetAmount": "",
+      "sdgBudgetAmount": ""
     }
   ],
   "users": [
@@ -190,11 +217,11 @@
       "id": "02212e99-4713-4fb2-8b0a-ef37130dd65c",
       "name": "Test Test",
       "email": "Test@gmail.com",
-      "password": "0j1nwjst",
+      "password": "174hyidj",
       "role": "Approver",
       "status": "Approved",
       "createdAt": "2025-07-09T08:53:31.032Z",
-      "statusUpdatedAt": "2025-07-09T10:04:23.360Z"
+      "statusUpdatedAt": "2025-07-09T17:58:14.763Z"
     },
     {
       "id": "542bc0b5-ac84-4540-8fb7-aaf8c3e464eb",

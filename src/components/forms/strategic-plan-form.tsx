@@ -33,7 +33,6 @@ import {
     departmentOptions,
     budgetSourceOptions,
     govBudgetCodeOptions,
-    weightOptions
 } from "@/lib/options";
 import type { Submission } from "@/lib/types";
 
@@ -215,48 +214,28 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting }: Strategi
                         <FormField control={form.control} name="objectiveWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>ዓላማ ክብደት</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value || ''}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                                <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="strategicActionWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>ስትራቴጂክ እርምጃ ክብደት</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value || ''}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                                <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="metricWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>የመለኪያ ክብደት</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value || ''}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                                <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="mainTaskWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>የዋና ተግባር ክብደት</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value || ''}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="ክብደት ይምረጡ" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        {weightOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                               <FormControl><Input type="number" placeholder="ከ 0-5 ቁጥር ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />

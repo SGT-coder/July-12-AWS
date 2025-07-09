@@ -42,7 +42,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset, on
     <div className="flex justify-center items-center h-full">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="font-headline text-2xl">የሰራተኛ መግቢያ</CardTitle>
+          <CardTitle className="font-headline text-2xl">የባለሙያ መግቢያ</CardTitle>
           <CardDescription>ለመቀጠል እባክዎ ይግቡ</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

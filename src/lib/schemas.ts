@@ -1,6 +1,12 @@
 
 import * as z from "zod";
 
+const weightSchema = z.string()
+    .min(1, "ክብደት መግባት አለበት።")
+    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 5, {
+        message: "ክብደት ከ 0 እስከ 5 ባለው ቁጥር መሆን አለበት።",
+    });
+
 export const strategicPlanSchema = z.object({
     userName: z.string({ required_error: "ስም ያስፈልጋል" }).min(1, "ስም ያስፈልጋል"),
     projectTitle: z.string({ required_error: "የእቅድ ርዕስ ያስፈልጋል" }).min(1, "የእቅድ ርዕስ ያስፈልጋል"),
@@ -11,10 +17,10 @@ export const strategicPlanSchema = z.object({
     metric: z.string({ required_error: "መለኪያ ያስፈልጋል" }).min(1, "መለኪያ ያስፈልጋል"),
     mainTask: z.string({ required_error: "ዋና ተግባር ያስፈልጋል" }).min(1, "ዋና ተግባር ያስፈልጋል"),
     mainTaskTarget: z.string({ required_error: "የዋና ተግባር ዒላማ ያስፈልጋል" }).min(1, "የዋና ተግባር ዒላማ ያስፈልጋል"),
-    objectiveWeight: z.string({ required_error: "የዓላማ ክብደት መምረጥ ያስፈልጋል" }).min(1, "የዓላማ ክብደት መምረጥ ያስፈልጋል"),
-    strategicActionWeight: z.string({ required_error: "የስትራቴጂክ እርምጃ ክብደት መምረጥ ያስፈልጋል" }).min(1, "የስትራቴጂክ እርምጃ ክብደት መምረጥ ያስፈልጋል"),
-    metricWeight: z.string({ required_error: "የመለኪያ ክብደት መምረጥ ያስፈልጋል" }).min(1, "የመለኪያ ክብደት መምረጥ ያስፈልጋል"),
-    mainTaskWeight: z.string({ required_error: "የዋና ተግባር ክብደት መምረጥ ያስፈልጋል" }).min(1, "የዋና ተግባር ክብደት መምረጥ ያስፈልጋል"),
+    objectiveWeight: weightSchema,
+    strategicActionWeight: weightSchema,
+    metricWeight: weightSchema,
+    mainTaskWeight: weightSchema,
     executingBody: z.string({ required_error: "ፈጻሚ አካል መምረጥ ያስፈልጋል" }).min(1, "ፈጻሚ አካል መምረጥ ያስፈልጋል"),
     executionTime: z.string({ required_error: "የሚከናወንበት ጊዜ መምረጥ ያስፈልጋል" }).min(1, "የሚከናወንበት ጊዜ መምረጥ ያስፈልጋል"),
     budgetSource: z.string({ required_error: "የበጀት ምንጭ መምረጥ ያስፈልጋል" }).min(1, "የበጀት ምንጭ መምረጥ ያስፈልጋል"),

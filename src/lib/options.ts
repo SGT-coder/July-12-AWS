@@ -115,12 +115,3 @@ export const govBudgetCodeOptions = [
   "6314 ለሕንፃ ፣ ለቁሳቁስ እና ለተገጣጣሚዎች መግዣ",
   '6315 "ለቀንድ ከብቶች እና ለማጓጓዣ የሚውሉ እንሰሳት መግዣ"',
 ];
-
-export const weightOptions = [
-    { value: "0", label: "0 - ገለልተኛ" },
-    { value: "1", label: "1 - በጣም ደካማ" },
-    { value: "2", label: "2 - ደካማ" },
-    { value: "3", label: "3 - አማካኝ" },
-    { value: "4", label: "4 - ጠንካራ" },
-    { value: "5", label: "5 - በጣም ጠንካራ" },
-];

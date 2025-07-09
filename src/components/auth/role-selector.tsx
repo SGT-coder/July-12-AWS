@@ -80,7 +80,7 @@ export function RoleSelector({ onSelectView }: RoleSelectorProps) {
                     <div className="p-4 bg-primary/10 rounded-full mb-4">
                     <User className="h-10 w-10 text-primary" />
                     </div>
-                    <CardTitle className="font-headline text-2xl">የህዝብ ተጠቃሚ</CardTitle>
+                    <CardTitle className="font-headline text-2xl">የሰራተኛ ተጠቃሚ</CardTitle>
                     <CardDescription>
                     የስትራቴጂክ ዕቅድ እና የሥራ እንቅስቃሴ ቅጾችን ይሙሉ እና ያስገቡ።
                     </CardDescription>
@@ -97,7 +97,7 @@ export function RoleSelector({ onSelectView }: RoleSelectorProps) {
                     <div className="p-4 bg-accent/10 rounded-full mb-4">
                     <Briefcase className="h-10 w-10 text-accent" />
                     </div>
-                    <CardTitle className="font-headline text-2xl">የሰራተኛ መግቢያ</CardTitle>
+                    <CardTitle className="font-headline text-2xl">የባለሙያ መግቢያ</CardTitle>
                     <CardDescription>
                     ገምጋሚዎች እና አስተዳዳሪዎች ለመግባት እዚህ ይጫኑ።
                     </CardDescription>
