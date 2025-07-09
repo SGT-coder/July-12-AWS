@@ -23,6 +23,11 @@ const statusTranslations: Record<UserStatus | SubmissionStatus, string> = {
     Rejected: "ውድቅ ተደርጓል",
 };
 
+const roleTranslations: Record<User['role'], string> = {
+    Admin: "አስተዳዳሪ",
+    Approver: "አጽዳቂ",
+};
+
 // Helper function to read the database file
 async function readDb(): Promise<Db> {
     try {
@@ -92,7 +97,9 @@ export async function loginUser(credentials: z.infer<typeof loginSchema>) {
     
     // Don't send password back to the client
     const { password: _, ...userWithoutPassword } = user;
-    return { success: true, user: userWithoutPassword };
+    const translatedRole = roleTranslations[user.role];
+
+    return { success: true, user: userWithoutPassword, translatedRole };
 }
 
 const registerSchema = z.object({

@@ -165,9 +165,9 @@
       "email": "Test@gmail.com",
       "password": "bnn1886p",
       "role": "Approver",
-      "status": "Pending",
+      "status": "Approved",
       "createdAt": "2025-07-09T08:53:31.032Z",
-      "statusUpdatedAt": "2025-07-09T08:53:51.993Z"
+      "statusUpdatedAt": "2025-07-09T09:17:28.011Z"
     },
     {
       "id": "542bc0b5-ac84-4540-8fb7-aaf8c3e464eb",

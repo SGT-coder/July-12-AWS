@@ -98,8 +98,8 @@ const AddUserDialog = ({ onAddUser }: { onAddUser: (data: AdminAddUserFormValues
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="ሚና ይምረጡ" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        <SelectItem value="Approver">አጽዳቂ</SelectItem>
-                                        <SelectItem value="Admin">አስተዳዳሪ</SelectItem>
+                                        <SelectItem value="Approver">{roleTranslations['Approver']}</SelectItem>
+                                        <SelectItem value="Admin">{roleTranslations['Admin']}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             <FormMessage /></FormItem>
@@ -149,6 +149,14 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
 
   const ITEMS_PER_PAGE = 5;
 
+  // --- State for "Requests" tab ---
+  const [requestsSearchTerm, setRequestsSearchTerm] = React.useState("");
+  const [requestsCurrentPage, setRequestsCurrentPage] = React.useState(1);
+  const [requestsSortConfig, setRequestsSortConfig] = React.useState<{ key: SortableUserColumn; direction: 'ascending' | 'descending' }>({
+    key: 'createdAt',
+    direction: 'descending',
+  });
+
   // --- State for "All Users" tab ---
   const [searchTerm, setSearchTerm] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<User['role'] | "all">("all");
@@ -169,31 +177,39 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
     direction: 'descending',
   });
 
-  const pendingRegistrations = users.filter(u => u.status === 'Pending');
-
   const genericSort = (items: User[], config: typeof sortConfig) => {
     const sortableItems = [...items];
-    if (config) {
-      sortableItems.sort((a, b) => {
-        const aValue = a[config.key];
-        const bValue = b[config.key];
+    sortableItems.sort((a, b) => {
+      const aValue = a[config.key];
+      const bValue = b[config.key];
 
-        if (['createdAt', 'statusUpdatedAt'].includes(config.key)) {
-            const dateA = new Date(aValue).getTime();
-            const dateB = new Date(bValue).getTime();
-            if (dateA < dateB) return config.direction === 'ascending' ? -1 : 1;
-            if (dateA > dateB) return config.direction === 'ascending' ? 1 : -1;
-            return 0;
-        }
+      if (['createdAt', 'statusUpdatedAt'].includes(config.key)) {
+          const dateA = new Date(aValue).getTime();
+          const dateB = new Date(bValue).getTime();
+          if (dateA < dateB) return config.direction === 'ascending' ? -1 : 1;
+          if (dateA > dateB) return config.direction === 'ascending' ? 1 : -1;
+          return 0;
+      }
 
-        if (aValue < bValue) return config.direction === 'ascending' ? -1 : 1;
-        if (aValue > bValue) return config.direction === 'ascending' ? 1 : -1;
-        return 0;
-      });
-    }
+      if (aValue < bValue) return config.direction === 'ascending' ? -1 : 1;
+      if (aValue > bValue) return config.direction === 'ascending' ? 1 : -1;
+      return 0;
+    });
     return sortableItems;
   }
   
+  // --- Memoized data for "Requests" tab ---
+  const pendingRegistrations = React.useMemo(() => users.filter(u => u.status === 'Pending'), [users]);
+  const filteredPendingUsers = React.useMemo(() => {
+    return pendingRegistrations
+      .filter((user) =>
+        user.name.toLowerCase().includes(requestsSearchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(requestsSearchTerm.toLowerCase())
+      );
+  }, [pendingRegistrations, requestsSearchTerm]);
+  const sortedPendingUsers = React.useMemo(() => genericSort(filteredPendingUsers, requestsSortConfig), [filteredPendingUsers, requestsSortConfig]);
+  const paginatedPendingUsers = sortedPendingUsers.slice((requestsCurrentPage - 1) * ITEMS_PER_PAGE, requestsCurrentPage * ITEMS_PER_PAGE);
+
   // --- Memoized data for "All Users" tab ---
   const filteredUsers = React.useMemo(() => {
     return users
@@ -204,9 +220,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
       .filter((user) => roleFilter === "all" ? true : user.role === roleFilter)
       .filter((user) => statusFilter === "all" ? true : user.status === statusFilter);
   }, [users, searchTerm, roleFilter, statusFilter]);
-  
   const sortedUsers = React.useMemo(() => genericSort(filteredUsers, sortConfig), [filteredUsers, sortConfig]);
-  
   const paginatedUsers = sortedUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   // --- Memoized data for "History" tab ---
@@ -219,7 +233,6 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
   }, [users, historySearchTerm, historyRoleFilter, historyStatusFilter]);
 
   const sortedHistoryUsers = React.useMemo(() => genericSort(filteredHistoryUsers, historySortConfig), [filteredHistoryUsers, historySortConfig]);
-  
   const paginatedHistoryUsers = sortedHistoryUsers.slice((historyCurrentPage - 1) * ITEMS_PER_PAGE, historyCurrentPage * ITEMS_PER_PAGE);
 
   // --- Generic sort request handler ---
@@ -236,6 +249,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
   
   const requestSort = createSortRequestHandler(sortConfig, setSortConfig);
   const requestHistorySort = createSortRequestHandler(historySortConfig, setHistorySortConfig);
+  const requestRequestsSort = createSortRequestHandler(requestsSortConfig, setRequestsSortConfig);
   
   const getSortIcon = (columnKey: SortableUserColumn, currentConfig: typeof sortConfig) => {
     if (!currentConfig || currentConfig.key !== columnKey) return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/70" />;
@@ -244,6 +258,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
 
   React.useEffect(() => { setCurrentPage(1); }, [searchTerm, roleFilter, statusFilter]);
   React.useEffect(() => { setHistoryCurrentPage(1); }, [historySearchTerm, historyRoleFilter, historyStatusFilter]);
+  React.useEffect(() => { setRequestsCurrentPage(1); }, [requestsSearchTerm]);
   
   const SortableHeader = ({ column, label, config, onRequestSort }: { column: SortableUserColumn, label: string, config: typeof sortConfig, onRequestSort: (key: SortableUserColumn) => void }) => (
     <TableHead>
@@ -275,10 +290,24 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                     <CardDescription>አዲስ የተጠቃሚ ምዝገባ ጥያቄዎችን አጽድቅ ወይም ውድቅ አድርግ።</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <Table>
-                        <TableHeader><TableRow><TableHead>ስም</TableHead><TableHead>ኢሜይል</TableHead><TableHead>የተጠየቀበት ቀን</TableHead><TableHead className="text-right">ድርጊቶች</TableHead></TableRow></TableHeader>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="በስም ወይም በኢሜይል ይፈልጉ..." value={requestsSearchTerm} onChange={(e) => setRequestsSearchTerm(e.target.value)} className="pl-10 w-full"/>
+                        </div>
+                    </div>
+                   <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <SortableHeader column="name" label="ስም" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
+                                <SortableHeader column="email" label="ኢሜይል" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
+                                <SortableHeader column="createdAt" label="የተጠየቀበት ቀን" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
+                                <TableHead className="text-right">ድርጊቶች</TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
-                            {pendingRegistrations.length > 0 ? pendingRegistrations.map(user => (
+                            {paginatedPendingUsers.length > 0 ? paginatedPendingUsers.map(user => (
                                 <TableRow key={user.id}>
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
@@ -293,7 +322,9 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                             )}
                         </TableBody>
                     </Table>
+                   </div>
                 </CardContent>
+                <TablePagination itemCount={sortedPendingUsers.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={requestsCurrentPage} onPreviousPage={() => setRequestsCurrentPage(p => p - 1)} onNextPage={() => setRequestsCurrentPage(p => p + 1)} />
             </Card>
         </TabsContent>
 
@@ -316,17 +347,17 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                             <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሚና ማጣሪያ" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">ሁሉም ሚናዎች</SelectItem>
-                                <SelectItem value="Admin">አስተዳዳሪ</SelectItem>
-                                <SelectItem value="Approver">አጽዳቂ</SelectItem>
+                                <SelectItem value="Admin">{roleTranslations['Admin']}</SelectItem>
+                                <SelectItem value="Approver">{roleTranslations['Approver']}</SelectItem>
                             </SelectContent>
                         </Select>
                         <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as UserStatus | "all")}>
                             <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሁኔታ ማጣሪያ" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">ሁሉም ሁኔታዎች</SelectItem>
-                                <SelectItem value="Approved">ጸድቋል</SelectItem>
-                                <SelectItem value="Pending">በመጠባበቅ ላይ</SelectItem>
-                                <SelectItem value="Rejected">ውድቅ ተደርጓል</SelectItem>
+                                <SelectItem value="Approved">{statusTranslations['Approved']}</SelectItem>
+                                <SelectItem value="Pending">{statusTranslations['Pending']}</SelectItem>
+                                <SelectItem value="Rejected">{statusTranslations['Rejected']}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -389,16 +420,16 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                             <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሚና ማጣሪያ" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">ሁሉም ሚናዎች</SelectItem>
-                                <SelectItem value="Admin">አስተዳዳሪ</SelectItem>
-                                <SelectItem value="Approver">አጽዳቂ</SelectItem>
+                                <SelectItem value="Admin">{roleTranslations['Admin']}</SelectItem>
+                                <SelectItem value="Approver">{roleTranslations['Approver']}</SelectItem>
                             </SelectContent>
                         </Select>
                         <Select value={historyStatusFilter} onValueChange={(value) => setHistoryStatusFilter(value as "Approved" | "Rejected" | "all")}>
                             <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሁኔታ ማጣሪያ" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">ሁሉም ሁኔታዎች</SelectItem>
-                                <SelectItem value="Approved">ጸድቋል</SelectItem>
-                                <SelectItem value="Rejected">ውድቅ ተደርጓል</SelectItem>
+                                <SelectItem value="Approved">{statusTranslations['Approved']}</SelectItem>
+                                <SelectItem value="Rejected">{statusTranslations['Rejected']}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

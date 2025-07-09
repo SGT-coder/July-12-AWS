@@ -79,22 +79,16 @@ export default function Home() {
 
   const handleLogin = async (email: string, password: string, role: "Admin" | "Approver"): Promise<boolean> => {
     const result = await loginUser({ email, password, role });
-    if (result.success && result.user) {
+    if (result.success && result.user && result.translatedRole) {
         setLoggedInUser(result.user);
         setRole(result.user.role);
         
-        const roleTranslations = {
-          Admin: "አስተዳዳሪ",
-          Approver: "አጽዳቂ"
-        };
-        const translatedRole = roleTranslations[result.user.role];
-
         if (result.user.role === 'Admin') {
             setView('admin-dashboard');
         } else {
             setView('dashboard');
         }
-        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${translatedRole}!` });
+        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${result.translatedRole}!` });
         return true;
     } else {
         toast({ title: "መግባት አልተቻለም", description: result.message, variant: "destructive" });
@@ -333,10 +327,13 @@ export default function Home() {
         </main>
     );
   }
+  
+  const pendingUsers = React.useMemo(() => users.filter(u => u.status === 'Pending'), [users]);
+  const notificationCount = loggedInUser?.role === 'Admin' ? pendingUsers.length : undefined;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader user={loggedInUser} onLogout={handleLogout} onGoToSettings={handleGoToSettings} />
+      <AppHeader user={loggedInUser} onLogout={handleLogout} onGoToSettings={handleGoToSettings} notificationCount={notificationCount} />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-in fade-in duration-500">
             {renderContent()}
