@@ -407,8 +407,8 @@ export default function Home() {
         pendingSubmissions={pendingSubmissions}
         onNotificationClick={(targetView) => setView(targetView)}
       />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
-        <div className="animate-in fade-in duration-500 mt-4">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-18 pb-8">
+        <div className="animate-in fade-in duration-500">
             {renderContent()}
         </div>
       </main>
