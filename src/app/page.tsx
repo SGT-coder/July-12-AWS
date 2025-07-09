@@ -51,6 +51,7 @@ export default function Home() {
         setIsLoading(true);
         if (loggedInUser?.role === 'Admin') {
             await fetchUsers();
+            await fetchSubmissions(); // Also fetch submissions for admin
         } else if (loggedInUser?.role === 'Approver') {
             await fetchSubmissions();
         }
@@ -188,7 +189,7 @@ export default function Home() {
         setFormKey(Date.now());
         handleBack();
       } else {
-        setView('dashboard');
+        setView(loggedInUser?.role === 'Admin' ? 'admin-dashboard' : 'dashboard');
         fetchSubmissions();
       }
 
@@ -208,7 +209,7 @@ export default function Home() {
       toast({ title: "ሁኔታው ታድሷል", description: result.message });
       fetchSubmissions();
       // After updating, go back to dashboard
-      setView('dashboard');
+      setView(loggedInUser?.role === 'Admin' ? 'admin-dashboard' : 'dashboard');
     } else {
       toast({ title: "ስህተት", description: result.message, variant: "destructive" });
     }
@@ -339,25 +340,29 @@ export default function Home() {
       case 'admin-dashboard':
         return <AdminDashboard 
             users={users} 
+            submissions={submissions}
             currentUser={loggedInUser}
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
             onAddUser={handleAddUser}
             onApprovePasswordReset={handleApprovePasswordReset}
             onRejectPasswordReset={handleRejectPasswordReset}
+            onViewSubmission={handleView}
+            onUpdateSubmissionStatus={handleUpdateSubmissionStatus}
+            onDeleteSubmission={handleDeleteSubmission}
         />;
 
       case 'analytics':
         return <AnalyticsDashboard submissions={submissions} />;
 
       case 'form':
-        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} />;
+        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} onBack={handleBack} />;
 
       case 'view-submission':
         if (currentSubmission) {
           return <SubmissionView 
                     submission={currentSubmission} 
-                    onUpdateStatus={loggedInUser?.role === 'Approver' ? handleUpdateSubmissionStatus : undefined} 
+                    onUpdateStatus={loggedInUser?.role === 'Approver' || loggedInUser?.role === 'Admin' ? handleUpdateSubmissionStatus : undefined} 
                  />;
         }
         return null;
@@ -400,14 +405,14 @@ export default function Home() {
         onLogout={handleLogout} 
         onGoToSettings={handleGoToSettings} 
         onBack={shouldShowHeaderButton ? handleBack : undefined}
-        onNavigateToAnalytics={loggedInUser?.role === 'Approver' ? handleViewAnalytics : undefined}
+        onNavigateToAnalytics={loggedInUser?.role === 'Approver' || loggedInUser?.role === 'Admin' ? handleViewAnalytics : undefined}
         notificationCount={notificationCount}
         pendingUsers={pendingUsers}
         pendingPasswordResets={pendingPasswordResets}
         pendingSubmissions={pendingSubmissions}
         onNotificationClick={(targetView) => setView(targetView)}
       />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-18 pb-8">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
         <div className="animate-in fade-in duration-500">
             {renderContent()}
         </div>
@@ -459,5 +464,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
