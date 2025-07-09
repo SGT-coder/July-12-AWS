@@ -1,10 +1,11 @@
 
 "use client";
 
+import * as React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import type { User } from "@/lib/types";
-import { LogOut, Settings, Bell } from "lucide-react";
+import type { User, Submission } from "@/lib/types";
+import { LogOut, Settings, Bell, User as UserIcon, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +21,19 @@ interface HeaderProps {
   onLogout: () => void;
   onGoToSettings: () => void;
   notificationCount?: number;
+  pendingUsers?: User[];
+  pendingSubmissions?: Submission[];
+  onNotificationClick: (view: 'admin-dashboard' | 'dashboard') => void;
 }
 
-export function AppHeader({ user, onLogout, onGoToSettings, notificationCount }: HeaderProps) {
+const roleTranslations: Record<User['role'], string> = {
+    Admin: "አስተዳዳሪ",
+    Approver: "አጽዳቂ",
+};
+
+export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, pendingUsers, pendingSubmissions, onNotificationClick }: HeaderProps) {
+  const [logoError, setLogoError] = React.useState(false);
+  
   const getInitials = (name: string) => {
     if (!name) return "";
     const names = name.split(' ');
@@ -30,25 +41,93 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount }:
     return initials.toUpperCase().slice(0, 2);
   }
 
+  const handleAdminNotificationClick = () => {
+    onNotificationClick('admin-dashboard');
+  }
+
+  const handleApproverNotificationClick = () => {
+    onNotificationClick('dashboard');
+  }
+
   return (
     <header className="bg-card/80 border-b backdrop-blur-sm sticky top-0 z-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-3">
-             <Image src="/ahri-logo.png" alt="AHRI Logo" width={100} height={40} className="object-contain" />
+             {logoError ? (
+                <span className="font-headline text-lg font-bold">አህሪ የስራ ፍሰት</span>
+             ) : (
+                <Image 
+                  src="/ahri-logo.png" 
+                  alt="አህሪ የስራ ፍሰት"
+                  width={100} 
+                  height={40} 
+                  className="object-contain"
+                  onError={() => setLogoError(true)}
+                  priority
+                />
+             )}
           </div>
           {user && (
             <div className="flex items-center gap-4">
-              {user.role === 'Admin' && (
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  {notificationCount && notificationCount > 0 && (
-                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                      {notificationCount}
-                    </span>
-                  )}
-                  <span className="sr-only">Toggle notifications</span>
-                </Button>
+              {(user.role === 'Admin' || user.role === 'Approver') && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative">
+                      <Bell className="h-5 w-5" />
+                      {notificationCount && notificationCount > 0 && (
+                        <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                          {notificationCount}
+                        </span>
+                      )}
+                      <span className="sr-only">ማሳወቂያዎችን ቀይር</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-80" align="end">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">ማሳወቂያዎች</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {user.role === 'Admin' && (
+                      <>
+                        {pendingUsers && pendingUsers.length > 0 ? (
+                          pendingUsers.map(pu => (
+                            <DropdownMenuItem key={pu.id} onSelect={handleAdminNotificationClick} className="cursor-pointer">
+                              <UserIcon className="mr-2 h-4 w-4 text-blue-500" />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{pu.name}</p>
+                                <p className="text-xs text-muted-foreground">{pu.email}</p>
+                              </div>
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <DropdownMenuItem disabled>ምንም አዲስ የተጠቃሚ ጥያቄዎች የሉም።</DropdownMenuItem>
+                        )}
+                      </>
+                    )}
+                     {user.role === 'Approver' && (
+                      <>
+                        {pendingSubmissions && pendingSubmissions.length > 0 ? (
+                          pendingSubmissions.map(ps => (
+                            <DropdownMenuItem key={ps.id} onSelect={handleApproverNotificationClick} className="cursor-pointer">
+                              <FileText className="mr-2 h-4 w-4 text-green-500" />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium truncate">{ps.projectTitle}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  በ <span className="font-semibold">{ps.userName}</span> የቀረበ
+                                </p>
+                              </div>
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                           <DropdownMenuItem disabled>ምንም አዲስ ማመልከቻዎች የሉም።</DropdownMenuItem>
+                        )}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -65,6 +144,9 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount }:
                       <p className="text-sm font-medium leading-none">{user.name}</p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
+                      </p>
+                       <p className="text-xs leading-none text-muted-foreground pt-1">
+                        ({roleTranslations[user.role]})
                       </p>
                     </div>
                   </DropdownMenuLabel>

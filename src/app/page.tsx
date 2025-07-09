@@ -44,32 +44,49 @@ export default function Home() {
   const { toast } = useToast();
 
   React.useEffect(() => {
-    if (loggedInUser?.role === 'Admin') {
-      fetchUsers();
-    } else if (loggedInUser?.role === 'Approver') {
-      if (view === 'dashboard' || view === 'analytics') {
-        fetchSubmissions();
-      }
-    } else {
-      setIsLoading(false);
+    const loadData = async () => {
+        setIsLoading(true);
+        if (loggedInUser?.role === 'Admin') {
+            await fetchUsers();
+        } else if (loggedInUser?.role === 'Approver') {
+            await fetchSubmissions();
+        }
+        setIsLoading(false);
     }
-  }, [view, loggedInUser]);
+    
+    if (loggedInUser) {
+        loadData();
+    } else {
+        setIsLoading(false);
+    }
+  }, [loggedInUser]);
   
   const pendingUsers = React.useMemo(() => users.filter(u => u.status === 'Pending'), [users]);
-  const notificationCount = loggedInUser?.role === 'Admin' ? pendingUsers.length : undefined;
+  const pendingSubmissions = React.useMemo(() => submissions.filter(s => s.status === 'Pending'), [submissions]);
+
+  const notificationCount = React.useMemo(() => {
+    if (loggedInUser?.role === 'Admin') {
+      return pendingUsers.length;
+    }
+    if (loggedInUser?.role === 'Approver') {
+      return pendingSubmissions.length;
+    }
+    return 0;
+  }, [loggedInUser, pendingUsers, pendingSubmissions]);
+
 
   const fetchSubmissions = async () => {
-    setIsLoading(true);
+    // setIsLoading(true); // managed by parent effect
     const fetchedSubmissions = await getSubmissions();
     setSubmissions(fetchedSubmissions);
-    setIsLoading(false);
+    // setIsLoading(false);
   };
   
   const fetchUsers = async () => {
-    setIsLoading(true);
+    // setIsLoading(true); // managed by parent effect
     const fetchedUsers = await getUsers();
     setUsers(fetchedUsers);
-    setIsLoading(false);
+    // setIsLoading(false);
   };
 
   const handleSelectView = (newView: 'form' | 'approver-login') => {
@@ -265,7 +282,7 @@ export default function Home() {
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
 
   const renderContent = () => {
-    if (isLoading && view !== 'role-selector') {
+    if (isLoading && view !== 'role-selector' && view !== 'form') {
         return (
             <div className="space-y-4">
                 <Skeleton className="h-16 w-1/2" />
@@ -333,7 +350,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader user={loggedInUser} onLogout={handleLogout} onGoToSettings={handleGoToSettings} notificationCount={notificationCount} />
+      <AppHeader 
+        user={loggedInUser} 
+        onLogout={handleLogout} 
+        onGoToSettings={handleGoToSettings} 
+        notificationCount={notificationCount}
+        pendingUsers={pendingUsers}
+        pendingSubmissions={pendingSubmissions}
+        onNotificationClick={(targetView) => setView(targetView)}
+      />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-in fade-in duration-500">
             {renderContent()}
@@ -356,7 +381,10 @@ export default function Home() {
                 }}><Copy className="h-4 w-4" /></Button>
             </div>
             <DialogFooter>
-                <Button onClick={() => setIsPasswordResetDialogOpen(false)}>ተከናውኗል</Button>
+                <Button onClick={() => {
+                    setIsPasswordResetDialogOpen(false);
+                    setView('approver-login');
+                }}>ተከናውኗል</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

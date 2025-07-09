@@ -135,9 +135,9 @@
       "email": "pending@example.com",
       "password": "password",
       "role": "Approver",
-      "status": "Pending",
+      "status": "Approved",
       "createdAt": "2024-07-10T12:00:00.000Z",
-      "statusUpdatedAt": "2024-07-10T12:00:00.000Z"
+      "statusUpdatedAt": "2025-07-09T09:26:09.191Z"
     },
     {
       "id": "4660f17d-d212-47e7-8bfc-43cd1c31b5c0",
