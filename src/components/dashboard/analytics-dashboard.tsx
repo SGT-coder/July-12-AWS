@@ -11,7 +11,12 @@ import {
     XAxis,
     YAxis,
     Cell,
+    LineChart,
+    Line,
+    CartesianGrid,
+    Tooltip as RechartsTooltip,
 } from "recharts";
+import { format } from "date-fns";
 
 import {
     Card,
@@ -28,7 +33,7 @@ import {
     ChartLegendContent,
 } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, Clock, FileText, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, FileText, XCircle, Download, BarChart2, PieChart as PieChartIcon, TrendingUp } from "lucide-react";
 import type { Submission, SubmissionStatus } from "@/lib/types";
 
 interface AnalyticsDashboardProps {
@@ -37,16 +42,22 @@ interface AnalyticsDashboardProps {
 }
 
 const COLORS = {
-    Approved: "hsl(var(--chart-2))",
-    Pending: "hsl(var(--chart-3))",
-    Rejected: "hsl(var(--chart-5))",
+    Approved: "hsl(142.1 76.2% 36.3%)", // green-600
+    Pending: "hsl(47.9 95.8% 53.1%)",  // yellow-500
+    Rejected: "hsl(0 84.2% 60.2%)",   // red-500
 };
 
 const departmentTranslations: { [key: string]: string } = {
     hr: "የሰው ሃይል",
     finance: "ፋይናንስ",
     it: "የመረጃ ቴክኖሎጂ",
-    // Add other departments here if needed
+};
+
+const quarterTranslations: { [key: string]: string } = {
+    q1: "ሩብ 1",
+    q2: "ሩብ 2",
+    q3: "ሩብ 3",
+    q4: "ሩብ 4",
 };
 
 const statusTranslations: Record<SubmissionStatus, string> = {
@@ -77,6 +88,24 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
         {} as Record<string, number>
     );
 
+    const quarterCounts = submissions.reduce(
+        (acc, s) => {
+            const quarterName = quarterTranslations[s.executionTime] || s.executionTime;
+            acc[quarterName] = (acc[quarterName] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>
+    );
+    
+    const monthlyCounts = submissions.reduce(
+        (acc, s) => {
+            try {
+                const month = format(new Date(s.submittedAt), 'yyyy-MM');
+                acc[month] = (acc[month] || 0) + 1;
+            } catch (e) { /* ignore invalid dates */ }
+            return acc;
+        }, {} as Record<string, number>
+    );
+
     const statusChartData = Object.entries(statusCounts)
       .map(([status, count]) => ({
         status: statusTranslations[status as SubmissionStatus],
@@ -86,11 +115,20 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
       .sort((a, b) => b.count - a.count);
 
     const departmentChartData = Object.entries(departmentCounts)
-        .map(([department, count]) => ({
-            department,
-            count,
-        }))
+        .map(([department, count]) => ({ department, count, }))
         .sort((a, b) => b.count - a.count);
+
+    const quarterChartData = Object.entries(quarterCounts)
+        .map(([quarter, count]) => ({ quarter, count }))
+        .sort((a,b) => a.quarter.localeCompare(b.quarter));
+
+    const monthlyChartData = Object.entries(monthlyCounts)
+        .map(([month, count]) => ({
+            month: format(new Date(month), 'MMM yyyy'), // For display
+            rawMonth: month,
+            count
+        }))
+        .sort((a, b) => a.rawMonth.localeCompare(b.rawMonth));
 
     return {
       totalSubmissions,
@@ -99,17 +137,69 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
       rejected: statusCounts.Rejected || 0,
       statusChartData,
       departmentChartData,
+      quarterChartData,
+      monthlyChartData,
     };
   }, [submissions]);
 
+  const handleDownloadCsv = () => {
+    if (!submissions.length) return;
+
+    const headers = [
+        "ID", "የፕሮጀክት ርዕስ", "የአስገባው ስም", "ዲፓርትመንት", "ሁኔታ",
+        "የገባበት ቀን", "ለመጨረሻ ጊዜ የተሻሻለው", "ግብ", "ዓላማ", "ስትራቴጂክ እርምጃ",
+        "መለኪያ", "ዋና ተግባር", "የዋና ተግባር ዒላማ", "የዓላማ ክብደት", "የስትራቴጂክ እርምጃ ክብደት",
+        "የመለኪያ ክብደት", "የዋና ተግባር ክብደት", "ፈጻሚ አካል", "የሚከናወንበት ጊዜ",
+        "በጀት ምንጭ", "ከመንግስት በጀት በብር", "ከመንግስት በጀት ኮድ",
+        "ከግራንት በጀት በብር", "ከኢስ ዲ ጂ በጀት በብር", "አስተያየቶች"
+    ];
+
+    const escapeCsvCell = (cell: any): string => {
+        const cellStr = String(cell ?? '');
+        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+        }
+        return cellStr;
+    };
+
+    const rows = submissions.map(s => [
+        s.id, s.projectTitle, s.userName, departmentTranslations[s.department] || s.department, statusTranslations[s.status],
+        format(new Date(s.submittedAt), 'yyyy-MM-dd HH:mm'), format(new Date(s.lastModifiedAt), 'yyyy-MM-dd HH:mm'),
+        s.goal, s.objective, s.strategicAction, s.metric, s.mainTask, s.mainTaskTarget,
+        s.objectiveWeight, s.strategicActionWeight, s.metricWeight, s.mainTaskWeight,
+        s.executingBody, quarterTranslations[s.executionTime] || s.executionTime, s.budgetSource,
+        s.governmentBudgetAmount, s.governmentBudgetCode, s.grantBudgetAmount, s.sdgBudgetAmount,
+        s.comments
+    ].map(escapeCsvCell).join(','));
+
+    const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    const date = new Date().toISOString().slice(0, 10);
+    link.setAttribute("download", `የአህሪ_ማመልከቻ_ሪፖርት_${date}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   return (
     <div className="space-y-6">
-       <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={onBack}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                ወደ ዳሽቦርድ ተመለስ
+       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+                <Button variant="outline" size="icon" onClick={onBack} className="h-10 w-10">
+                    <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div>
+                    <CardTitle className="font-headline text-3xl">የሪፖርት ዳሽቦርድ</CardTitle>
+                    <CardDescription>የማመልከቻ ውሂብ ትንተና እና ግንዛቤዎች።</CardDescription>
+                </div>
+            </div>
+            <Button onClick={handleDownloadCsv}>
+                <Download className="mr-2 h-4 w-4" />
+                CSV አውርድ
             </Button>
-            <CardTitle className="font-headline text-3xl">የሪፖርት ዳሽቦርድ</CardTitle>
        </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -151,20 +241,42 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+      <Card>
+        <CardHeader>
+            <div className="flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-primary" />
+                <CardTitle>የወርሃዊ ማመልከቻ አዝማሚያ</CardTitle>
+            </div>
+            <CardDescription>ማመልከቻዎች በጊዜ ሂደት እንዴት እንደተለወጡ ይመልከቱ።</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[350px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={analyticsData.monthlyChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis allowDecimals={false} />
+                    <RechartsTooltip content={<ChartTooltipContent />} />
+                    <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} name="ማመልከቻዎች" />
+                </LineChart>
+            </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="lg:col-span-1">
             <CardHeader>
-                <CardTitle>ማመልከቻዎች በሁኔታ</CardTitle>
+                 <div className="flex items-center gap-2">
+                    <PieChartIcon className="h-6 w-6 text-primary" />
+                    <CardTitle>ማመልከቻዎች በሁኔታ</CardTitle>
+                </div>
                 <CardDescription>የማመልከቻዎች ስርጭት በሁኔታቸው።</CardDescription>
             </CardHeader>
             <CardContent>
                  <ChartContainer config={{}} className="mx-auto aspect-square max-h-[300px]">
                     <PieChart>
-                         <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
-                        />
-                        <Pie data={analyticsData.statusChartData} dataKey="count" nameKey="status" innerRadius={60}>
+                         <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                        <Pie data={analyticsData.statusChartData} dataKey="count" nameKey="status" innerRadius={60} outerRadius={80} paddingAngle={5}>
                             {analyticsData.statusChartData.map((entry) => (
                                 <Cell key={`cell-${entry.status}`} fill={entry.fill} />
                             ))}
@@ -175,33 +287,47 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
             </CardContent>
         </Card>
 
-        <Card>
+        <Card className="lg:col-span-2">
             <CardHeader>
-                <CardTitle>ማመልከቻዎች በዲፓርትመንት</CardTitle>
-                <CardDescription>ከእያንዳንዱ ዲፓርትመንት የቀረቡ የማመልከቻዎች ብዛት።</CardDescription>
+                 <div className="flex items-center gap-2">
+                    <BarChart2 className="h-6 w-6 text-primary" />
+                    <CardTitle>ማመልከቻዎች በዲፓርትመንት እና ሩብ ዓመት</CardTitle>
+                </div>
+                <CardDescription>በዲፓርትመንት እና በሩብ ዓመት የማመልከቻዎች ብዛት ንጽጽር።</CardDescription>
             </CardHeader>
-            <CardContent>
-                <ChartContainer config={{ count: { label: "ማመልከቻዎች", color: "hsl(var(--chart-1))" } }}>
-                    <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 20 }}>
-                         <YAxis
-                            dataKey="department"
-                            type="category"
-                            tickLine={false}
-                            tickMargin={10}
-                            axisLine={false}
-                            tickFormatter={(value) => value.slice(0, 15)}
-                        />
-                        <XAxis dataKey="count" type="number" hide />
-                        <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
-                        />
-                        <Bar dataKey="count" radius={5} />
-                    </BarChart>
-                </ChartContainer>
+            <CardContent className="grid md:grid-cols-2 gap-6">
+                 <div className="h-[300px]">
+                    <h3 className="text-sm font-medium text-center mb-2">በዲፓርትመንት</h3>
+                    <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 20 }}>
+                            <XAxis type="number" hide />
+                            <YAxis
+                                dataKey="department"
+                                type="category"
+                                tickLine={false}
+                                tickMargin={5}
+                                axisLine={false}
+                                tickFormatter={(value) => value.length > 15 ? `${value.slice(0, 15)}...` : value}
+                                width={80}
+                            />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                            <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} name="ማመልከቻዎች" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                 </div>
+                 <div className="h-[300px]">
+                    <h3 className="text-sm font-medium text-center mb-2">በሩብ ዓመት</h3>
+                    <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={analyticsData.quarterChartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                            <XAxis dataKey="quarter" />
+                            <YAxis allowDecimals={false} />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                            <Bar dataKey="count" fill="hsl(var(--accent))" radius={4} name="ማመልከቻዎች" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                 </div>
             </CardContent>
         </Card>
-
       </div>
     </div>
   );
