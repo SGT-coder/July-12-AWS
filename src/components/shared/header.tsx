@@ -5,7 +5,7 @@ import * as React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type { User, Submission } from "@/lib/types";
-import { LogOut, Settings, Bell, User as UserIcon, FileText, KeyRound, ArrowLeft, BarChart } from "lucide-react";
+import { LogOut, Settings, Bell, User as UserIcon, FileText, KeyRound, ArrowLeft } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface HeaderProps {
   user: User | null;
@@ -91,9 +91,8 @@ export function AppHeader({
           {user && (
             <div className="flex items-center gap-2 sm:gap-4">
               {user.role === 'Approver' && onNavigateToAnalytics && (
-                  <Button variant="ghost" size="icon" onClick={onNavigateToAnalytics}>
-                    <BarChart className="h-5 w-5" />
-                    <span className="sr-only">ሪፖርቶችን ይመልከቱ</span>
+                  <Button variant="ghost" onClick={onNavigateToAnalytics}>
+                    የትንታኔ ገጽ
                   </Button>
               )}
               {(user.role === 'Admin' || user.role === 'Approver') && (

@@ -1,6 +1,7 @@
 
 "use client";
 
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -18,6 +19,14 @@ interface RoleSelectorProps {
 export function RoleSelector({ onSelectView }: RoleSelectorProps) {
   return (
     <div className="flex flex-col items-center justify-center pt-16 w-full max-w-3xl">
+      <Image 
+        src="https://placehold.co/400x300.png"
+        data-ai-hint="workflow process"
+        alt="AHRI Workflow Illustration"
+        width={400}
+        height={300}
+        className="mx-auto mb-8 rounded-lg shadow-md"
+      />
       <div className="text-center mb-12">
         <h1 className="font-headline text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           ወደ አህሪ የስራ ፍሰት እንኳን በደህና መጡ

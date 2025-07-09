@@ -9,14 +9,10 @@ import {
   XCircle,
   Eye,
   Trash2,
-  FileWarning,
   Search,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  BarChart,
-  FileText,
-  Clock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -225,14 +221,6 @@ export function ApproverDashboard({
     </TableHead>
   );
 
-  const stats = React.useMemo(() => {
-    const total = submissions.length;
-    const pending = submissions.filter(s => s.status === 'Pending').length;
-    const approved = submissions.filter(s => s.status === 'Approved').length;
-    const rejected = submissions.filter(s => s.status === 'Rejected').length;
-    return { total, pending, approved, rejected };
-  }, [submissions]);
-
   return (
     <Card>
       <CardHeader>
@@ -246,44 +234,6 @@ export function ApproverDashboard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">ጠቅላላ ማመልከቻዎች</CardTitle>
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{stats.total}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">በመጠባበቅ ላይ ያሉ</CardTitle>
-                    <Clock className="h-4 w-4 text-yellow-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{stats.pending}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">የጸደቁ</CardTitle>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{stats.approved}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">ውድቅ የተደረጉ</CardTitle>
-                    <XCircle className="h-4 w-4 text-red-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{stats.rejected}</div>
-                </CardContent>
-            </Card>
-        </div>
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

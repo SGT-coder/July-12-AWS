@@ -5,8 +5,6 @@ import * as React from "react";
 import {
     Bar,
     BarChart,
-    Pie,
-    PieChart,
     XAxis,
     YAxis,
     Cell,
@@ -28,11 +26,9 @@ import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-    ChartLegend,
-    ChartLegendContent,
 } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, Clock, FileText, XCircle, Download, BarChart2, PieChart as PieChartIcon, TrendingUp } from "lucide-react";
+import { CheckCircle, Clock, FileText, XCircle, Download, BarChart2, TrendingUp } from "lucide-react";
 import type { Submission, SubmissionStatus } from "@/lib/types";
 
 interface AnalyticsDashboardProps {
@@ -109,7 +105,7 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
 
     const monthlyChartData = Object.entries(monthlyCounts)
         .map(([month, count]) => ({
-            month: format(new Date(month), 'MMM yyyy'), // For display
+            month: format(new Date(month), 'MMM yy'), // For display
             rawMonth: month,
             count
         }))
@@ -170,7 +166,7 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
                 <CardTitle className="font-headline text-3xl">የሪፖርት ዳሽቦርድ</CardTitle>
@@ -182,7 +178,7 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
             </Button>
        </div>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">ጠቅላላ ማመልከቻዎች</CardTitle>
@@ -245,7 +241,7 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
       </Card>
 
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         <Card>
             <CardHeader>
                  <div className="flex items-center gap-2">
@@ -286,7 +282,7 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
                     <ResponsiveContainer width="100%" height="100%">
                          <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" />
+                            <XAxis type="number" allowDecimals={false} />
                             <YAxis
                                 dataKey="department"
                                 type="category"
