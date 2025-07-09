@@ -65,17 +65,18 @@ export default function Home() {
   }, [loggedInUser]);
   
   const pendingUsers = React.useMemo(() => users.filter(u => u.status === 'Pending'), [users]);
+  const pendingPasswordResets = React.useMemo(() => users.filter(u => u.passwordResetStatus === 'Pending'), [users]);
   const pendingSubmissions = React.useMemo(() => submissions.filter(s => s.status === 'Pending'), [submissions]);
 
   const notificationCount = React.useMemo(() => {
     if (loggedInUser?.role === 'Admin') {
-      return pendingUsers.length;
+      return (pendingUsers?.length || 0) + (pendingPasswordResets?.length || 0);
     }
     if (loggedInUser?.role === 'Approver') {
       return pendingSubmissions.length;
     }
     return 0;
-  }, [loggedInUser, pendingUsers, pendingSubmissions]);
+  }, [loggedInUser, pendingUsers, pendingPasswordResets, pendingSubmissions]);
 
 
   const fetchSubmissions = async () => {
@@ -232,13 +233,11 @@ export default function Home() {
     if (result.success) {
       if (result.isAdminRequest) {
         toast({ title: "ጥያቄው ተልኳል", description: result.message });
-        return true;
-      }
-      if (result.newPassword) {
+      } else if (result.newPassword) {
         setNewPassword(result.newPassword);
         setIsPasswordResetDialogOpen(true);
-        return true;
       }
+      return true;
     } 
     toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
     return false;
@@ -386,6 +385,7 @@ export default function Home() {
         onGoToSettings={handleGoToSettings} 
         notificationCount={notificationCount}
         pendingUsers={pendingUsers}
+        pendingPasswordResets={pendingPasswordResets}
         pendingSubmissions={pendingSubmissions}
         onNotificationClick={(targetView) => setView(targetView)}
       />

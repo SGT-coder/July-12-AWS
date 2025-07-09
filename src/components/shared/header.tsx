@@ -5,7 +5,7 @@ import * as React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type { User, Submission } from "@/lib/types";
-import { LogOut, Settings, Bell, User as UserIcon, FileText } from "lucide-react";
+import { LogOut, Settings, Bell, User as UserIcon, FileText, KeyRound } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,7 @@ interface HeaderProps {
   onGoToSettings: () => void;
   notificationCount?: number;
   pendingUsers?: User[];
+  pendingPasswordResets?: User[];
   pendingSubmissions?: Submission[];
   onNotificationClick: (view: 'admin-dashboard' | 'dashboard') => void;
 }
@@ -31,7 +32,7 @@ const roleTranslations: Record<User['role'], string> = {
     Approver: "አጽዳቂ",
 };
 
-export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, pendingUsers, pendingSubmissions, onNotificationClick }: HeaderProps) {
+export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, pendingUsers, pendingPasswordResets, pendingSubmissions, onNotificationClick }: HeaderProps) {
   const [logoError, setLogoError] = React.useState(false);
   
   const getInitials = (name: string) => {
@@ -92,18 +93,26 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, p
                     <DropdownMenuSeparator />
                     {user.role === 'Admin' && (
                       <>
-                        {pendingUsers && pendingUsers.length > 0 ? (
-                          pendingUsers.map(pu => (
-                            <DropdownMenuItem key={pu.id} onSelect={handleAdminNotificationClick} className="cursor-pointer">
+                        {pendingUsers && pendingUsers.length > 0 && pendingUsers.map(pu => (
+                            <DropdownMenuItem key={`user-${pu.id}`} onSelect={handleAdminNotificationClick} className="cursor-pointer">
                               <UserIcon className="mr-2 h-4 w-4 text-blue-500" />
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{pu.name}</p>
-                                <p className="text-xs text-muted-foreground">{pu.email}</p>
+                                <p className="text-xs text-muted-foreground">አዲስ የተጠቃሚ ምዝገባ ጥያቄ</p>
                               </div>
                             </DropdownMenuItem>
-                          ))
-                        ) : (
-                          <DropdownMenuItem disabled>ምንም አዲስ የተጠቃሚ ጥያቄዎች የሉም።</DropdownMenuItem>
+                        ))}
+                        {pendingPasswordResets && pendingPasswordResets.length > 0 && pendingPasswordResets.map(pr => (
+                            <DropdownMenuItem key={`pw-${pr.id}`} onSelect={handleAdminNotificationClick} className="cursor-pointer">
+                                <KeyRound className="mr-2 h-4 w-4 text-orange-500" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium">{pr.name}</p>
+                                    <p className="text-xs text-muted-foreground">የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ</p>
+                                </div>
+                            </DropdownMenuItem>
+                        ))}
+                        {(notificationCount === 0) && (
+                            <DropdownMenuItem disabled>ምንም አዲስ ማሳወቂያዎች የሉም።</DropdownMenuItem>
                         )}
                       </>
                     )}

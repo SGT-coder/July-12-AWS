@@ -163,11 +163,11 @@
       "id": "02212e99-4713-4fb2-8b0a-ef37130dd65c",
       "name": "Test Test",
       "email": "Test@gmail.com",
-      "password": "admin123",
+      "password": "0j1nwjst",
       "role": "Approver",
       "status": "Approved",
       "createdAt": "2025-07-09T08:53:31.032Z",
-      "statusUpdatedAt": "2025-07-09T09:56:41.962Z"
+      "statusUpdatedAt": "2025-07-09T10:04:23.360Z"
     },
     {
       "id": "542bc0b5-ac84-4540-8fb7-aaf8c3e464eb",
@@ -177,7 +177,8 @@
       "role": "Admin",
       "status": "Approved",
       "createdAt": "2025-07-09T08:58:30.975Z",
-      "statusUpdatedAt": "2025-07-09T10:01:41.864Z"
+      "statusUpdatedAt": "2025-07-09T10:04:51.200Z",
+      "passwordResetStatus": "Pending"
     }
   ]
 }
