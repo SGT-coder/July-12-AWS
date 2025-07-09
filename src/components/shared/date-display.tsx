@@ -2,8 +2,6 @@
 "use client";
 
 import { format, formatDistanceToNow } from 'date-fns';
-// The 'am' locale is causing a build error, so it's temporarily removed.
-// import { am } from 'date-fns/locale/am';
 
 interface DateDisplayProps {
     dateString: string;
@@ -16,7 +14,7 @@ export function DateDisplay({ dateString, includeTime = false }: DateDisplayProp
     try {
         const date = new Date(dateString);
         const fullFormat = includeTime ? 'MMM d, yyyy, h:mm a' : 'MMM d, yyyy';
-        const fullDate = format(date, fullFormat);
+        const fullDate = format(date, fullFormat); // Title remains in standard format
         const relativeDate = formatDistanceToNow(date, { addSuffix: true });
 
         return (

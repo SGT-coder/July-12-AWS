@@ -13,7 +13,7 @@ import {
     CartesianGrid,
     ResponsiveContainer
 } from "recharts";
-import { format } from "date-fns";
+import { format, subMonths, startOfMonth } from "date-fns";
 
 import {
     Card,
@@ -35,7 +35,7 @@ interface AnalyticsDashboardProps {
   submissions: Submission[];
 }
 
-const COLORS = {
+const COLORS: Record<SubmissionStatus, string> = {
     Approved: "hsl(142.1 76.2% 36.3%)", // green-600
     Pending: "hsl(47.9 95.8% 53.1%)",  // yellow-500
     Rejected: "hsl(0 84.2% 60.2%)",   // red-500
@@ -57,7 +57,7 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
         acc[s.status] = (acc[s.status] || 0) + 1;
         return acc;
       },
-      {} as Record<SubmissionStatus, number>
+      { Approved: 0, Pending: 0, Rejected: 0 } as Record<SubmissionStatus, number>
     );
 
     const departmentCounts = submissions.reduce(
@@ -77,23 +77,45 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
         }, {} as Record<string, number>
     );
     
-    const monthlyCounts = submissions.reduce(
-        (acc, s) => {
-            try {
-                const month = format(new Date(s.submittedAt), 'yyyy-MM');
-                acc[month] = (acc[month] || 0) + 1;
-            } catch (e) { /* ignore invalid dates */ }
-            return acc;
-        }, {} as Record<string, number>
-    );
+    // --- Monthly Counts for the last 6 months ---
+    const last6Months: Date[] = [];
+    const today = new Date();
+    for (let i = 5; i >= 0; i--) {
+        last6Months.push(startOfMonth(subMonths(today, i)));
+    }
+    
+    const monthlyCounts: Record<string, number> = last6Months.reduce((acc, month) => {
+        const monthKey = format(month, 'yyyy-MM');
+        acc[monthKey] = 0;
+        return acc;
+    }, {} as Record<string, number>);
 
-    const statusChartData = Object.entries(statusCounts)
-      .map(([status, count]) => ({
-        status: statusTranslations[status as SubmissionStatus],
-        count,
-        fill: COLORS[status as SubmissionStatus],
-      }))
-      .sort((a, b) => b.count - a.count);
+    submissions.forEach(s => {
+        try {
+            const submissionMonth = startOfMonth(new Date(s.submittedAt));
+            const monthKey = format(submissionMonth, 'yyyy-MM');
+            if (monthKey in monthlyCounts) {
+                monthlyCounts[monthKey]++;
+            }
+        } catch (e) { /* ignore invalid dates */ }
+    });
+    
+    const monthlyChartData = Object.entries(monthlyCounts)
+        .map(([month, count]) => ({
+            month: format(new Date(month), 'MMM yy'), // For display
+            rawMonth: month,
+            count
+        }))
+        .sort((a, b) => a.rawMonth.localeCompare(b.rawMonth));
+
+
+    // --- Status Chart Data ---
+    const statusOrder: SubmissionStatus[] = ['Pending', 'Approved', 'Rejected'];
+    const statusChartData = statusOrder.map(status => ({
+        status: statusTranslations[status],
+        count: statusCounts[status] || 0,
+        fill: COLORS[status],
+    }));
 
     const departmentChartData = Object.entries(departmentCounts)
         .map(([department, count]) => ({ department, count, fill: "hsl(var(--primary))" }))
@@ -102,14 +124,6 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
     const quarterChartData = Object.entries(quarterCounts)
         .map(([quarter, count]) => ({ quarter, count, fill: "hsl(var(--accent))" }))
         .sort((a,b) => a.quarter.localeCompare(b.quarter));
-
-    const monthlyChartData = Object.entries(monthlyCounts)
-        .map(([month, count]) => ({
-            month: format(new Date(month), 'MMM yy'), // For display
-            rawMonth: month,
-            count
-        }))
-        .sort((a, b) => a.rawMonth.localeCompare(b.rawMonth));
 
     return {
       totalSubmissions,
@@ -223,7 +237,7 @@ export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
                 <TrendingUp className="h-6 w-6 text-primary" />
                 <CardTitle>የማስረከቢያ አዝማሚያዎች በጊዜ ሂደት</CardTitle>
             </div>
-            <CardDescription>ማመልከቻዎች በጊዜ ሂደት እንዴት እንደተለወጡ ይመልከቱ።</CardDescription>
+            <CardDescription>ማመልከቻዎች ባለፉት 6 ወራት እንዴት እንደተለወጡ ይመልከቱ።</CardDescription>
         </CardHeader>
         <CardContent>
             <ChartContainer config={{}} className="h-[350px] w-full">
