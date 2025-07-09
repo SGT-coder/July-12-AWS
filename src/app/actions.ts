@@ -370,6 +370,7 @@ export async function getSubmissions(): Promise<Submission[]> {
     }
 }
 
+// Used internally or by logged-in users who already have rights
 export async function getSubmissionById(id: string): Promise<{ success: boolean; submission?: Submission; message?: string }> {
     if (!id || typeof id !== 'string' || id.trim() === '') {
         return { success: false, message: "የመከታተያ መታወቂያ ያስፈልጋል።" };
@@ -385,6 +386,37 @@ export async function getSubmissionById(id: string): Promise<{ success: boolean;
         }
     } catch (error) {
         console.error("Error fetching submission by ID: ", error);
+        return { success: false, message: "ማመልከቻውን በማምጣት ላይ ሳለ ስህተት ተፈጥሯል።" };
+    }
+}
+
+const trackSubmissionSchema = z.object({
+    trackingId: z.string().min(1, 'የመከታተያ መታወቂያ ያስፈልጋል።'),
+    userName: z.string().min(1, 'ሙሉ ስም ያስፈልጋል።'),
+});
+
+export async function trackSubmission(data: z.infer<typeof trackSubmissionSchema>) {
+    const parsedData = trackSubmissionSchema.safeParse(data);
+    if (!parsedData.success) {
+        return { success: false, message: "የመከታተያ መታወቂያ እና ሙሉ ስም ያስፈልጋል።" };
+    }
+
+    const { trackingId, userName } = parsedData.data;
+
+    try {
+        const db = await readDb();
+        const submission = db.submissions.find(s => 
+            s.id.toLowerCase() === trackingId.toLowerCase() && 
+            s.userName.trim().toLowerCase() === userName.trim().toLowerCase()
+        );
+
+        if (submission) {
+            return { success: true, submission };
+        } else {
+            return { success: false, message: "በዚህ መታወቂያ እና ስም ምንም ማመልከቻ አልተገኘም። እባክዎ መረጃዎን ያረጋግጡ።" };
+        }
+    } catch (error) {
+        console.error("Error tracking submission: ", error);
         return { success: false, message: "ማመልከቻውን በማምጣት ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
@@ -493,3 +525,5 @@ export async function deleteSubmission(id: string) {
         return { success: false, message: "ማመልከቻውን በመሰረዝ ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
+
+    

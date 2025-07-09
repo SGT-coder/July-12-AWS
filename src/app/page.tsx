@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -480,7 +481,7 @@ export default function Home() {
             <DialogHeader>
                 <DialogTitle>ዕቅድ በተሳካ ሁኔታ ገብቷል!</DialogTitle>
                 <DialogDescription>
-                    ለግምገማ እና ለክትትል ይህንን የመከታተያ መታወቂያ ይጠቀሙ። እባክዎ ገልብጠው ደህንነቱ በተጠበቀ ቦታ ያስቀምጡት።
+                    ለግምገማ እና ለክትትል ይህንን ልዩ የመከታተያ መታወቂያ ይጠቀሙ። እባክዎ ገልብጠው ደህንነቱ በተጠበቀ ቦታ ያስቀምጡት፣ ምክንያቱም እንደገና አይታይም።
                 </DialogDescription>
             </DialogHeader>
             <div className="flex items-center space-x-2 my-4">
@@ -501,3 +502,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

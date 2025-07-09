@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { getSubmissionById } from "@/app/actions";
+import { trackSubmission } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { Submission } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ interface SubmissionTrackingProps {
 
 export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
   const [trackingId, setTrackingId] = React.useState("");
+  const [userName, setUserName] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [submission, setSubmission] = React.useState<Submission | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -25,10 +26,10 @@ export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!trackingId) {
+    if (!trackingId || !userName) {
       toast({
-        title: "መታወቂያ ያስፈልጋል",
-        description: "እባክዎ ለመፈለግ የመከታተያ መታወቂያ ያስገቡ።",
+        title: "መረጃ ያስፈልጋል",
+        description: "እባክዎ ለመፈለግ የመከታተያ መታወቂያ እና ሙሉ ስም ያስገቡ።",
         variant: "destructive",
       });
       return;
@@ -36,7 +37,7 @@ export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
     setIsLoading(true);
     setError(null);
     setSubmission(null);
-    const result = await getSubmissionById(trackingId);
+    const result = await trackSubmission({ trackingId, userName });
     if (result.success && result.submission) {
       setSubmission(result.submission);
     } else {
@@ -51,32 +52,41 @@ export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
         <CardHeader>
           <CardTitle className="font-headline text-2xl">የማመልከቻ ሁኔታን ይከታተሉ</CardTitle>
           <CardDescription>
-            የማመልከቻዎን ሁኔታ ለማየት ከዚህ በታች የመከታተያ መታወቂያዎን ያስገቡ።
+            የማመልከቻዎን ሁኔታ ለማየት ከዚህ በታች የመከታተያ መታወቂያዎን እና ሙሉ ስምዎን ያስገቡ።
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSearch}>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="trackingId">የመከታተያ መታወቂያ</Label>
-              <div className="flex gap-2">
+              <Input
+                id="trackingId"
+                placeholder="TRX-..."
+                value={trackingId}
+                onChange={(e) => setTrackingId(e.target.value)}
+                className="font-mono"
+              />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="userName">በማመልከቻው ላይ የተጠቀመ ሙሉ ስም</Label>
                 <Input
-                  id="trackingId"
-                  placeholder="TRX-..."
-                  value={trackingId}
-                  onChange={(e) => setTrackingId(e.target.value)}
-                  className="font-mono"
+                    id="userName"
+                    placeholder="ሙሉ ስም ያስገቡ"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
                 />
-                <Button type="submit" disabled={isLoading}>
+             </div>
+          </CardContent>
+          <CardFooter>
+             <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     <Search className="h-5 w-5" />
                   )}
-                  <span className="sr-only sm:not-sr-only sm:ml-2">ፈልግ</span>
+                  <span className="ml-2">ፈልግ</span>
                 </Button>
-              </div>
-            </div>
-          </CardContent>
+          </CardFooter>
         </form>
       </Card>
 
@@ -113,3 +123,5 @@ export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
     </div>
   );
 }
+
+    
