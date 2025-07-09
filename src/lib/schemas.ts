@@ -3,8 +3,8 @@ import * as z from "zod";
 
 const weightSchema = z.string()
     .min(1, "ክብደት መግባት አለበት።")
-    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 5, {
-        message: "ክብደት ከ 0 እስከ 5 ባለው ቁጥር መሆን አለበት።",
+    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, {
+        message: "ክብደት ቁጥር መሆን አለበት።",
     });
 
 export const strategicPlanSchema = z.object({

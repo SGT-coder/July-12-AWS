@@ -160,6 +160,33 @@
       "governmentBudgetCode": "6114 የቀን ሠራተኞች ምንዳ",
       "grantBudgetAmount": "",
       "sdgBudgetAmount": ""
+    },
+    {
+      "id": "TRX-2025-0709-J9SCF",
+      "userId": "user1",
+      "status": "Pending",
+      "submittedAt": "2025-07-09T18:29:35.159Z",
+      "lastModifiedAt": "2025-07-09T18:29:35.159Z",
+      "userName": "jj",
+      "projectTitle": "JJ",
+      "department": "ተላላፊ በሽታዎች ምርምር",
+      "goal": "በማስረጃ ላይ የተመሰረተ ዉሳኔ አሰጣጥን ማሳደግ",
+      "objective": "የሳይንሳዊ ዕውቀትን፣ ቴክኖሎጂ እና ማስረጃዎችን ለውሳኔ አሰጣጥ አጠቃቀምን ማሻሻል",
+      "strategicAction": "S",
+      "metric": "S",
+      "mainTask": "S",
+      "mainTaskTarget": "S",
+      "objectiveWeight": "4",
+      "strategicActionWeight": "3",
+      "metricWeight": "3",
+      "mainTaskWeight": "3",
+      "executingBody": "ተላላፊና ተላላፊ ያልሆኑ በሽታዎች ምርምር ዳይሬክቶሬት",
+      "executionTime": "1ኛ ሩብ ዓመት",
+      "budgetSource": "ግራንት",
+      "governmentBudgetAmount": "",
+      "governmentBudgetCode": "",
+      "grantBudgetAmount": "4",
+      "sdgBudgetAmount": ""
     }
   ],
   "users": [

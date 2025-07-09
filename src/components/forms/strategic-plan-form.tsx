@@ -211,34 +211,34 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting }: Strategi
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-xl">ክብደቶች</CardTitle>
-                        <CardDescription>እባክዎ ከ 0 እስከ 5 ያለውን የችግር መጠን በቁጥር ያስገቡ (5 በጣም አስቸጋሪ ነው)።</CardDescription>
+                        <CardDescription>እባክዎ የችግር መጠኑን በቁጥር ያስገቡ።</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <FormField control={form.control} name="objectiveWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>ዓላማ ክብደት</FormLabel>
-                                <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
+                                <FormControl><Input type="number" placeholder="የዓላማ ክብደት ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="strategicActionWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>ስትራቴጂክ እርምጃ ክብደት</FormLabel>
-                                <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
+                                <FormControl><Input type="number" placeholder="የስትራቴጂክ እርምጃ ክብደት ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="metricWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>የመለኪያ ክብደት</FormLabel>
-                                <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
+                                <FormControl><Input type="number" placeholder="የመለኪያ ክብደት ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="mainTaskWeight" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>የዋና ተግባር ክብደት</FormLabel>
-                               <FormControl><Input type="number" placeholder="የችግር መጠን በቁጥር ያስገቡ" {...field} /></FormControl>
+                               <FormControl><Input type="number" placeholder="የዋና ተግባር ክብደት ያስገቡ" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
