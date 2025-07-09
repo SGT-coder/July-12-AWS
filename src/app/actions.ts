@@ -263,7 +263,7 @@ export async function approvePasswordReset(userId: string, adminId: string) {
         return { success: false, message: "የሚጸድቅ የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ አልተገኘም።" };
     }
 
-    const newPassword = Math.random().toString(36).substring(2, 10);
+    const newPassword = 'ahri123';
     db.users[userIndex].password = newPassword;
     db.users[userIndex].passwordResetStatus = undefined;
     db.users[userIndex].statusUpdatedAt = new Date().toISOString();
