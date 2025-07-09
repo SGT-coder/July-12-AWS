@@ -9,16 +9,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, Shield } from "lucide-react";
-import type { Role } from "@/lib/types";
+import { User, Shield, Briefcase } from "lucide-react";
 
 interface RoleSelectorProps {
-  onSelectRole: (role: Role) => void;
+  onSelectView: (view: 'form' | 'approver-login' | 'admin-login') => void;
 }
 
-export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
+export function RoleSelector({ onSelectView }: RoleSelectorProps) {
   return (
-    <div className="flex flex-col items-center justify-center pt-16">
+    <div className="flex flex-col items-center justify-center pt-16 w-full max-w-5xl">
       <div className="text-center mb-12">
         <h1 className="font-headline text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           ወደ AHRI Workflow እንኳን በደህና መጡ
@@ -27,9 +26,9 @@ export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
           ለበለጠ ውጤታማነት ስትራቴጂካዊ ዕቅድን በዲጂታል መልክ ማደራጀት።
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl w-full">
-        <Card className="hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="items-center text-center p-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+        <Card className="hover:shadow-xl transition-shadow duration-300 flex flex-col">
+          <CardHeader className="items-center text-center p-6 flex-grow">
             <div className="p-4 bg-primary/10 rounded-full mb-4">
               <User className="h-10 w-10 text-primary" />
             </div>
@@ -38,25 +37,43 @@ export function RoleSelector({ onSelectRole }: RoleSelectorProps) {
               የስትራቴጂክ ዕቅድ እና የሥራ እንቅስቃሴ ቅጾችን ይሙሉ እና ያስገቡ።
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center px-8 pb-8">
-            <Button onClick={() => onSelectRole("User")} className="w-full">
+          <CardContent className="text-center px-6 pb-6">
+            <Button onClick={() => onSelectView("form")} className="w-full">
               እንደ ተጠቃሚ ይቀጥሉ
             </Button>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="items-center text-center p-8">
+        
+        <Card className="hover:shadow-xl transition-shadow duration-300 flex flex-col">
+          <CardHeader className="items-center text-center p-6 flex-grow">
             <div className="p-4 bg-accent/10 rounded-full mb-4">
-              <Shield className="h-10 w-10 text-accent" />
+              <Briefcase className="h-10 w-10 text-accent" />
             </div>
-            <CardTitle className="font-headline text-2xl">ባለሥልጣን</CardTitle>
+            <CardTitle className="font-headline text-2xl">አጽዳቂ</CardTitle>
             <CardDescription>
-              ለመግባት፣ ቅጾችን ለመገምገም እና ተጠቃሚዎችን ለማስተዳደር እዚህ ይግቡ።
+              የገባውን መረጃ ለመገምገም እና ለማጽደቅ እዚህ ይግቡ።
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center px-8 pb-8">
-            <Button onClick={() => onSelectRole("Approver")} className="w-full" style={{backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))'}}>
-              እንደ ባለሥልጣን ይቀጥሉ
+          <CardContent className="text-center px-6 pb-6">
+            <Button onClick={() => onSelectView("approver-login")} className="w-full" style={{backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))'}}>
+              የአጽዳቂ መግቢያ
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-xl transition-shadow duration-300 flex flex-col">
+          <CardHeader className="items-center text-center p-6 flex-grow">
+            <div className="p-4 bg-slate-500/10 rounded-full mb-4">
+              <Shield className="h-10 w-10 text-slate-600" />
+            </div>
+            <CardTitle className="font-headline text-2xl">አስተዳዳሪ</CardTitle>
+            <CardDescription>
+              ተጠቃሚዎችን እና የስርዓት ቅንብሮችን ለማስተዳደር እዚህ ይግቡ።
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center px-6 pb-6">
+            <Button onClick={() => onSelectView("admin-login")} className="w-full" variant="secondary">
+              የአስተዳዳሪ መግቢያ
             </Button>
           </CardContent>
         </Card>

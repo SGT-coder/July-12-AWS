@@ -15,14 +15,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-interface ApproverLoginProps {
+interface AdminLoginProps {
   onLogin: (email: string, password: string) => Promise<boolean>;
   onBack: () => void;
-  onGoToRegister: () => void;
-  onGoToReset: () => void;
 }
 
-export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: ApproverLoginProps) {
+export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -40,8 +38,8 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
     <div className="flex justify-center items-center h-full">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="font-headline text-2xl">የአጽዳቂ መግቢያ</CardTitle>
-          <CardDescription>ለመቀጠል እባክዎ ይግቡ</CardDescription>
+          <CardTitle className="font-headline text-2xl">የአስተዳዳሪ መግቢያ</CardTitle>
+          <CardDescription>ለመቀጠል እባክዎ የአስተዳዳሪ ምስክርነቶችዎን ያስገቡ</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -50,7 +48,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
               <Input
                 id="email"
                 type="email"
-                placeholder="approver@example.com"
+                placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -67,18 +65,11 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: 
                 required
               />
             </div>
-             <div className="text-sm">
-                <Button variant="link" type="button" onClick={onGoToReset} className="p-0 h-auto">የይለፍ ቃል ረሱ?</Button>
-            </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? <Loader2 className="animate-spin" /> : "ይግቡ"}
             </Button>
-             <div className="text-sm text-center">
-                መለያ የለዎትም?{" "}
-                <Button variant="link" type="button" onClick={onGoToRegister} className="p-0 h-auto">ይመዝገቡ</Button>
-            </div>
             <Button
               type="button"
               variant="outline"

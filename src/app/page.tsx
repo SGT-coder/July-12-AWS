@@ -11,6 +11,7 @@ import {
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
 import { ApproverLogin } from "@/components/auth/approver-login";
+import { AdminLogin } from "@/components/auth/admin-login";
 import { ApproverDashboard } from "@/components/dashboard/approver-dashboard";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { StrategicPlanForm } from "@/components/forms/strategic-plan-form";
@@ -22,7 +23,7 @@ import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
   const [loggedInUser, setLoggedInUser] = React.useState<User | null>(null);
-  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'register' | 'reset-password'>('role-selector');
+  const [view, setView] = React.useState<'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password'>('role-selector');
   const [submissions, setSubmissions] = React.useState<Submission[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -57,16 +58,12 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  const handleSelectRole = (selectedRole: Role) => {
-    if (selectedRole) {
-      if (selectedRole === 'User') {
+  const handleViewChange = (newView: 'form' | 'approver-login' | 'admin-login') => {
+    if (newView === 'form') {
         setRole('User');
-        setView('form');
-        setCurrentSubmissionId(null);
-      } else if (selectedRole === 'Approver') { // This path is now for both Approver and Admin
-        setView('approver-login');
-      }
     }
+    setView(newView);
+    setCurrentSubmissionId(null);
   };
 
   const handleLogin = async (email: string, password: string): Promise<boolean> => {
@@ -112,7 +109,7 @@ export default function Home() {
   const handleBack = () => {
       if (view === 'form' && role === 'User') {
         handleLogout();
-      } else if (view === 'approver-login' || view === 'register' || view === 'reset-password') {
+      } else if (view === 'approver-login' || view === 'admin-login' || view === 'register' || view === 'reset-password') {
         handleLogout();
       }
       else {
@@ -263,6 +260,9 @@ export default function Home() {
 
       case 'approver-login':
         return <ApproverLogin onLogin={handleLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} />;
+      
+      case 'admin-login':
+        return <AdminLogin onLogin={handleLogin} onBack={handleBack} />;
 
       case 'register':
         return <RegisterForm onRegister={handleRegister} onBack={handleBackToLogin} />;
@@ -271,14 +271,14 @@ export default function Home() {
         return <ResetPasswordForm onReset={handleResetPassword} onBack={handleBackToLogin} />;
 
       default:
-        return <RoleSelector onSelectRole={handleSelectRole} />;
+        return <RoleSelector onSelectView={handleViewChange} />;
     }
   };
   
   if (view === 'role-selector') {
     return (
         <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-            <RoleSelector onSelectRole={handleSelectRole} />
+            <RoleSelector onSelectView={handleViewChange} />
         </main>
     );
   }
