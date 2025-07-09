@@ -1,6 +1,9 @@
+
 "use client";
 
 import { format, formatDistanceToNow } from 'date-fns';
+// The 'am' locale is causing a build error, so it's temporarily removed.
+// import { am } from 'date-fns/locale/am';
 
 interface DateDisplayProps {
     dateString: string;

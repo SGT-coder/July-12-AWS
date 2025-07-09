@@ -17,7 +17,6 @@ import { DateDisplay } from "@/components/shared/date-display";
 
 interface SubmissionViewProps {
   submission: Submission;
-  onBack: () => void;
 }
 
 const DescriptionListItem = ({ term, children, isMono=false }: { term: string, children: React.ReactNode, isMono?: boolean }) => (
@@ -28,7 +27,7 @@ const DescriptionListItem = ({ term, children, isMono=false }: { term: string, c
     </div>
 );
 
-export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
+export function SubmissionView({ submission }: SubmissionViewProps) {
   const totalBudget = [
     submission.governmentBudgetAmount,
     submission.grantBudgetAmount,
@@ -37,11 +36,6 @@ export function SubmissionView({ submission, onBack }: SubmissionViewProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Button variant="outline" onClick={onBack}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        ወደ ዳሽቦርድ ተመለስ
-      </Button>
-
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">

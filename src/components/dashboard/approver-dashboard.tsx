@@ -79,7 +79,6 @@ interface ApproverDashboardProps {
     comments?: string
   ) => void;
   onDelete: (id: string) => void;
-  onViewAnalytics: () => void;
 }
 
 const RejectionDialog = ({ onConfirm }: { onConfirm: (comment: string) => void }) => {
@@ -129,7 +128,6 @@ export function ApproverDashboard({
   onView,
   onUpdateStatus,
   onDelete,
-  onViewAnalytics,
 }: ApproverDashboardProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [departmentFilter, setDepartmentFilter] = React.useState("all");
@@ -245,10 +243,6 @@ export function ApproverDashboard({
                 ሁሉንም ገቢ ቅጾች ይገምግሙ እና ያስተዳድሩ።
                 </CardDescription>
             </div>
-            <Button variant="outline" onClick={onViewAnalytics}>
-                <BarChart className="mr-2 h-4 w-4" />
-                ሪፖርቶችን ይመልከቱ
-            </Button>
         </div>
       </CardHeader>
       <CardContent>

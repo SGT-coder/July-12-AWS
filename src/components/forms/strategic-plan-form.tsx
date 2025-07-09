@@ -63,11 +63,10 @@ const defaultFormValues: StrategicPlanFormValues = {
 interface StrategicPlanFormProps {
     submission?: Submission | null;
     onSave: (data: StrategicPlanFormValues, id?: string) => void;
-    onCancel?: () => void;
     isSubmitting: boolean;
 }
 
-export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }: StrategicPlanFormProps) {
+export function StrategicPlanForm({ submission, onSave, isSubmitting }: StrategicPlanFormProps) {
   const form = useForm<StrategicPlanFormValues>({
     resolver: zodResolver(strategicPlanSchema),
     defaultValues: submission ? {
@@ -99,12 +98,6 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-        {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                ተመለስ
-            </Button>
-        )}
         <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
             <Card>
@@ -362,7 +355,6 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
 
             </CardContent>
             <CardFooter className="flex justify-end gap-4 p-6">
-                {onCancel && <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>ተመለስ</Button>}
                 <Button type="button" variant="ghost" onClick={handleReset} disabled={isSubmitting}>አጽዳ</Button>
                 <Button type="submit" disabled={isSubmitting} className="text-lg px-6 py-4">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (submission ? 'ለውጦችን አስቀምጥ' : 'ዕቅድ አስገባ')}

@@ -37,11 +37,10 @@ import { updateUserProfile, changeUserPassword } from "@/app/actions";
 
 interface SettingsPageProps {
   user: User;
-  onBack: () => void;
   onUserUpdate: (updatedUser: User) => void;
 }
 
-export function SettingsPage({ user, onBack, onUserUpdate }: SettingsPageProps) {
+export function SettingsPage({ user, onUserUpdate }: SettingsPageProps) {
   const { toast } = useToast();
   const [isProfileSubmitting, setIsProfileSubmitting] = React.useState(false);
   const [isPasswordSubmitting, setIsPasswordSubmitting] = React.useState(false);
@@ -89,12 +88,9 @@ export function SettingsPage({ user, onBack, onUserUpdate }: SettingsPageProps) 
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">ቅንብሮች</h1>
-          <p className="text-muted-foreground">የመለያ ዝርዝሮችዎን እና የይለፍ ቃልዎን ያስተዳድሩ።</p>
-        </div>
-        <Button variant="outline" onClick={onBack}>ወደ ዳሽቦርድ ተመለስ</Button>
+      <div>
+        <h1 className="text-3xl font-bold font-headline">ቅንብሮች</h1>
+        <p className="text-muted-foreground">የመለያ ዝርዝሮችዎን እና የይለፍ ቃልዎን ያስተዳድሩ።</p>
       </div>
       
       <Card>

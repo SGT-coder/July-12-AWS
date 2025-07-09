@@ -108,7 +108,7 @@ export default function Home() {
         } else {
             setView('dashboard');
         }
-        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${result.translatedRole}!` });
+        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${result.user.name} (${result.translatedRole})!` });
         return true;
     } else {
         toast({ title: "መግባት አልተቻለም", description: result.message, variant: "destructive" });
@@ -229,6 +229,7 @@ export default function Home() {
   };
 
   const handleResetPassword = async (data: { fullName: string; email: string }): Promise<boolean> => {
+    setIsSubmitting(true);
     const result = await requestPasswordReset(data);
     if (result.success) {
       if (result.isAdminRequest) {
@@ -237,9 +238,11 @@ export default function Home() {
         setNewPassword(result.newPassword);
         setIsPasswordResetDialogOpen(true);
       }
+      setIsSubmitting(false);
       return true;
     } 
     toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
+    setIsSubmitting(false);
     return false;
   };
 
@@ -308,6 +311,8 @@ export default function Home() {
 
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
 
+  const shouldShowHeaderButton = ['form', 'view-submission', 'analytics', 'settings'].includes(view);
+
   const renderContent = () => {
     if (isLoading && view !== 'role-selector' && view !== 'form') {
         return (
@@ -321,7 +326,7 @@ export default function Home() {
 
     switch(view) {
       case 'dashboard':
-        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} onViewAnalytics={handleViewAnalytics} />;
+        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} />;
       
       case 'admin-dashboard':
         return <AdminDashboard 
@@ -335,14 +340,14 @@ export default function Home() {
         />;
 
       case 'analytics':
-        return <AnalyticsDashboard submissions={submissions} onBack={handleBack} />;
+        return <AnalyticsDashboard submissions={submissions} />;
 
       case 'form':
-        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} onCancel={handleBack} isSubmitting={isSubmitting} />;
+        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} />;
 
       case 'view-submission':
         if (currentSubmission) {
-          return <SubmissionView submission={currentSubmission} onBack={handleBack} />;
+          return <SubmissionView submission={currentSubmission} />;
         }
         return null;
 
@@ -356,11 +361,11 @@ export default function Home() {
         return <RegisterForm onRegister={handleRegister} onBack={handleBackToLogin} />;
       
       case 'reset-password':
-        return <ResetPasswordForm onReset={handleResetPassword} onBack={handleBackToLogin} />;
+        return <ResetPasswordForm onReset={handleResetPassword} onBack={handleBackToLogin} isSubmitting={isSubmitting} />;
 
       case 'settings':
         if (loggedInUser) {
-          return <SettingsPage user={loggedInUser} onBack={handleBack} onUserUpdate={handleUserUpdate} />;
+          return <SettingsPage user={loggedInUser} onUserUpdate={handleUserUpdate} />;
         }
         return null;
 
@@ -383,13 +388,15 @@ export default function Home() {
         user={loggedInUser} 
         onLogout={handleLogout} 
         onGoToSettings={handleGoToSettings} 
+        onBack={shouldShowHeaderButton ? handleBack : undefined}
+        onNavigateToAnalytics={loggedInUser?.role === 'Approver' ? handleViewAnalytics : undefined}
         notificationCount={notificationCount}
         pendingUsers={pendingUsers}
         pendingPasswordResets={pendingPasswordResets}
         pendingSubmissions={pendingSubmissions}
         onNotificationClick={(targetView) => setView(targetView)}
       />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
         <div className="animate-in fade-in duration-500">
             {renderContent()}
         </div>

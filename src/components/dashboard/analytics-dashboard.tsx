@@ -37,7 +37,6 @@ import type { Submission, SubmissionStatus } from "@/lib/types";
 
 interface AnalyticsDashboardProps {
   submissions: Submission[];
-  onBack: () => void;
 }
 
 const COLORS = {
@@ -53,7 +52,7 @@ const statusTranslations: Record<SubmissionStatus, string> = {
 };
 
 
-export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({ submissions }: AnalyticsDashboardProps) {
 
   const analyticsData = React.useMemo(() => {
     const totalSubmissions = submissions.length;
@@ -173,14 +172,9 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
   return (
     <div className="space-y-6">
        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" onClick={onBack} className="h-10 w-10">
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <div>
-                    <CardTitle className="font-headline text-3xl">የሪፖርት ዳሽቦርድ</CardTitle>
-                    <CardDescription>የማመልከቻ ውሂብ ትንተና እና ግንዛቤዎች።</CardDescription>
-                </div>
+            <div>
+                <CardTitle className="font-headline text-3xl">የሪፖርት ዳሽቦርድ</CardTitle>
+                <CardDescription>የማመልከቻ ውሂብ ትንተና እና ግንዛቤዎች።</CardDescription>
             </div>
             <Button onClick={handleDownloadCsv}>
                 <Download className="mr-2 h-4 w-4" />
@@ -231,14 +225,14 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
         <CardHeader>
             <div className="flex items-center gap-2">
                 <TrendingUp className="h-6 w-6 text-primary" />
-                <CardTitle>የወርሃዊ ማመልከቻ አዝማሚያ</CardTitle>
+                <CardTitle>የማስረከቢያ አዝማሚያዎች በጊዜ ሂደት</CardTitle>
             </div>
             <CardDescription>ማመልከቻዎች በጊዜ ሂደት እንዴት እንደተለወጡ ይመልከቱ።</CardDescription>
         </CardHeader>
-        <CardContent className="h-[350px] w-full">
-            <ChartContainer config={{}}>
+        <CardContent>
+            <ChartContainer config={{}} className="h-[350px] w-full">
                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={analyticsData.monthlyChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <LineChart data={analyticsData.monthlyChartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" />
                         <YAxis allowDecimals={false} />
@@ -251,33 +245,35 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
       </Card>
 
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-1">
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
             <CardHeader>
                  <div className="flex items-center gap-2">
-                    <PieChartIcon className="h-6 w-6 text-primary" />
-                    <CardTitle>ማመልከቻዎች በሁኔታ</CardTitle>
+                    <BarChart2 className="h-6 w-6 text-primary" />
+                    <CardTitle>ዕቅዶች በሁኔታ (ባር ገበታ)</CardTitle>
                 </div>
                 <CardDescription>የማመልከቻዎች ስርጭት በሁኔታቸው።</CardDescription>
             </CardHeader>
             <CardContent>
-                 <ChartContainer config={{}} className="mx-auto aspect-square max-h-[300px]">
+                 <ChartContainer config={{}} className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                            <Pie data={analyticsData.statusChartData} dataKey="count" nameKey="status" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                        <BarChart data={analyticsData.statusChartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                           <CartesianGrid strokeDasharray="3 3" />
+                           <XAxis dataKey="status" />
+                           <YAxis allowDecimals={false} />
+                           <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                           <Bar dataKey="count" name="ብዛት">
                                 {analyticsData.statusChartData.map((entry) => (
                                     <Cell key={`cell-${entry.status}`} fill={entry.fill} />
                                 ))}
-                            </Pie>
-                            <ChartLegend content={<ChartLegendContent nameKey="status" />} />
-                        </PieChart>
+                            </Bar>
+                        </BarChart>
                     </ResponsiveContainer>
                  </ChartContainer>
             </CardContent>
         </Card>
 
-        <Card className="md:col-span-1">
+        <Card>
             <CardHeader>
                  <div className="flex items-center gap-2">
                     <BarChart2 className="h-6 w-6 text-primary" />
@@ -285,58 +281,51 @@ export function AnalyticsDashboard({ submissions, onBack }: AnalyticsDashboardPr
                 </div>
                 <CardDescription>በዲፓርትመንት የማመልከቻዎች ብዛት።</CardDescription>
             </CardHeader>
-            <CardContent className="h-[300px]">
-                <ChartContainer config={{}}>
+            <CardContent>
+                <ChartContainer config={{}} className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                         <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 20, right: 20 }}>
-                            <XAxis type="number" hide />
+                         <BarChart data={analyticsData.departmentChartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" />
                             <YAxis
                                 dataKey="department"
                                 type="category"
                                 tickLine={false}
                                 tickMargin={5}
                                 axisLine={false}
-                                tickFormatter={(value) => value.length > 15 ? `${value.slice(0, 15)}...` : value}
-                                width={120}
+                                tickFormatter={(value) => value.length > 20 ? `${value.slice(0, 20)}...` : value}
+                                width={150}
                             />
                             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                            <Bar dataKey="count" radius={4} name="ማመልከቻዎች">
-                                {analyticsData.departmentChartData.map((entry) => (
-                                    <Cell key={`cell-${entry.department}`} fill={entry.fill} />
-                                ))}
-                            </Bar>
+                            <Bar dataKey="count" radius={4} name="ማመልከቻዎች" fill="hsl(var(--primary))" />
                         </BarChart>
                     </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>
         </Card>
-
-        <Card className="md:col-span-1">
-            <CardHeader>
-                 <div className="flex items-center gap-2">
-                    <BarChart2 className="h-6 w-6 text-accent" />
-                    <CardTitle>ማመልከቻዎች በሩብ ዓመት</CardTitle>
-                </div>
-                <CardDescription>በሩብ ዓመት የማመልከቻዎች ብዛት።</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-                 <ChartContainer config={{}}>
-                    <ResponsiveContainer width="100%" height="100%">
-                         <BarChart data={analyticsData.quarterChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                            <XAxis dataKey="quarter" />
-                            <YAxis allowDecimals={false} />
-                            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                             <Bar dataKey="count" radius={4} name="ማመልከቻዎች">
-                                {analyticsData.quarterChartData.map((entry) => (
-                                    <Cell key={`cell-${entry.quarter}`} fill={entry.fill} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                 </ChartContainer>
-            </CardContent>
-        </Card>
       </div>
+      <Card>
+        <CardHeader>
+                <div className="flex items-center gap-2">
+                <BarChart2 className="h-6 w-6 text-accent" />
+                <CardTitle>ማመልከቻዎች በሩብ ዓመት</CardTitle>
+            </div>
+            <CardDescription>በሩብ ዓመት የማመልከቻዎች ብዛት።</CardDescription>
+        </CardHeader>
+        <CardContent>
+                <ChartContainer config={{}} className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsData.quarterChartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="quarter" />
+                        <YAxis allowDecimals={false} />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                            <Bar dataKey="count" radius={4} name="ማመልከቻዎች" fill="hsl(var(--accent))" />
+                    </BarChart>
+                </ResponsiveContainer>
+                </ChartContainer>
+        </CardContent>
+    </Card>
     </div>
   );
 }

@@ -18,24 +18,21 @@ import { Loader2 } from "lucide-react";
 interface ResetPasswordFormProps {
   onReset: (data: { fullName: string; email: string }) => Promise<boolean>;
   onBack: () => void;
+  isSubmitting: boolean;
 }
 
-export function ResetPasswordForm({ onReset, onBack }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ onReset, onBack, isSubmitting }: ResetPasswordFormProps) {
   const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     const success = await onReset({ fullName, email });
-    setIsLoading(false); // Stop loading regardless of outcome
     if (success) {
       // Parent will show dialog, we just clear the form
       setFullName("");
       setEmail("");
     }
-    // On failure, parent shows a toast, we just stop loading
   };
 
   return (
@@ -73,8 +70,8 @@ export function ResetPasswordForm({ onReset, onBack }: ResetPasswordFormProps) {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin" /> : "የዳግም ማስጀመሪያ ጥያቄ ላክ"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="animate-spin" /> : "የዳግም ማስጀመሪያ ጥያቄ ላክ"}
             </Button>
             <Button
               type="button"

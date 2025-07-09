@@ -5,7 +5,7 @@ import * as React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type { User, Submission } from "@/lib/types";
-import { LogOut, Settings, Bell, User as UserIcon, FileText, KeyRound } from "lucide-react";
+import { LogOut, Settings, Bell, User as UserIcon, FileText, KeyRound, ArrowLeft, BarChart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,8 @@ interface HeaderProps {
   user: User | null;
   onLogout: () => void;
   onGoToSettings: () => void;
+  onBack?: () => void;
+  onNavigateToAnalytics?: () => void;
   notificationCount?: number;
   pendingUsers?: User[];
   pendingPasswordResets?: User[];
@@ -32,7 +34,18 @@ const roleTranslations: Record<User['role'], string> = {
     Approver: "አጽዳቂ",
 };
 
-export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, pendingUsers, pendingPasswordResets, pendingSubmissions, onNotificationClick }: HeaderProps) {
+export function AppHeader({ 
+    user, 
+    onLogout, 
+    onGoToSettings, 
+    onBack, 
+    onNavigateToAnalytics,
+    notificationCount, 
+    pendingUsers, 
+    pendingPasswordResets, 
+    pendingSubmissions, 
+    onNotificationClick 
+}: HeaderProps) {
   const [logoError, setLogoError] = React.useState(false);
   
   const getInitials = (name: string) => {
@@ -54,7 +67,13 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, p
     <header className="bg-card/80 border-b backdrop-blur-sm sticky top-0 z-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
+            {onBack && (
+                <Button variant="ghost" size="icon" onClick={onBack}>
+                    <ArrowLeft className="h-5 w-5" />
+                    <span className="sr-only">ተመለስ</span>
+                </Button>
+            )}
              {logoError ? (
                 <span className="font-headline text-lg font-bold">አህሪ የስራ ፍሰት</span>
              ) : (
@@ -70,7 +89,13 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, p
              )}
           </div>
           {user && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              {user.role === 'Approver' && onNavigateToAnalytics && (
+                  <Button variant="ghost" size="icon" onClick={onNavigateToAnalytics}>
+                    <BarChart className="h-5 w-5" />
+                    <span className="sr-only">ሪፖርቶችን ይመልከቱ</span>
+                  </Button>
+              )}
               {(user.role === 'Admin' || user.role === 'Approver') && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
