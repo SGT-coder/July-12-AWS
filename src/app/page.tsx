@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
     loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
-    updateUserProfile, changeUserPassword, adminAddUser
+    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset
 } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
@@ -41,6 +41,9 @@ export default function Home() {
   const [formKey, setFormKey] = React.useState(Date.now());
   const [newPassword, setNewPassword] = React.useState<string | null>(null);
   const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = React.useState(false);
+  const [approvedPassword, setApprovedPassword] = React.useState<string | null>(null);
+  const [isApprovedPasswordDialogOpen, setIsApprovedPasswordDialogOpen] = React.useState(false);
+
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -76,17 +79,13 @@ export default function Home() {
 
 
   const fetchSubmissions = async () => {
-    // setIsLoading(true); // managed by parent effect
     const fetchedSubmissions = await getSubmissions();
     setSubmissions(fetchedSubmissions);
-    // setIsLoading(false);
   };
   
   const fetchUsers = async () => {
-    // setIsLoading(true); // managed by parent effect
     const fetchedUsers = await getUsers();
     setUsers(fetchedUsers);
-    // setIsLoading(false);
   };
 
   const handleSelectView = (newView: 'form' | 'approver-login') => {
@@ -229,15 +228,20 @@ export default function Home() {
   };
 
   const handleResetPassword = async (data: { fullName: string; email: string }): Promise<boolean> => {
-      const result = await requestPasswordReset(data);
-      if (result.success && result.newPassword) {
+    const result = await requestPasswordReset(data);
+    if (result.success) {
+      if (result.isAdminRequest) {
+        toast({ title: "ጥያቄው ተልኳል", description: result.message });
+        return true;
+      }
+      if (result.newPassword) {
         setNewPassword(result.newPassword);
         setIsPasswordResetDialogOpen(true);
         return true;
-      } else {
-        toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
-        return false;
       }
+    } 
+    toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
+    return false;
   };
 
   // --- Admin actions handlers ---
@@ -273,6 +277,30 @@ export default function Home() {
       }
   }
 
+  const handleApprovePasswordReset = async (userId: string) => {
+    if (!loggedInUser) return;
+    const result = await approvePasswordReset(userId, loggedInUser.id);
+    if (result.success && result.newPassword) {
+        setApprovedPassword(result.newPassword);
+        setIsApprovedPasswordDialogOpen(true);
+        toast({ title: "ጥያቄ ጸድቋል", description: result.message });
+        fetchUsers();
+    } else {
+        toast({ title: "ስህተት", description: result.message, variant: "destructive" });
+    }
+  };
+
+  const handleRejectPasswordReset = async (userId: string) => {
+      const result = await rejectPasswordReset(userId);
+      if (result.success) {
+          toast({ title: "ጥያቄ ውድቅ ተደርጓል", description: result.message });
+          fetchUsers();
+      } else {
+          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
+      }
+  };
+
+
   // --- User Profile Handlers ---
   const handleUserUpdate = (updatedUser: User) => {
       setLoggedInUser(updatedUser);
@@ -303,6 +331,8 @@ export default function Home() {
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
             onAddUser={handleAddUser}
+            onApprovePasswordReset={handleApprovePasswordReset}
+            onRejectPasswordReset={handleRejectPasswordReset}
         />;
 
       case 'analytics':
@@ -385,6 +415,26 @@ export default function Home() {
                     setIsPasswordResetDialogOpen(false);
                     setView('approver-login');
                 }}>ተከናውኗል</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isApprovedPasswordDialogOpen} onOpenChange={setIsApprovedPasswordDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>የይለፍ ቃል ዳግም ማስጀመር ጸድቋል</DialogTitle>
+                <DialogDescription>
+                እባክዎ ይህን አዲስ ጊዜያዊ የይለፍ ቃል ገልብጠው ለተጠቃሚው ደህንነቱ በተጠበቀ ሁኔታ ያድርሱት። ይህ የይለፍ ቃል እንደገና አይታይም።
+                </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center space-x-2 my-4">
+                <Input value={approvedPassword || ''} readOnly className="font-mono text-lg tracking-wider" />
+                <Button variant="outline" size="icon" onClick={() => {
+                    if(approvedPassword) navigator.clipboard.writeText(approvedPassword)
+                    toast({ title: "ተቀድቷል!", description: "አዲስ የይለፍ ቃል ወደ ቅንጥብ ሰሌዳ ተቀድቷል።" });
+                }}><Copy className="h-4 w-4" /></Button>
+            </div>
+            <DialogFooter>
+                <Button onClick={() => setIsApprovedPasswordDialogOpen(false)}>ተከናውኗል</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

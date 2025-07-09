@@ -29,4 +29,5 @@ export interface User {
   status: UserStatus;
   createdAt: string;
   statusUpdatedAt: string;
+  passwordResetStatus?: 'Pending' | null;
 }

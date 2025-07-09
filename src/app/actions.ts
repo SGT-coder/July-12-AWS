@@ -160,19 +160,24 @@ export async function requestPasswordReset(data: z.infer<typeof resetPasswordSch
         return { success: false, message: "በዚያ ስም እና የኢሜይል አድራሻ የተመዘገበ መለያ የለም።" };
     }
     
-    // Security check: Prevent admins from resetting their own password via this public form
-    if (db.users[userIndex].role === 'Admin') {
-        return { success: false, message: "አስተዳዳሪዎች የራሳቸውን የይለፍ ቃል ዳግም ማስጀመር አይችሉም። እባክዎ ሌላ አስተዳዳሪን ያግኙ።" };
+    const user = db.users[userIndex];
+
+    if (user.role === 'Admin') {
+        user.passwordResetStatus = 'Pending';
+        user.statusUpdatedAt = new Date().toISOString();
+        await writeDb(db);
+        return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎ ለአስተዳዳሪ ተልኳል።", isAdminRequest: true };
     }
 
     const newPassword = Math.random().toString(36).substring(2, 10);
-    db.users[userIndex].password = newPassword;
-    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
+    user.password = newPassword;
+    user.statusUpdatedAt = new Date().toISOString();
     
     await writeDb(db);
 
-    return { success: true, newPassword, message: "አዲስ የይለፍ ቃል ተፈጥሯል።" };
+    return { success: true, newPassword, message: "አዲስ የይለፍ ቃል ተፈጥሯል።", isAdminRequest: false };
 }
+
 
 // --- Admin Actions ---
 
@@ -244,6 +249,46 @@ export async function deleteUser(userId: string) {
     await writeDb(db);
     return { success: true, message: "ተጠቃሚው በተሳካ ሁኔታ ተሰርዟል።"};
 }
+
+
+export async function approvePasswordReset(userId: string, adminId: string) {
+    if (userId === adminId) {
+        return { success: false, message: "የራስዎን የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ ማጽደቅ አይችሉም።" };
+    }
+    
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1 || db.users[userIndex].passwordResetStatus !== 'Pending') {
+        return { success: false, message: "የሚጸድቅ የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ አልተገኘም።" };
+    }
+
+    const newPassword = Math.random().toString(36).substring(2, 10);
+    db.users[userIndex].password = newPassword;
+    db.users[userIndex].passwordResetStatus = undefined;
+    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
+
+    await writeDb(db);
+
+    return { success: true, newPassword, message: "የይለፍ ቃል ዳግም ማስጀመር ጸድቋል። አዲሱ የይለፍ ቃል ለተጠቃሚው ደህንነቱ በተጠበቀ ሁኔታ መላክ አለበት።" };
+}
+
+export async function rejectPasswordReset(userId: string) {
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1 || db.users[userIndex].passwordResetStatus !== 'Pending') {
+        return { success: false, message: "ውድቅ የሚደረግ የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ አልተገኘም።" };
+    }
+    
+    db.users[userIndex].passwordResetStatus = undefined;
+    db.users[userIndex].statusUpdatedAt = new Date().toISOString();
+
+    await writeDb(db);
+
+    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄ ውድቅ ተደርጓል።" };
+}
+
 
 // --- User Profile Actions ---
 

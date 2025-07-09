@@ -26,6 +26,8 @@ interface AdminDashboardProps {
   onUpdateUserStatus: (userId: string, status: UserStatus) => void;
   onDeleteUser: (userId: string) => void;
   onAddUser: (data: AdminAddUserFormValues) => Promise<boolean>;
+  onApprovePasswordReset: (userId: string) => void;
+  onRejectPasswordReset: (userId: string) => void;
 }
 
 type SortableUserColumn = keyof Pick<User, 'name' | 'email' | 'role' | 'status' | 'createdAt' | 'statusUpdatedAt'>;
@@ -145,7 +147,7 @@ const TablePagination = ({
     )
 }
 
-export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDeleteUser, onAddUser }: AdminDashboardProps) {
+export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDeleteUser, onAddUser, onApprovePasswordReset, onRejectPasswordReset }: AdminDashboardProps) {
 
   const ITEMS_PER_PAGE = 5;
 
@@ -156,6 +158,13 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
     key: 'createdAt',
     direction: 'descending',
   });
+  const [passwordResetRequestsSearchTerm, setPasswordResetRequestsSearchTerm] = React.useState("");
+  const [passwordResetRequestsCurrentPage, setPasswordResetRequestsCurrentPage] = React.useState(1);
+  const [passwordResetRequestsSortConfig, setPasswordResetRequestsSortConfig] = React.useState<{ key: SortableUserColumn; direction: 'ascending' | 'descending' }>({
+    key: 'createdAt',
+    direction: 'descending',
+  });
+
 
   // --- State for "All Users" tab ---
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -210,6 +219,18 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
   const sortedPendingUsers = React.useMemo(() => genericSort(filteredPendingUsers, requestsSortConfig), [filteredPendingUsers, requestsSortConfig]);
   const paginatedPendingUsers = sortedPendingUsers.slice((requestsCurrentPage - 1) * ITEMS_PER_PAGE, requestsCurrentPage * ITEMS_PER_PAGE);
 
+  const passwordResetRequests = React.useMemo(() => users.filter(u => u.passwordResetStatus === 'Pending'), [users]);
+  const filteredPasswordResetRequests = React.useMemo(() => {
+    return passwordResetRequests
+      .filter((user) =>
+        user.name.toLowerCase().includes(passwordResetRequestsSearchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(passwordResetRequestsSearchTerm.toLowerCase())
+      );
+  }, [passwordResetRequests, passwordResetRequestsSearchTerm]);
+  const sortedPasswordResetRequests = React.useMemo(() => genericSort(filteredPasswordResetRequests, passwordResetRequestsSortConfig), [filteredPasswordResetRequests, passwordResetRequestsSortConfig]);
+  const paginatedPasswordResetRequests = sortedPasswordResetRequests.slice((passwordResetRequestsCurrentPage - 1) * ITEMS_PER_PAGE, passwordResetRequestsCurrentPage * ITEMS_PER_PAGE);
+
+
   // --- Memoized data for "All Users" tab ---
   const filteredUsers = React.useMemo(() => {
     return users
@@ -250,6 +271,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
   const requestSort = createSortRequestHandler(sortConfig, setSortConfig);
   const requestHistorySort = createSortRequestHandler(historySortConfig, setHistorySortConfig);
   const requestRequestsSort = createSortRequestHandler(requestsSortConfig, setRequestsSortConfig);
+  const requestPasswordResetSort = createSortRequestHandler(passwordResetRequestsSortConfig, setPasswordResetRequestsSortConfig);
   
   const getSortIcon = (columnKey: SortableUserColumn, currentConfig: typeof sortConfig) => {
     if (!currentConfig || currentConfig.key !== columnKey) return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/70" />;
@@ -259,6 +281,8 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
   React.useEffect(() => { setCurrentPage(1); }, [searchTerm, roleFilter, statusFilter]);
   React.useEffect(() => { setHistoryCurrentPage(1); }, [historySearchTerm, historyRoleFilter, historyStatusFilter]);
   React.useEffect(() => { setRequestsCurrentPage(1); }, [requestsSearchTerm]);
+  React.useEffect(() => { setPasswordResetRequestsCurrentPage(1); }, [passwordResetRequestsSearchTerm]);
+
   
   const SortableHeader = ({ column, label, config, onRequestSort }: { column: SortableUserColumn, label: string, config: typeof sortConfig, onRequestSort: (key: SortableUserColumn) => void }) => (
     <TableHead>
@@ -325,6 +349,48 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                    </div>
                 </CardContent>
                 <TablePagination itemCount={sortedPendingUsers.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={requestsCurrentPage} onPreviousPage={() => setRequestsCurrentPage(p => p - 1)} onNextPage={() => setRequestsCurrentPage(p => p + 1)} />
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎች</CardTitle>
+                    <CardDescription>የአስተዳዳሪ የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎችን አጽድቅ ወይም ውድቅ አድርግ።</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="በስም ወይም በኢሜይል ይፈልጉ..." value={passwordResetRequestsSearchTerm} onChange={(e) => setPasswordResetRequestsSearchTerm(e.target.value)} className="pl-10 w-full"/>
+                        </div>
+                    </div>
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <SortableHeader column="name" label="ስም" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
+                                    <SortableHeader column="email" label="ኢሜይል" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
+                                    <SortableHeader column="createdAt" label="የተጠየቀበት ቀን" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
+                                    <TableHead className="text-right">ድርጊቶች</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {paginatedPasswordResetRequests.length > 0 ? paginatedPasswordResetRequests.map(user => (
+                                <TableRow key={user.id}>
+                                    <TableCell className="font-medium">{user.name}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell><DateDisplay dateString={user.statusUpdatedAt} /></TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                        <Button size="sm" variant="outline" onClick={() => onApprovePasswordReset(user.id)} disabled={currentUser?.id === user.id}><UserCheck className="mr-2 h-4 w-4" /> አጽድቅ</Button>
+                                        <Button size="sm" variant="destructive" onClick={() => onRejectPasswordReset(user.id)} disabled={currentUser?.id === user.id}><UserX className="mr-2 h-4 w-4" /> ውድቅ አድርግ</Button>
+                                    </TableCell>
+                                </TableRow>
+                                )) : (
+                                <TableRow><TableCell colSpan={4} className="h-24 text-center">ምንም የይለፍ ቃል ዳግም ማስጀመሪያ ጥያቄዎች የሉም።</TableCell></TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+                <TablePagination itemCount={sortedPasswordResetRequests.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={passwordResetRequestsCurrentPage} onPreviousPage={() => setPasswordResetRequestsCurrentPage(p => p - 1)} onNextPage={() => setPasswordResetRequestsCurrentPage(p => p + 1)} />
             </Card>
         </TabsContent>
 
