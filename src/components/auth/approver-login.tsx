@@ -23,8 +23,8 @@ interface ApproverLoginProps {
 }
 
 export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset }: ApproverLoginProps) {
-  const [email, setEmail] = React.useState("admin@example.com");
-  const [password, setPassword] = React.useState("password");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
