@@ -201,6 +201,8 @@ export default function Home() {
     if(result.success) {
       toast({ title: "ሁኔታው ታድሷል", description: result.message });
       fetchSubmissions();
+      // After updating, go back to dashboard
+      setView('dashboard');
     } else {
       toast({ title: "ስህተት", description: result.message, variant: "destructive" });
     }
@@ -347,7 +349,10 @@ export default function Home() {
 
       case 'view-submission':
         if (currentSubmission) {
-          return <SubmissionView submission={currentSubmission} />;
+          return <SubmissionView 
+                    submission={currentSubmission} 
+                    onUpdateStatus={loggedInUser?.role === 'Approver' ? handleUpdateSubmissionStatus : undefined} 
+                 />;
         }
         return null;
 
@@ -448,3 +453,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

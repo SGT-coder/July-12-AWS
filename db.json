@@ -29,9 +29,9 @@
     {
       "id": "TRX-2025-0709-FOQDB",
       "userId": "user1",
-      "status": "Pending",
+      "status": "Approved",
       "submittedAt": "2025-07-09T08:31:37.570Z",
-      "lastModifiedAt": "2025-07-09T08:31:37.570Z",
+      "lastModifiedAt": "2025-07-09T11:53:29.221Z",
       "userName": "sad",
       "projectTitle": "z",
       "department": "hr",
