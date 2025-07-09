@@ -55,23 +55,29 @@ const DeletionDialog = ({ onConfirm, type = 'user' }: { onConfirm: () => void, t
     return (
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>{isRejection ? 'Reject Registration?' : 'Are you sure?'}</AlertDialogTitle>
+                <AlertDialogTitle>{isRejection ? 'ምዝገባው ውድቅ ይደረግ?' : 'እርግጠኛ ነዎት?'}</AlertDialogTitle>
                 <AlertDialogDescription>
                     {isRejection 
-                        ? "This will permanently delete the user's registration request. This action cannot be undone."
-                        : "This will permanently delete the user. This action cannot be undone."
+                        ? "ይህ የተጠቃሚውን የምዝገባ ጥያቄ እስከመጨረሻው ይሰርዘዋል። ይህን እርምጃ መቀልበስ አይቻልም።"
+                        : "ይህ ተጠቃሚውን እስከመጨረሻው ይሰርዘዋል። ይህን እርምጃ መቀልበስ አይቻልም።"
                     }
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>ይቅር</AlertDialogCancel>
                 <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    {isRejection ? 'Yes, reject and delete' : 'Yes, delete user'}
+                    {isRejection ? 'አዎ፣ ውድቅ አድርግ እና ሰርዝ' : 'አዎ፣ ተጠቃሚውን ሰርዝ'}
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     );
 }
+
+const statusTranslations: Record<UserStatus, string> = {
+    Approved: "ጸድቋል",
+    Pending: "በመጠባበቅ ላይ",
+    Rejected: "ውድቅ ተደርጓል",
+};
 
 const StatusBadge = ({ status }: { status: UserStatus }) => {
     const config = {
@@ -85,7 +91,7 @@ const StatusBadge = ({ status }: { status: UserStatus }) => {
             className: "bg-red-100 text-red-800 border-red-200",
         },
     };
-    return <Badge variant="outline" className={config[status].className}>{status}</Badge>;
+    return <Badge variant="outline" className={config[status].className}>{statusTranslations[status]}</Badge>;
 }
 
 export function AdminDashboard({
@@ -103,9 +109,9 @@ export function AdminDashboard({
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Admin Dashboard</CardTitle>
+          <CardTitle className="font-headline">የአስተዳዳሪ ዳሽቦርድ</CardTitle>
           <CardDescription>
-            Manage user registrations and account issues.
+            የተጠቃሚ ምዝገባዎችን እና የመለያ ጉዳዮችን ያስተዳድሩ።
           </CardDescription>
         </CardHeader>
       </Card>
@@ -113,17 +119,17 @@ export function AdminDashboard({
       {/* Pending Registrations */}
       <Card>
         <CardHeader>
-            <CardTitle>Pending Registrations</CardTitle>
-            <CardDescription>Approve or reject new user registration requests.</CardDescription>
+            <CardTitle>በመጠባበቅ ላይ ያሉ ምዝገባዎች</CardTitle>
+            <CardDescription>አዲስ የተጠቃሚ ምዝገባ ጥያቄዎችን አጽድቅ ወይም ውድቅ አድርግ።</CardDescription>
         </CardHeader>
         <CardContent>
            <Table>
                 <TableHeader>
                     <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Requested Role</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>ስም</TableHead>
+                    <TableHead>ኢሜይል</TableHead>
+                    <TableHead>የተጠየቀው ሚና</TableHead>
+                    <TableHead className="text-right">ድርጊቶች</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -135,12 +141,12 @@ export function AdminDashboard({
                                 <TableCell><Badge variant="secondary">{user.role}</Badge></TableCell>
                                 <TableCell className="text-right space-x-2">
                                     <Button size="sm" variant="outline" onClick={() => onUpdateUserStatus(user.id, 'Approved')}>
-                                        <UserCheck className="mr-2 h-4 w-4" /> Approve
+                                        <UserCheck className="mr-2 h-4 w-4" /> አጽድቅ
                                     </Button>
                                      <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button size="sm" variant="destructive">
-                                                <UserX className="mr-2 h-4 w-4" /> Reject
+                                                <UserX className="mr-2 h-4 w-4" /> ውድቅ አድርግ
                                             </Button>
                                         </AlertDialogTrigger>
                                         <DeletionDialog type="rejection" onConfirm={() => onDeleteUser(user.id)} />
@@ -152,7 +158,7 @@ export function AdminDashboard({
                          <TableRow>
                             <TableCell colSpan={4} className="h-24 text-center">
                                 <ShieldCheck className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                                No pending registrations.
+                                በመጠባበቅ ላይ ያሉ ምዝገባዎች የሉም።
                             </TableCell>
                         </TableRow>
                     )}
@@ -164,19 +170,19 @@ export function AdminDashboard({
       {/* User Management */}
       <Card>
         <CardHeader>
-            <CardTitle>User Management</CardTitle>
-            <CardDescription>View all active users and manage their accounts.</CardDescription>
+            <CardTitle>የተጠቃሚ አስተዳደር</CardTitle>
+            <CardDescription>ሁሉንም ንቁ ተጠቃሚዎችን ይመልከቱ እና መለያዎቻቸውን ያስተዳድሩ።</CardDescription>
         </CardHeader>
         <CardContent>
            <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Pwd Reset Req.</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>ስም</TableHead>
+                        <TableHead>ኢሜይል</TableHead>
+                        <TableHead>ሚና</TableHead>
+                        <TableHead>ሁኔታ</TableHead>
+                        <TableHead>የይለፍ ቃል ዳግም ማስጀመር</TableHead>
+                        <TableHead className="text-right">ድርጊቶች</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -187,18 +193,18 @@ export function AdminDashboard({
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell><Badge variant="secondary">{user.role}</Badge></TableCell>
                                 <TableCell><StatusBadge status={user.status} /></TableCell>
-                                <TableCell>{user.passwordResetRequested ? 'Yes' : 'No'}</TableCell>
+                                <TableCell>{user.passwordResetRequested ? 'አዎ' : 'አይ'}</TableCell>
                                 <TableCell className="text-right space-x-2">
                                    {user.passwordResetRequested && (
                                      <TooltipProvider>
                                        <Tooltip>
                                          <TooltipTrigger asChild>
                                            <Button size="sm" variant="outline" className="text-blue-600 border-blue-300 hover:bg-blue-50" onClick={() => onConfirmPasswordReset(user.id)}>
-                                                <KeyRound className="mr-2 h-4 w-4" /> Acknowledge
+                                                <KeyRound className="mr-2 h-4 w-4" /> እውቅና ስጥ
                                            </Button>
                                          </TooltipTrigger>
                                          <TooltipContent>
-                                           <p>Acknowledge password reset request.</p>
+                                           <p>የይለፍ ቃል ዳግም ማስጀመር ጥያቄን እውቅና ይስጡ።</p>
                                          </TooltipContent>
                                        </Tooltip>
                                      </TooltipProvider>
@@ -218,7 +224,7 @@ export function AdminDashboard({
                          <TableRow>
                             <TableCell colSpan={6} className="h-24 text-center">
                                 <FileWarning className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                                No other users found.
+                                ሌሎች ተጠቃሚዎች አልተገኙም።
                             </TableCell>
                         </TableRow>
                     )}

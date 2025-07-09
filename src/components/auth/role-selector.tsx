@@ -20,7 +20,7 @@ export function RoleSelector({ onSelectView }: RoleSelectorProps) {
     <div className="flex flex-col items-center justify-center pt-16 w-full max-w-3xl">
       <div className="text-center mb-12">
         <h1 className="font-headline text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-          ወደ AHRI Workflow እንኳን በደህና መጡ
+          ወደ አህሪ የስራ ፍሰት እንኳን በደህና መጡ
         </h1>
         <p className="mt-4 text-lg leading-8 text-gray-600">
           ለበለጠ ውጤታማነት ስትራቴጂካዊ ዕቅድን በዲጂታል መልክ ማደራጀት።

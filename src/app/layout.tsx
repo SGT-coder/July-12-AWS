@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AHRI Workflow",
-  description: "Digitizing strategic planning and activity forms for AHRI.",
+  title: "አህሪ የስራ ፍሰት",
+  description: "የስትራቴጂክ ዕቅድ እና የተግባር ቅጾችን ለAHRI በዲጂታል መልክ መለወጥ።",
 };
 
 export default function RootLayout({

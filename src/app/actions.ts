@@ -58,7 +58,7 @@ const loginSchema = z.object({
 export async function loginUser(credentials: z.infer<typeof loginSchema>) {
     const parsedCredentials = loginSchema.safeParse(credentials);
     if (!parsedCredentials.success) {
-        return { success: false, message: 'Invalid credentials provided.' };
+        return { success: false, message: 'የተሳሳተ መረጃ ቀርቧል።' };
     }
 
     const { email, password } = parsedCredentials.data;
@@ -66,16 +66,16 @@ export async function loginUser(credentials: z.infer<typeof loginSchema>) {
     const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
     if (!user || (user.role !== 'Approver' && user.role !== 'Admin')) {
-        return { success: false, message: 'No account found with this email.' };
+        return { success: false, message: 'በዚህ ኢሜይል የተመዘገበ መለያ አልተገኘም።' };
     }
 
     // In a real app, you would hash and compare passwords.
     if (user.password !== password) {
-        return { success: false, message: 'Incorrect password.' };
+        return { success: false, message: 'የተሳሳተ የይለፍ ቃል።' };
     }
 
     if (user.status !== 'Approved') {
-        return { success: false, message: 'This account is pending approval.' };
+        return { success: false, message: 'ይህ መለያ ይሁንታ በመጠበቅ ላይ ነው።' };
     }
     
     // Don't send password back to the client
@@ -84,9 +84,9 @@ export async function loginUser(credentials: z.infer<typeof loginSchema>) {
 }
 
 const registerSchema = z.object({
-    fullName: z.string().min(2, 'Full name is required.'),
-    email: z.string().email('Invalid email address.'),
-    password: z.string().min(6, 'Password must be at least 6 characters.'),
+    fullName: z.string().min(2, 'ሙሉ ስም ያስፈልጋል።'),
+    email: z.string().email('የተሳሳተ የኢሜይል አድራሻ።'),
+    password: z.string().min(6, 'የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።'),
 });
 
 export async function registerUser(data: z.infer<typeof registerSchema>) {
@@ -94,7 +94,7 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
     if (!parsedData.success) {
         const issues = parsedData.error.flatten().fieldErrors;
         const message = Object.values(issues).flat().join(' ');
-        return { success: false, message: message || "Invalid data provided." };
+        return { success: false, message: message || "የተሳሳተ መረጃ ቀርቧል።" };
     }
     
     const { fullName, email, password } = parsedData.data;
@@ -102,7 +102,7 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
 
     const existingUser = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (existingUser) {
-        return { success: false, message: 'An account with this email already exists.' };
+        return { success: false, message: 'በዚህ ኢሜይል አስቀድሞ የተመዘገበ መለያ አለ።' };
     }
 
     const newUser: User = {
@@ -117,12 +117,12 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
     db.users.push(newUser);
     await writeDb(db);
 
-    return { success: true, message: 'Registration successful! Your account is pending admin approval.' };
+    return { success: true, message: 'ምዝገባው ተሳክቷል! መለያዎ የአስተዳዳሪ ይሁንታ በመጠበቅ ላይ ነው።' };
 }
 
 const resetPasswordSchema = z.object({
-    fullName: z.string().min(1, 'Full name is required.'),
-    email: z.string().email('Invalid email address.'),
+    fullName: z.string().min(1, 'ሙሉ ስም ያስፈልጋል።'),
+    email: z.string().email('የተሳሳተ የኢሜይል አድራሻ።'),
 });
 
 export async function requestPasswordReset(data: z.infer<typeof resetPasswordSchema>) {
@@ -130,7 +130,7 @@ export async function requestPasswordReset(data: z.infer<typeof resetPasswordSch
     if (!parsedData.success) {
         const issues = parsedData.error.flatten().fieldErrors;
         const message = Object.values(issues).flat().join(' ');
-        return { success: false, message: message || "Invalid data provided." };
+        return { success: false, message: message || "የተሳሳተ መረጃ ቀርቧል።" };
     }
 
     const { fullName, email } = parsedData.data;
@@ -141,13 +141,13 @@ export async function requestPasswordReset(data: z.infer<typeof resetPasswordSch
     );
 
     if (userIndex === -1) {
-        return { success: false, message: "No account found with that name and email address." };
+        return { success: false, message: "በዚያ ስም እና የኢሜይል አድራሻ የተመዘገበ መለያ የለም።" };
     }
     
     db.users[userIndex].passwordResetRequested = true;
     await writeDb(db);
 
-    return { success: true, message: "Password reset has been requested. An admin will review it." };
+    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመር ጥያቄ ቀርቧል። አስተዳዳሪው ይገመግመዋል።" };
 }
 
 // --- Admin Actions ---
@@ -163,24 +163,24 @@ export async function updateUserStatus(userId: string, status: UserStatus) {
     const userIndex = db.users.findIndex(u => u.id === userId);
 
     if (userIndex === -1) {
-        return { success: false, message: "User not found." };
+        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
     }
 
     db.users[userIndex].status = status;
     await writeDb(db);
-    return { success: true, message: `User status updated to ${status}.`};
+    return { success: true, message: `የተጠቃሚው ሁኔታ ወደ ${status} ተቀይሯል።`};
 }
 
 export async function confirmPasswordReset(userId: string) {
     const db = await readDb();
     const userIndex = db.users.findIndex(u => u.id === userId);
      if (userIndex === -1) {
-        return { success: false, message: "User not found." };
+        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
     }
     
     db.users[userIndex].passwordResetRequested = false;
     await writeDb(db);
-    return { success: true, message: "Password reset request acknowledged." };
+    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመር ጥያቄ እውቅና አግኝቷል።" };
 }
 
 
@@ -190,11 +190,11 @@ export async function deleteUser(userId: string) {
     db.users = db.users.filter(u => u.id !== userId);
 
     if (db.users.length === initialLength) {
-        return { success: false, message: "User not found." };
+        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
     }
 
     await writeDb(db);
-    return { success: true, message: "User deleted successfully."};
+    return { success: true, message: "ተጠቃሚው በተሳካ ሁኔታ ተሰርዟል።"};
 }
 
 
@@ -219,7 +219,7 @@ export async function addSubmission(data: StrategicPlanFormValues) {
     }
 
     // For public user submissions, we can assign a default user
-    const user = { id: 'user1', name: "Public User" };
+    const user = { id: 'user1', name: "የህዝብ ተጠቃሚ" };
     
     const newId = randomUUID();
     const newSubmission: Submission = {
@@ -239,7 +239,7 @@ export async function addSubmission(data: StrategicPlanFormValues) {
         return { success: true, submission: newSubmission, message: "ዕቅድ በተሳካ ሁኔታ ገብቷል!" };
     } catch (error) {
         console.error("Error adding submission: ", error);
-        return { success: false, message: "An error occurred while saving the submission." };
+        return { success: false, message: "ማመልከቻውን በማስቀመጥ ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
 
@@ -254,7 +254,7 @@ export async function updateSubmission(id: string, data: StrategicPlanFormValues
         const submissionIndex = db.submissions.findIndex(s => s.id === id);
 
         if (submissionIndex === -1) {
-            return { success: false, message: "Submission not found." };
+            return { success: false, message: "ማመልከቻው አልተገኘም።" };
         }
 
         const updatedSubmission = {
@@ -269,7 +269,7 @@ export async function updateSubmission(id: string, data: StrategicPlanFormValues
         return { success: true, message: "ዕቅድ በተሳካ ሁኔታ ተስተካክሏል!" };
     } catch (error) {
         console.error("Error updating submission: ", error);
-        return { success: false, message: "An error occurred while updating the submission." };
+        return { success: false, message: "ማመልከቻውን በማዘመን ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
 
@@ -279,7 +279,7 @@ export async function updateSubmissionStatus(id: string, status: SubmissionStatu
         const submissionIndex = db.submissions.findIndex(s => s.id === id);
 
         if (submissionIndex === -1) {
-            return { success: false, message: "Submission not found." };
+            return { success: false, message: "ማመልከቻው አልተገኘም።" };
         }
         
         const statusUpdate: Partial<Submission> = {
@@ -293,11 +293,11 @@ export async function updateSubmissionStatus(id: string, status: SubmissionStatu
 
         db.submissions[submissionIndex] = { ...db.submissions[submissionIndex], ...statusUpdate };
         await writeDb(db);
-        return { success: true, message: `Status updated to ${status}` };
+        return { success: true, message: `ሁኔታው ወደ ${status} ተቀይሯል` };
 
     } catch (error) {
         console.error("Error updating status: ", error);
-        return { success: false, message: "An error occurred while updating the status." };
+        return { success: false, message: "ሁኔታውን በማዘመን ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
 
@@ -308,13 +308,13 @@ export async function deleteSubmission(id: string) {
         db.submissions = db.submissions.filter(s => s.id !== id);
         
         if (db.submissions.length === initialLength) {
-             return { success: false, message: "Submission not found to delete." };
+             return { success: false, message: "ለመሰረዝ ማመልከቻ አልተገኘም።" };
         }
 
         await writeDb(db);
-        return { success: true, message: "Submission deleted." };
+        return { success: true, message: "ማመልከቻው ተሰርዟል።" };
     } catch (error) {
         console.error("Error deleting submission: ", error);
-        return { success: false, message: "An error occurred while deleting the submission." };
+        return { success: false, message: "ማመልከቻውን በመሰረዝ ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }

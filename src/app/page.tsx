@@ -78,10 +78,10 @@ export default function Home() {
         } else {
             setView('dashboard');
         }
-        toast({ title: "Login Successful", description: `Welcome, ${result.user.role}!` });
+        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${result.user.role}!` });
         return true;
     } else {
-        toast({ title: "Login Failed", description: result.message, variant: "destructive" });
+        toast({ title: "መግባት አልተቻለም", description: result.message, variant: "destructive" });
         return false;
     }
   }
@@ -159,31 +159,31 @@ export default function Home() {
   const handleUpdateSubmissionStatus = async (id: string, status: SubmissionStatus, comments?: string) => {
     const result = await updateSubmissionStatus(id, status, comments);
     if(result.success) {
-      toast({ title: "Status Updated", description: result.message });
+      toast({ title: "ሁኔታው ታድሷል", description: result.message });
       fetchSubmissions();
     } else {
-      toast({ title: "Error", description: result.message, variant: "destructive" });
+      toast({ title: "ስህተት", description: result.message, variant: "destructive" });
     }
   };
 
   const handleDeleteSubmission = async (id: string) => {
     const result = await deleteSubmission(id);
     if(result.success) {
-      toast({ title: "Submission Deleted", description: result.message });
+      toast({ title: "ማመልከቻ ተሰርዟል", description: result.message });
       fetchSubmissions();
     } else {
-      toast({ title: "Error", description: result.message, variant: "destructive" });
+      toast({ title: "ስህተት", description: result.message, variant: "destructive" });
     }
   };
 
   const handleRegister = async (data: any): Promise<boolean> => {
     const result = await registerUser(data);
     if (result.success) {
-      toast({ title: "Registration Submitted", description: result.message });
+      toast({ title: "ምዝገባ ገብቷል", description: result.message });
       setView('approver-login');
       return true;
     } else {
-      toast({ title: "Registration Failed", description: result.message, variant: "destructive" });
+      toast({ title: "ምዝገባ አልተሳካም", description: result.message, variant: "destructive" });
       return false;
     }
   };
@@ -191,11 +191,11 @@ export default function Home() {
   const handleResetPassword = async (data: { fullName: string, email: string }): Promise<boolean> => {
       const result = await requestPasswordReset(data);
       if (result.success) {
-        toast({ title: "Password Reset Request", description: result.message });
+        toast({ title: "የይለፍ ቃል ዳግም ማስጀመር ጥያቄ", description: result.message });
         setView('approver-login');
         return true;
       } else {
-        toast({ title: "Request Failed", description: result.message, variant: "destructive" });
+        toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
         return false;
       }
   };
@@ -204,30 +204,30 @@ export default function Home() {
   const handleUpdateUserStatus = async (userId: string, status: UserStatus) => {
       const result = await updateUserStatus(userId, status);
       if (result.success) {
-          toast({ title: "User Status Updated", description: result.message });
+          toast({ title: "የተጠቃሚ ሁኔታ ታድሷል", description: result.message });
           fetchUsers();
       } else {
-          toast({ title: "Error", description: result.message, variant: "destructive" });
+          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
       }
   };
 
   const handleDeleteUser = async (userId: string) => {
       const result = await deleteUser(userId);
       if (result.success) {
-          toast({ title: "User Deleted", description: result.message });
+          toast({ title: "ተጠቃሚ ተሰርዟል", description: result.message });
           fetchUsers();
       } else {
-          toast({ title: "Error", description: result.message, variant: "destructive" });
+          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
       }
   }
 
   const handleConfirmPasswordReset = async (userId: string) => {
       const result = await confirmPasswordReset(userId);
        if (result.success) {
-          toast({ title: "Password Reset Confirmed", description: result.message });
+          toast({ title: "የይለፍ ቃል ዳግም ማስጀመር ጸድቋል", description: result.message });
           fetchUsers();
       } else {
-          toast({ title: "Error", description: result.message, variant: "destructive" });
+          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
       }
   }
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -76,19 +77,19 @@ const RejectionDialog = ({ onConfirm }: { onConfirm: (comment: string) => void }
     return (
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>Reject Submission?</AlertDialogTitle>
+                <AlertDialogTitle>ማመልከቻው ውድቅ ይደረግ?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Please provide a reason for rejecting this submission. This will be visible to the user.
+                    እባክዎ ይህን ማመልከቻ ውድቅ ለማድረግ ምክንያት ያቅርቡ። ይህ ለተጠቃሚው የሚታይ ይሆናል።
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <Textarea 
-                placeholder="Type your comments here..."
+                placeholder="አስተያየትዎን እዚህ ይጻፉ..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
             />
             <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setComment('')}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onConfirm(comment)}>Confirm Rejection</AlertDialogAction>
+                <AlertDialogCancel onClick={() => setComment('')}>ይቅር</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onConfirm(comment)}>ውድቅ ማድረጉን አረጋግጥ</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     )
@@ -98,15 +99,15 @@ const RejectionDialog = ({ onConfirm }: { onConfirm: (comment: string) => void }
 const DeletionDialog = ({ onConfirm }: { onConfirm: () => void }) => (
     <AlertDialogContent>
         <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>እርግጠኛ ነዎት?</AlertDialogTitle>
             <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the submission.
+                ይህ እርምጃ ሊቀለበስ አይችልም። ይህ ማመልከቻውን እስከመጨረሻው ይሰርዘዋል።
             </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>ይቅር</AlertDialogCancel>
             <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Yes, delete it
+                አዎ፣ ሰርዝ
             </AlertDialogAction>
         </AlertDialogFooter>
     </AlertDialogContent>
@@ -157,9 +158,9 @@ export function ApproverDashboard({
   };
 
   const departmentTranslations: { [key: string]: string } = {
-    hr: "Human Resources",
-    finance: "Finance",
-    it: "IT",
+    hr: "የሰው ሃይል",
+    finance: "ፋይናንስ",
+    it: "የመረጃ ቴክኖሎጂ",
   };
 
   const departmentOptions = React.useMemo(() => {
@@ -170,9 +171,9 @@ export function ApproverDashboard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Approver Dashboard</CardTitle>
+        <CardTitle className="font-headline">የአጽዳቂ ዳሽቦርድ</CardTitle>
         <CardDescription>
-          Review and manage all submitted forms.
+          ሁሉንም ገቢ ቅጾች ይገምግሙ እና ያስተዳድሩ።
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -180,7 +181,7 @@ export function ApproverDashboard({
             <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                    placeholder="Search by project title..."
+                    placeholder="በፕሮጀክት ርዕስ ይፈልጉ..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 w-full"
@@ -188,10 +189,10 @@ export function ApproverDashboard({
             </div>
             <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by Department" />
+                    <SelectValue placeholder="በዲፓርትመንት ማጣሪያ" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Departments</SelectItem>
+                    <SelectItem value="all">ሁሉም ዲፓርትመንቶች</SelectItem>
                     {departmentOptions.map(dept => (
                       <SelectItem key={dept} value={dept}>{departmentTranslations[dept] || dept}</SelectItem>
                     ))}
@@ -199,28 +200,28 @@ export function ApproverDashboard({
             </Select>
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as SubmissionStatus | "all")}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by Status" />
+                    <SelectValue placeholder="በሁኔታ ማጣሪያ" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Approved">Approved</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
+                    <SelectItem value="all">ሁሉም ሁኔታዎች</SelectItem>
+                    <SelectItem value="Pending">በመጠባበቅ ላይ</SelectItem>
+                    <SelectItem value="Approved">ጸድቋል</SelectItem>
+                    <SelectItem value="Rejected">ውድቅ ተደርጓል</SelectItem>
                 </SelectContent>
             </Select>
         </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Project Title</TableHead>
-              <TableHead>Submitted By</TableHead>
-              <TableHead>Department</TableHead>
+              <TableHead>የፕሮጀክት ርዕስ</TableHead>
+              <TableHead>ያስገባው</TableHead>
+              <TableHead>ዲፓርትመንት</TableHead>
               <TableHead className="hidden md:table-cell">
-                Submitted At
+                የገባበት ቀን
               </TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>ሁኔታ</TableHead>
               <TableHead>
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">ድርጊቶች</span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -250,13 +251,13 @@ export function ApproverDashboard({
                             variant="ghost"
                           >
                             <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
+                            <span className="sr-only">ምናሌ ቀይር</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuLabel>ድርጊቶች</DropdownMenuLabel>
                           <DropdownMenuItem onSelect={() => onView(submission.id)}>
-                            <Eye className="mr-2 h-4 w-4" /> View
+                            <Eye className="mr-2 h-4 w-4" /> ይመልከቱ
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onSelect={() =>
@@ -264,14 +265,14 @@ export function ApproverDashboard({
                             }
                           >
                             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                            Approve
+                            አጽድቅ
                           </DropdownMenuItem>
 
                            <AlertDialog>
                               <AlertDialogTrigger asChild>
                                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                     <XCircle className="mr-2 h-4 w-4 text-orange-500" />
-                                    Reject
+                                    ውድቅ አድርግ
                                   </DropdownMenuItem>
                               </AlertDialogTrigger>
                               <RejectionDialog onConfirm={(comment) => onUpdateStatus(submission.id, "Rejected", comment)} />
@@ -282,7 +283,7 @@ export function ApproverDashboard({
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
-                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                  <Trash2 className="mr-2 h-4 w-4" /> ሰርዝ
                               </DropdownMenuItem>
                             </AlertDialogTrigger>
                             <DeletionDialog onConfirm={() => onDelete(submission.id)} />
@@ -297,7 +298,7 @@ export function ApproverDashboard({
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   <FileWarning className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                  No submissions found matching your criteria.
+                  ከፍለጋዎ ጋር የሚዛመድ ማመልከቻ አልተገኘም።
                 </TableCell>
               </TableRow>
             )}
@@ -307,12 +308,12 @@ export function ApproverDashboard({
       {totalPages > 1 && (
          <CardFooter className="flex items-center justify-between border-t pt-6">
             <div className="text-sm text-muted-foreground">
-                Showing{' '}
+                ከ{' '}
+                <strong>{filteredSubmissions.length}</strong> ማመልከቻዎች ውስጥ{' '}
                 <strong>
-                    {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredSubmissions.length)}-
-                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredSubmissions.length)}
-                </strong>{' '}
-                of <strong>{filteredSubmissions.length}</strong> submissions
+                    {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredSubmissions.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredSubmissions.length)}
+                </strong>
+                {' '}በማሳየት ላይ
             </div>
             <div className="flex items-center gap-2">
                 <Button
@@ -321,7 +322,7 @@ export function ApproverDashboard({
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1}
                 >
-                    Previous
+                    የቀድሞ
                 </Button>
                 <Button
                     variant="outline"
@@ -329,7 +330,7 @@ export function ApproverDashboard({
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
                 >
-                    Next
+                    ቀጣይ
                 </Button>
             </div>
         </CardFooter>

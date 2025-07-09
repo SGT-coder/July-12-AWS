@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ export function AppHeader({ role, onLogout }: HeaderProps) {
           <div className="flex items-center space-x-3">
              <TestTube2 className="h-7 w-7 text-primary" />
             <h1 className="font-headline text-2xl font-bold text-primary">
-              AHRI Workflow
+              አህሪ የስራ ፍሰት
             </h1>
           </div>
           {role && (
