@@ -9,14 +9,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, Search, Edit } from "lucide-react";
+import { Loader2, Search, Edit, ArrowLeft } from "lucide-react";
 import { SubmissionView } from "@/components/forms/submission-view";
 
 interface SubmissionTrackingProps {
   onEdit: (id: string) => void;
+  onBack: () => void;
 }
 
-export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
+export function SubmissionTracking({ onEdit, onBack }: SubmissionTrackingProps) {
   const [trackingId, setTrackingId] = React.useState("");
   const [userName, setUserName] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -77,7 +78,7 @@ export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
                 />
              </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col sm:flex-row gap-4">
              <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? (
                     <Loader2 className="animate-spin" />
@@ -86,6 +87,15 @@ export function SubmissionTracking({ onEdit }: SubmissionTrackingProps) {
                   )}
                   <span className="ml-2">ፈልግ</span>
                 </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={onBack}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              ተመለስ
+            </Button>
           </CardFooter>
         </form>
       </Card>

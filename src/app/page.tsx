@@ -7,7 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
     loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
-    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset, getSubmissionById
+    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset, getSubmissionById,
+    trackSubmission
 } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
@@ -398,7 +399,7 @@ export default function Home() {
         return null;
         
       case 'track-submission':
-          return <SubmissionTracking onEdit={handleEdit} />;
+          return <SubmissionTracking onEdit={handleEdit} onBack={handleBack} />;
 
       default:
         return <RoleSelector onSelectView={handleSelectView} />;
