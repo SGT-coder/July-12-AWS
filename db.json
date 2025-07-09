@@ -173,12 +173,11 @@
       "id": "542bc0b5-ac84-4540-8fb7-aaf8c3e464eb",
       "name": "samuel",
       "email": "sa@gmail.com",
-      "password": "5zl6s2rt",
+      "password": "ahri123",
       "role": "Admin",
       "status": "Approved",
       "createdAt": "2025-07-09T08:58:30.975Z",
-      "statusUpdatedAt": "2025-07-09T10:04:51.200Z",
-      "passwordResetStatus": "Pending"
+      "statusUpdatedAt": "2025-07-09T10:11:18.984Z"
     }
   ]
 }

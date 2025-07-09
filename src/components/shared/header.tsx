@@ -59,7 +59,7 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, p
                 <span className="font-headline text-lg font-bold">አህሪ የስራ ፍሰት</span>
              ) : (
                 <Image 
-                  src="/ahri-logo.png" 
+                  src="https://ahri.gov.et/wp-content/uploads/2022/08/AHRI-UPDATED-LOGO1.jpg" 
                   alt="አህሪ የስራ ፍሰት"
                   width={100} 
                   height={40} 
@@ -142,8 +142,9 @@ export function AppHeader({ user, onLogout, onGoToSettings, notificationCount, p
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={`https://placehold.co/100x100.png`} alt={user.name} data-ai-hint="professional avatar" />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                      <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
