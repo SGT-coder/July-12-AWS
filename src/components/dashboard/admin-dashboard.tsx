@@ -7,7 +7,6 @@ import {
   UserX,
   ShieldCheck,
   Trash2,
-  KeyRound,
   FileWarning,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +38,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import type { User, UserStatus } from "@/lib/types";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 interface AdminDashboardProps {
@@ -47,7 +45,6 @@ interface AdminDashboardProps {
   currentUser: User | null;
   onUpdateUserStatus: (userId: string, status: UserStatus) => void;
   onDeleteUser: (userId: string) => void;
-  onConfirmPasswordReset: (userId: string) => void;
 }
 
 const DeletionDialog = ({ onConfirm, type = 'user' }: { onConfirm: () => void, type?: 'user' | 'rejection' }) => {
@@ -98,8 +95,7 @@ export function AdminDashboard({
   users,
   currentUser,
   onUpdateUserStatus,
-  onDeleteUser,
-  onConfirmPasswordReset
+  onDeleteUser
 }: AdminDashboardProps) {
 
   const pendingUsers = users.filter(u => u.status === 'Pending');
@@ -181,7 +177,6 @@ export function AdminDashboard({
                         <TableHead>ኢሜይል</TableHead>
                         <TableHead>ሚና</TableHead>
                         <TableHead>ሁኔታ</TableHead>
-                        <TableHead>የይለፍ ቃል ዳግም ማስጀመር</TableHead>
                         <TableHead className="text-right">ድርጊቶች</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -193,22 +188,7 @@ export function AdminDashboard({
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell><Badge variant="secondary">{user.role}</Badge></TableCell>
                                 <TableCell><StatusBadge status={user.status} /></TableCell>
-                                <TableCell>{user.passwordResetRequested ? 'አዎ' : 'አይ'}</TableCell>
                                 <TableCell className="text-right space-x-2">
-                                   {user.passwordResetRequested && (
-                                     <TooltipProvider>
-                                       <Tooltip>
-                                         <TooltipTrigger asChild>
-                                           <Button size="sm" variant="outline" className="text-blue-600 border-blue-300 hover:bg-blue-50" onClick={() => onConfirmPasswordReset(user.id)}>
-                                                <KeyRound className="mr-2 h-4 w-4" /> እውቅና ስጥ
-                                           </Button>
-                                         </TooltipTrigger>
-                                         <TooltipContent>
-                                           <p>የይለፍ ቃል ዳግም ማስጀመር ጥያቄን እውቅና ይስጡ።</p>
-                                         </TooltipContent>
-                                       </Tooltip>
-                                     </TooltipProvider>
-                                   )}
                                    <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-red-50">
@@ -222,7 +202,7 @@ export function AdminDashboard({
                         ))
                     ) : (
                          <TableRow>
-                            <TableCell colSpan={6} className="h-24 text-center">
+                            <TableCell colSpan={5} className="h-24 text-center">
                                 <FileWarning className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                                 ሌሎች ተጠቃሚዎች አልተገኙም።
                             </TableCell>

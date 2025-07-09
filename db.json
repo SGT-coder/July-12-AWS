@@ -1,3 +1,4 @@
+
 {
   "submissions": [
     {
@@ -50,8 +51,7 @@
       "email": "pending@example.com",
       "password": "password",
       "role": "Approver",
-      "status": "Pending",
-      "passwordResetRequested": true
+      "status": "Pending"
     },
     {
       "id": "4660f17d-d212-47e7-8bfc-43cd1c31b5c0",
@@ -67,8 +67,7 @@
       "email": "habta@gmail.com",
       "password": "asdfghjkl",
       "role": "Approver",
-      "status": "Approved",
-      "passwordResetRequested": true
+      "status": "Approved"
     }
   ]
 }

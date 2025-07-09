@@ -27,5 +27,4 @@ export interface User {
   password?: string; // Keep optional on client-side types
   role: "User" | "Approver" | "Admin";
   status: UserStatus;
-  passwordResetRequested?: boolean;
 }

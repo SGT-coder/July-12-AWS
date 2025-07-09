@@ -150,10 +150,13 @@ export async function requestPasswordReset(data: z.infer<typeof resetPasswordSch
         return { success: false, message: "በዚያ ስም እና የኢሜይል አድራሻ የተመዘገበ መለያ የለም።" };
     }
     
-    db.users[userIndex].passwordResetRequested = true;
+    // Generate a new 8-character random password
+    const newPassword = Math.random().toString(36).substring(2, 10);
+    db.users[userIndex].password = newPassword;
+    
     await writeDb(db);
 
-    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመር ጥያቄ ቀርቧል። አስተዳዳሪው ይገመግመዋል።" };
+    return { success: true, newPassword };
 }
 
 // --- Admin Actions ---
@@ -176,19 +179,6 @@ export async function updateUserStatus(userId: string, status: UserStatus) {
     await writeDb(db);
     return { success: true, message: `የተጠቃሚው ሁኔታ ወደ ${status} ተቀይሯል።`};
 }
-
-export async function confirmPasswordReset(userId: string) {
-    const db = await readDb();
-    const userIndex = db.users.findIndex(u => u.id === userId);
-     if (userIndex === -1) {
-        return { success: false, message: "ተጠቃሚው አልተገኘም።" };
-    }
-    
-    db.users[userIndex].passwordResetRequested = false;
-    await writeDb(db);
-    return { success: true, message: "የይለፍ ቃል ዳግም ማስጀመር ጥያቄ እውቅና አግኝቷል።" };
-}
-
 
 export async function deleteUser(userId: string) {
     const db = await readDb();
@@ -324,4 +314,5 @@ export async function deleteSubmission(id: string) {
         return { success: false, message: "ማመልከቻውን በመሰረዝ ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
+
 

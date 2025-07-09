@@ -6,7 +6,7 @@ import type { Role, Submission, SubmissionStatus, StrategicPlanFormValues, User,
 import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
-    loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser, confirmPasswordReset 
+    loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser
 } from "@/app/actions";
 import { AppHeader } from "@/components/shared/header";
 import { RoleSelector } from "@/components/auth/role-selector";
@@ -19,6 +19,15 @@ import { SubmissionView } from "@/components/forms/submission-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RegisterForm } from "@/components/auth/register-form";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password';
 
@@ -33,6 +42,9 @@ export default function Home() {
   const [currentSubmissionId, setCurrentSubmissionId] = React.useState<string | null>(null);
   const [formKey, setFormKey] = React.useState(Date.now());
   const { toast } = useToast();
+
+  const [newPassword, setNewPassword] = React.useState<string | null>(null);
+  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (view === 'dashboard') {
@@ -190,9 +202,9 @@ export default function Home() {
 
   const handleResetPassword = async (data: { fullName: string, email: string }): Promise<boolean> => {
       const result = await requestPasswordReset(data);
-      if (result.success) {
-        toast({ title: "የይለፍ ቃል ዳግም ማስጀመር ጥያቄ", description: result.message });
-        setView('approver-login');
+      if (result.success && result.newPassword) {
+        setNewPassword(result.newPassword);
+        setIsPasswordResetDialogOpen(true);
         return true;
       } else {
         toast({ title: "ጥያቄው አልተሳካም", description: result.message, variant: "destructive" });
@@ -215,16 +227,6 @@ export default function Home() {
       const result = await deleteUser(userId);
       if (result.success) {
           toast({ title: "ተጠቃሚ ተሰርዟል", description: result.message });
-          fetchUsers();
-      } else {
-          toast({ title: "ስህተት", description: result.message, variant: "destructive" });
-      }
-  }
-
-  const handleConfirmPasswordReset = async (userId: string) => {
-      const result = await confirmPasswordReset(userId);
-       if (result.success) {
-          toast({ title: "የይለፍ ቃል ዳግም ማስጀመር ጸድቋል", description: result.message });
           fetchUsers();
       } else {
           toast({ title: "ስህተት", description: result.message, variant: "destructive" });
@@ -254,7 +256,6 @@ export default function Home() {
             currentUser={loggedInUser}
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
-            onConfirmPasswordReset={handleConfirmPasswordReset}
         />;
 
       case 'form':
@@ -299,6 +300,28 @@ export default function Home() {
             {renderContent()}
         </div>
       </main>
+
+      <AlertDialog open={isPasswordResetDialogOpen} onOpenChange={setIsPasswordResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>የይለፍ ቃል ዳግም ማስጀመር ተሳክቷል</AlertDialogTitle>
+            <AlertDialogDescription>
+              የይለፍ ቃልዎ በተሳካ ሁኔታ ዳግም ተጀምሯል። አዲሱ ጊዜያዊ የይለፍ ቃልዎ ይኸውና። እባክዎ ደህንነቱ በተጠበቀ ቦታ ያስቀምጡት።
+              <div className="my-4 p-3 bg-muted rounded font-mono text-center text-lg tracking-wider">
+                {newPassword}
+              </div>
+               ከገቡ በኋላ የይለፍ ቃልዎን እንዲቀይሩ ይመከራል።
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => {
+              setIsPasswordResetDialogOpen(false);
+              setNewPassword(null);
+              setView('approver-login');
+            }}>ገባኝ</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
