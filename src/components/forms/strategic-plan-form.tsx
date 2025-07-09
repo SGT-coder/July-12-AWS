@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from "react";
@@ -27,6 +28,7 @@ import { strategicPlanSchema, type StrategicPlanFormValues } from "@/lib/schemas
 import type { Submission } from "@/lib/types";
 
 const defaultFormValues: StrategicPlanFormValues = {
+    userName: "",
     projectTitle: "",
     department: "",
     goal: "",
@@ -66,7 +68,10 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
 
   useEffect(() => {
     if (submission) {
-      form.reset(submission);
+      form.reset({
+        ...defaultFormValues,
+        ...submission,
+      });
     } else {
       form.reset(defaultFormValues);
     }
@@ -97,6 +102,13 @@ export function StrategicPlanForm({ submission, onSave, onCancel, isSubmitting }
             <Card>
                 <CardHeader><CardTitle className="text-xl">አጠቃላይ መረጃ</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="userName" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>የአስገባው ሙሉ ስም</FormLabel>
+                            <FormControl><Input placeholder="ሙሉ ስምዎን ያስገቡ" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
                     <FormField control={form.control} name="projectTitle" render={({ field }) => (
                         <FormItem>
                             <FormLabel>የእቅድ ርዕስ</FormLabel>

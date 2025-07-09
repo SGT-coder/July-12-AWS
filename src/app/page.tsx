@@ -14,6 +14,7 @@ import { ApproverLogin } from "@/components/auth/approver-login";
 import { AdminLogin } from "@/components/auth/admin-login";
 import { ApproverDashboard } from "@/components/dashboard/approver-dashboard";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
+import { AnalyticsDashboard } from "@/components/dashboard/analytics-dashboard";
 import { StrategicPlanForm } from "@/components/forms/strategic-plan-form";
 import { SubmissionView } from "@/components/forms/submission-view";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,7 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password';
+type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics';
 
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
@@ -47,7 +48,7 @@ export default function Home() {
   const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (view === 'dashboard') {
+    if (view === 'dashboard' || view === 'analytics') {
       fetchSubmissions();
     } else if (view === 'admin-dashboard') {
         fetchUsers();
@@ -118,6 +119,10 @@ export default function Home() {
   const handleView = (id: string) => {
     setCurrentSubmissionId(id);
     setView('view-submission');
+  };
+
+  const handleViewAnalytics = () => {
+    setView('analytics');
   };
   
   const handleBack = () => {
@@ -248,7 +253,7 @@ export default function Home() {
 
     switch(view) {
       case 'dashboard':
-        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} />;
+        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} onViewAnalytics={handleViewAnalytics} />;
       
       case 'admin-dashboard':
         return <AdminDashboard 
@@ -257,6 +262,9 @@ export default function Home() {
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
         />;
+
+      case 'analytics':
+        return <AnalyticsDashboard submissions={submissions} onBack={handleBack} />;
 
       case 'form':
         return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} onCancel={handleBack} isSubmitting={isSubmitting} />;

@@ -223,19 +223,15 @@ export async function addSubmission(data: StrategicPlanFormValues) {
     if (!parsedData.success) {
         return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
-
-    // For public user submissions, we can assign a default user
-    const user = { id: 'user1', name: "የህዝብ ተጠቃሚ" };
     
     const newId = generateTrackingId();
     const newSubmission: Submission = {
         id: newId,
-        userId: user.id,
-        userName: user.name,
+        userId: 'user1', // Generic ID for public submissions
         status: 'Pending',
         submittedAt: new Date().toISOString(),
         lastModifiedAt: new Date().toISOString(),
-        ...parsedData.data,
+        ...parsedData.data, // This now includes userName
     };
     
     try {

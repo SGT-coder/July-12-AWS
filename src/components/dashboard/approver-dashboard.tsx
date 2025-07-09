@@ -12,7 +12,8 @@ import {
   Search,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  BarChart,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ interface ApproverDashboardProps {
     comments?: string
   ) => void;
   onDelete: (id: string) => void;
+  onViewAnalytics: () => void;
 }
 
 const RejectionDialog = ({ onConfirm }: { onConfirm: (comment: string) => void }) => {
@@ -124,6 +126,7 @@ export function ApproverDashboard({
   onView,
   onUpdateStatus,
   onDelete,
+  onViewAnalytics,
 }: ApproverDashboardProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [departmentFilter, setDepartmentFilter] = React.useState("all");
@@ -230,10 +233,18 @@ export function ApproverDashboard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">የአጽዳቂ ዳሽቦርድ</CardTitle>
-        <CardDescription>
-          ሁሉንም ገቢ ቅጾች ይገምግሙ እና ያስተዳድሩ።
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <CardTitle className="font-headline">የአጽዳቂ ዳሽቦርድ</CardTitle>
+                <CardDescription>
+                ሁሉንም ገቢ ቅጾች ይገምግሙ እና ያስተዳድሩ።
+                </CardDescription>
+            </div>
+            <Button variant="outline" onClick={onViewAnalytics}>
+                <BarChart className="mr-2 h-4 w-4" />
+                ሪፖርቶችን ይመልከቱ
+            </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col sm:flex-row gap-4 mb-6">

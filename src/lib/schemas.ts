@@ -1,6 +1,8 @@
+
 import * as z from "zod";
 
 export const strategicPlanSchema = z.object({
+    userName: z.string({ required_error: "ስም ያስፈልጋል" }).min(2, "ስም ቢያንስ 2 ቁምፊዎች መሆን አለበት።"),
     projectTitle: z.string({ required_error: "የእቅድ ርዕስ ያስፈልጋል" }).min(1, "የእቅድ ርዕስ ባዶ መሆን የለበትም"),
     department: z.string({ required_error: "ዲፓርትመንት መምረጥ ያስፈልጋል" }).min(1, "ዲፓርትመንት መምረጥ ያስፈልጋል"),
     goal: z.string({ required_error: "ግብ መምረጥ ያስፈልጋል" }).min(1, "ግብ መምረጥ ያስፈልጋል"),

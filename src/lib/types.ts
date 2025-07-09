@@ -9,7 +9,7 @@ export type StrategicPlanFormValues = z.infer<typeof strategicPlanSchema>;
 export interface Submission extends StrategicPlanFormValues {
   id: string;
   userId: string;
-  userName: string;
+  // userName is now part of StrategicPlanFormValues
   status: SubmissionStatus;
   submittedAt: string;
   lastModifiedAt: string;
@@ -25,6 +25,6 @@ export interface User {
   name: string;
   email: string;
   password?: string; // Keep optional on client-side types
-  role: "User" | "Approver" | "Admin";
+  role: "Approver" | "Admin";
   status: UserStatus;
 }

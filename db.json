@@ -1,14 +1,13 @@
-
 {
   "submissions": [
     {
       "id": "TRX-2024-0315-A1B2C",
       "userId": "user1",
       "userName": "Dawit Abebe",
-      "status": "Approved",
+      "status": "Rejected",
       "submittedAt": "2024-03-15T09:30:00.000Z",
-      "lastModifiedAt": "2024-03-20T14:00:00.000Z",
-      "comments": "Good proposal. Approved.",
+      "lastModifiedAt": "2025-07-09T06:32:19.264Z",
+      "comments": "wer",
       "projectTitle": "የክትባት ምርምር ፕሮጀክት",
       "department": "it",
       "goal": "goal1",
@@ -26,6 +25,33 @@
       "budgetSource": "gov",
       "governmentBudgetAmount": "500000",
       "governmentBudgetCode": "code1"
+    },
+    {
+      "id": "TRX-2025-0709-MC64J",
+      "userId": "user1",
+      "userName": "የህዝብ ተጠቃሚ",
+      "status": "Pending",
+      "submittedAt": "2025-07-09T06:31:02.366Z",
+      "lastModifiedAt": "2025-07-09T06:31:02.366Z",
+      "projectTitle": "habata",
+      "department": "hr",
+      "goal": "goal1",
+      "objective": "obj1",
+      "strategicAction": "a",
+      "metric": "a",
+      "mainTask": "a",
+      "mainTaskTarget": "a",
+      "objectiveWeight": "1",
+      "strategicActionWeight": "1",
+      "metricWeight": "1",
+      "mainTaskWeight": "1",
+      "executingBody": "internal",
+      "executionTime": "q1",
+      "budgetSource": "gov",
+      "governmentBudgetAmount": "aaaa",
+      "governmentBudgetCode": "code1",
+      "grantBudgetAmount": "",
+      "sdgBudgetAmount": ""
     }
   ],
   "users": [
