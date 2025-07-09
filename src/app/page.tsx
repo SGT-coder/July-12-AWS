@@ -68,8 +68,8 @@ export default function Home() {
     setCurrentSubmissionId(null);
   };
 
-  const handleLogin = async (email: string, password: string): Promise<boolean> => {
-    const result = await loginUser({ email, password });
+  const handleLogin = async (email: string, password: string, role: "Admin" | "Approver"): Promise<boolean> => {
+    const result = await loginUser({ email, password, role });
     if (result.success && result.user) {
         setLoggedInUser(result.user);
         setRole(result.user.role);
@@ -302,3 +302,4 @@ export default function Home() {
     </div>
   );
 }
+

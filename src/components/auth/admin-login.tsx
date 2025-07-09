@@ -14,9 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import type { Role } from "@/lib/types";
 
 interface AdminLoginProps {
-  onLogin: (email: string, password: string) => Promise<boolean>;
+  onLogin: (email: string, password: string, role: 'Admin' | 'Approver') => Promise<boolean>;
   onBack: () => void;
 }
 
@@ -28,7 +29,7 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const success = await onLogin(email, password);
+    const success = await onLogin(email, password, 'Admin');
     if (!success) {
       setIsLoading(false);
     }

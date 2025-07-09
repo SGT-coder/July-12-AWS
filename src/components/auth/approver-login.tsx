@@ -14,9 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, Shield } from "lucide-react";
+import type { Role } from "@/lib/types";
 
 interface ApproverLoginProps {
-  onLogin: (email: string, password: string) => Promise<boolean>;
+  onLogin: (email: string, password: string, role: 'Admin' | 'Approver') => Promise<boolean>;
   onBack: () => void;
   onGoToRegister: () => void;
   onGoToReset: () => void;
@@ -31,7 +32,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset, on
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const success = await onLogin(email, password);
+    const success = await onLogin(email, password, 'Approver');
     if (!success) {
       setIsLoading(false);
     }

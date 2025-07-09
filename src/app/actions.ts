@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { z } from 'zod';
 import { strategicPlanSchema, type StrategicPlanFormValues } from '@/lib/schemas';
-import type { Submission, SubmissionStatus, User, UserStatus } from '@/lib/types';
+import type { Submission, SubmissionStatus, User, UserStatus, Role } from '@/lib/types';
 
 // Path to the local JSON database file
 const dbPath = path.join(process.cwd(), 'db.json');
@@ -53,6 +53,7 @@ async function writeDb(data: Db): Promise<void> {
 const loginSchema = z.object({
     email: z.string().email(),
     password: z.string(),
+    role: z.enum(['Admin', 'Approver']),
 });
 
 export async function loginUser(credentials: z.infer<typeof loginSchema>) {
@@ -61,12 +62,17 @@ export async function loginUser(credentials: z.infer<typeof loginSchema>) {
         return { success: false, message: 'የተሳሳተ መረጃ ቀርቧል።' };
     }
 
-    const { email, password } = parsedCredentials.data;
+    const { email, password, role } = parsedCredentials.data;
     const db = await readDb();
     const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
-    if (!user || (user.role !== 'Approver' && user.role !== 'Admin')) {
+    if (!user) {
         return { success: false, message: 'በዚህ ኢሜይል የተመዘገበ መለያ አልተገኘም።' };
+    }
+    
+    // Critical fix: Ensure the user's role matches the one expected by the login form.
+    if (user.role !== role) {
+        return { success: false, message: 'በዚህ ገጽ ለመግባት ፈቃድ የለዎትም።' };
     }
 
     // In a real app, you would hash and compare passwords.
@@ -318,3 +324,4 @@ export async function deleteSubmission(id: string) {
         return { success: false, message: "ማመልከቻውን በመሰረዝ ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
+
