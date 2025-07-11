@@ -425,6 +425,7 @@ export async function addSubmission(data: StrategicPlanFormValues) {
     const parsedData = strategicPlanSchema.safeParse(data);
 
     if (!parsedData.success) {
+        console.log("Validation Errors: ", parsedData.error.flatten());
         return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
     

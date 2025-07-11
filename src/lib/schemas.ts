@@ -7,18 +7,27 @@ const weightSchema = z.string()
         message: "ክብደት ቁጥር መሆን አለበት።",
     });
 
+const strategicActionSchema = z.object({
+    action: z.string().min(1, "እርምጃ መግባት አለበት።"),
+    weight: weightSchema,
+});
+
+const objectiveSchema = z.object({
+    objective: z.string({ required_error: "ዓላማ መምረጥ ያስፈልጋል" }).min(1, "ዓላማ መምረጥ ያስፈልጋል"),
+    objectiveWeight: weightSchema,
+    strategicActions: z.array(strategicActionSchema).min(1, "ቢያንስ አንድ ስትራቴጂክ እርምጃ ያስፈልጋል።"),
+});
+
+
 export const strategicPlanSchema = z.object({
     userName: z.string({ required_error: "ስም ያስፈልጋል" }).min(1, "ስም ያስፈልጋል"),
     projectTitle: z.string({ required_error: "የእቅድ ርዕስ ያስፈልጋል" }).min(1, "የእቅድ ርዕስ ያስፈልጋል"),
     department: z.string({ required_error: "ዲፓርትመንት መምረጥ ያስፈልጋል" }).min(1, "ዲፓርትመንት መምረጥ ያስፈልጋል"),
     goal: z.string({ required_error: "ግብ መምረጥ ያስፈልጋል" }).min(1, "ግብ መምረጥ ያስፈልጋል"),
-    objective: z.string({ required_error: "ዓላማ መምረጥ ያስፈልጋል" }).min(1, "ዓላማ መምረጥ ያስፈልጋል"),
-    strategicAction: z.string({ required_error: "ስትራቴጂክ እርምጃ ያስፈልጋል" }).min(1, "ስትራቴጂክ እርምጃ ያስፈልጋል"),
+    objectives: z.array(objectiveSchema).min(1, "ቢያንስ አንድ ዓላማ ያስፈልጋል።"),
     metric: z.string({ required_error: "መለኪያ ያስፈልጋል" }).min(1, "መለኪያ ያስፈልጋል"),
     mainTask: z.string({ required_error: "ዋና ተግባር ያስፈልጋል" }).min(1, "ዋና ተግባር ያስፈልጋል"),
     mainTaskTarget: z.string({ required_error: "የዋና ተግባር ዒላማ ያስፈልጋል" }).min(1, "የዋና ተግባር ዒላማ ያስፈልጋል"),
-    objectiveWeight: weightSchema,
-    strategicActionWeight: weightSchema,
     metricWeight: weightSchema,
     mainTaskWeight: weightSchema,
     executingBody: z.string({ required_error: "ፈጻሚ አካል መምረጥ ያስፈልጋል" }).min(1, "ፈጻሚ አካል መምረጥ ያስፈልጋል"),

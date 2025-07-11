@@ -56,9 +56,9 @@ const RejectionDialog = ({ onConfirm }: { onConfirm: (comment: string) => void }
     )
 }
 
-const DescriptionListItem = ({ term, children, isMono=false }: { term: string, children: React.ReactNode, isMono?: boolean }) => (
+const DescriptionListItem = ({ term, children, isMono=false, className="" }: { term: string, children: React.ReactNode, isMono?: boolean, className?: string }) => (
     !children || children === '' ? null :
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-1 py-3">
+    <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-1 py-3", className)}>
       <dt className="font-medium text-muted-foreground">{term}</dt>
       <dd className={`md:col-span-2 ${isMono ? 'font-mono text-sm' : ''}`}>{children}</dd>
     </div>
@@ -88,57 +88,70 @@ export function SubmissionView({ submission, onUpdateStatus }: SubmissionViewPro
             <DescriptionListItem term="ID" isMono>{submission.id}</DescriptionListItem>
             <DescriptionListItem term="ዲፓርትመንት">{submission.department}</DescriptionListItem>
             <DescriptionListItem term="ግብ">{submission.goal}</DescriptionListItem>
-            <DescriptionListItem term="ዓላማ">{submission.objective}</DescriptionListItem>
             <DescriptionListItem term="የገባበት ቀን"><DateDisplay dateString={submission.submittedAt} includeTime /></DescriptionListItem>
             <DescriptionListItem term="ለመጨረሻ ጊዜ የተሻሻለው"><DateDisplay dateString={submission.lastModifiedAt} includeTime /></DescriptionListItem>
           </dl>
         </CardContent>
       </Card>
+      
+      <Card>
+        <CardHeader><CardTitle className="font-headline">ዓላማዎች እና ስትራቴጂካዊ እርምጃዎች</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+            {submission.objectives?.map((obj, index) => (
+                <div key={index} className="p-4 border rounded-lg bg-slate-50/50">
+                    <dl className="divide-y">
+                        <DescriptionListItem term="ዓላማ" className="text-base font-semibold">{obj.objective}</DescriptionListItem>
+                        <DescriptionListItem term="ዓላማ ክብደት">{obj.objectiveWeight}</DescriptionListItem>
+                    </dl>
+                    <div className="pl-6 mt-3">
+                        <h4 className="font-medium text-muted-foreground mb-2">ስትራቴጂክ እርምጃዎች</h4>
+                        <dl className="divide-y border-l pl-4">
+                        {obj.strategicActions?.map((act, actIndex) => (
+                           <React.Fragment key={actIndex}>
+                                <DescriptionListItem term="እርምጃ">{act.action}</DescriptionListItem>
+                                <DescriptionListItem term="የእርምጃ ክብደት">{act.weight}</DescriptionListItem>
+                           </React.Fragment>
+                        ))}
+                        </dl>
+                    </div>
+                </div>
+            ))}
+        </CardContent>
+      </Card>
+
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
-            <CardHeader><CardTitle className="font-headline">ዝርዝር ዕቅድ</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="font-headline">መለኪያዎች እና ተግባራት</CardTitle></CardHeader>
             <CardContent>
                 <dl className="divide-y">
-                    <DescriptionListItem term="ስትራቴጂክ እርምጃ">{submission.strategicAction}</DescriptionListItem>
                     <DescriptionListItem term="መለኪያ">{submission.metric}</DescriptionListItem>
+                    <DescriptionListItem term="የመለኪያ ክብደት">{submission.metricWeight}</DescriptionListItem>
                     <DescriptionListItem term="ዋና ተግባር">{submission.mainTask}</DescriptionListItem>
+                    <DescriptionListItem term="የዋና ተግባር ክብደት">{submission.mainTaskWeight}</DescriptionListItem>
                     <DescriptionListItem term="የዋና ተግባር ዒላማ">{submission.mainTaskTarget}</DescriptionListItem>
                 </dl>
             </CardContent>
         </Card>
+        
         <Card>
-            <CardHeader><CardTitle className="font-headline">ክብደቶች</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="font-headline">አፈጻጸም እና በጀት</CardTitle></CardHeader>
             <CardContent>
                 <dl className="divide-y">
-                    <DescriptionListItem term="ዓላማ ክብደት">{submission.objectiveWeight}</DescriptionListItem>
-                    <DescriptionListItem term="ስትራቴጂክ እርምጃ ክብደት">{submission.strategicActionWeight}</DescriptionListItem>
-                    <DescriptionListItem term="የመለኪያ ክብደት">{submission.metricWeight}</DescriptionListItem>
-                    <DescriptionListItem term="የዋና ተግባር ክብደት">{submission.mainTaskWeight}</DescriptionListItem>
+                    <DescriptionListItem term="ፈጻሚ አካል">{submission.executingBody}</DescriptionListItem>
+                    <DescriptionListItem term="የሚከናወንበት ጊዜ">{submission.executionTime}</DescriptionListItem>
+                    <DescriptionListItem term="በጀት ምንጭ">{submission.budgetSource}</DescriptionListItem>
+                    <DescriptionListItem term="ከመንግስት በጀት በብር">{submission.governmentBudgetAmount}</DescriptionListItem>
+                    <DescriptionListItem term="ከመንግስት በጀት ኮድ">{submission.governmentBudgetCode}</DescriptionListItem>
+                    <DescriptionListItem term="ከግራንት በጀት በብር">{submission.grantBudgetAmount}</DescriptionListItem>
+                    <DescriptionListItem term="ከኢስ ዲ ጂ በጀት በብር">{submission.sdgBudgetAmount}</DescriptionListItem>
                 </dl>
             </CardContent>
+            <CardFooter className="text-right">
+                <p className="w-full text-xl font-bold">ጠቅላላ በጀት: <span className="text-primary">{totalBudget.toLocaleString()} ብር</span></p>
+            </CardFooter>
         </Card>
       </div>
-
-       <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl">አፈጻጸም እና በጀት</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <dl className="divide-y">
-                <DescriptionListItem term="ፈጻሚ አካል">{submission.executingBody}</DescriptionListItem>
-                <DescriptionListItem term="የሚከናወንበት ጊዜ">{submission.executionTime}</DescriptionListItem>
-                <DescriptionListItem term="በጀት ምንጭ">{submission.budgetSource}</DescriptionListItem>
-                <DescriptionListItem term="ከመንግስት በጀት በብር">{submission.governmentBudgetAmount}</DescriptionListItem>
-                <DescriptionListItem term="ከመንግስት በጀት ኮድ">{submission.governmentBudgetCode}</DescriptionListItem>
-                <DescriptionListItem term="ከግራንት በጀት በብር">{submission.grantBudgetAmount}</DescriptionListItem>
-                <DescriptionListItem term="ከኢስ ዲ ጂ በጀት በብር">{submission.sdgBudgetAmount}</DescriptionListItem>
-            </dl>
-        </CardContent>
-        <CardFooter className="text-right">
-            <p className="w-full text-xl font-bold">ጠቅላላ በጀት: <span className="text-primary">{totalBudget.toLocaleString()} ብር</span></p>
-        </CardFooter>
-      </Card>
 
       {submission.status === 'Pending' && onUpdateStatus && (
         <Card>

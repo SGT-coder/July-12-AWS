@@ -6,14 +6,21 @@ export type SubmissionStatus = "Pending" | "Approved" | "Rejected";
 
 export type StrategicPlanFormValues = z.infer<typeof strategicPlanSchema>;
 
+// This is now the main type for submissions, based on the new schema
 export interface Submission extends StrategicPlanFormValues {
   id: string;
   userId: string;
-  // userName is now part of StrategicPlanFormValues
   status: SubmissionStatus;
   submittedAt: string;
   lastModifiedAt: string;
   comments?: string;
+
+  // These fields are deprecated in the new structure but might exist in old data.
+  // We keep them optional to avoid breaking old records.
+  objective?: string;
+  strategicAction?: string;
+  objectiveWeight?: string;
+  strategicActionWeight?: string;
 }
 
 export type Role = "User" | "Approver" | "Admin" | null;
