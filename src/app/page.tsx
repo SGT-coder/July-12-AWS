@@ -203,30 +203,18 @@ export default function Home() {
       if (!id && result.submission) {
          setNewSubmissionId(result.submission.id);
          setIsTrackingIdDialogOpen(true);
-         setTrackedSubmission(null);
+         setTrackedSubmission(null); // Clear tracked submission after new one is created
+         setFormKey(Date.now()); // Reset form
       } else {
           toast({
             title: "ዕቅድ ተስተካክሏል",
             description: `"${data.projectTitle}" ${'የተሰኘው እቅድዎ ተስተካክሎ እንደገና ለግምገማ ተልኳል።'}`,
           });
-          setTrackedSubmission(null);
+          setTrackedSubmission(null); // Clear tracked submission
           setCurrentSubmissionId(null);
+          setFormKey(Date.now()); // Reset form
           // If a logged-in user is editing, fetch fresh data
           if(loggedInUser) await fetchSubmissions();
-      }
-      
-      if (role === 'User') {
-        setFormKey(Date.now());
-        if (!id) {
-          // Stay on the page to show dialog, user will click done to go back to a clean page
-        } else {
-           // Clear form after successful edit from tracking page
-           setTrackedSubmission(null);
-           setCurrentSubmissionId(null);
-        }
-      } else {
-        setView(loggedInUser?.role === 'Admin' ? 'admin-dashboard' : 'dashboard');
-        fetchSubmissions();
       }
 
     } else {
@@ -434,7 +422,7 @@ export default function Home() {
                     trackedSubmission={trackedSubmission}
                   >
                      <StrategicPlanForm
-                        key={trackedSubmission ? trackedSubmission.id : 'new-tracked'}
+                        key={formKey}
                         submission={trackedSubmission}
                         onSave={handleSaveSubmission}
                         isSubmitting={isSubmitting}
@@ -457,8 +445,6 @@ export default function Home() {
 
   const handleDialogDone = () => {
     setIsTrackingIdDialogOpen(false);
-    // This now clears the form for the next submission
-    setFormKey(Date.now()); 
   }
 
   return (
@@ -547,5 +533,3 @@ export default function Home() {
     </div>
   );
 }
-
-  

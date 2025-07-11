@@ -9,14 +9,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, Search } from "lucide-react";
-import { SubmissionView } from "@/components/forms/submission-view";
+import { Loader2, Search, MessageSquareWarning } from "lucide-react";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { DateDisplay } from "@/components/shared/date-display";
 
 interface SubmissionTrackingProps {
   onTracked: (submission: Submission | null) => void;
   trackedSubmission: Submission | null;
   children: React.ReactNode;
 }
+
+const DescriptionListItem = ({ term, children, isMono=false }: { term: string, children: React.ReactNode, isMono?: boolean }) => (
+    !children || children === '' ? null :
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-1 py-3">
+      <dt className="font-medium text-muted-foreground">{term}</dt>
+      <dd className={`md:col-span-2 ${isMono ? 'font-mono text-sm' : ''}`}>{children}</dd>
+    </div>
+);
 
 export function SubmissionTracking({ onTracked, trackedSubmission, children }: SubmissionTrackingProps) {
   const [trackingId, setTrackingId] = React.useState("");
@@ -56,49 +65,49 @@ export function SubmissionTracking({ onTracked, trackedSubmission, children }: S
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl">የማመልከቻ ሁኔታን ይከታተሉ</CardTitle>
-          <CardDescription>
-            የማመልከቻዎን ሁኔታ ለማየት ከዚህ በታች የመከታተያ መታወቂያዎን እና ሙሉ ስምዎን ያስገቡ።
-          </CardDescription>
-        </CardHeader>
-        {!trackedSubmission && (
-          <form onSubmit={handleSearch}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="trackingId">የመከታተያ መታወቂያ</Label>
-                <Input
-                  id="trackingId"
-                  placeholder="TRX-..."
-                  value={trackingId}
-                  onChange={(e) => setTrackingId(e.target.value)}
-                  className="font-mono"
-                />
-              </div>
-              <div className="space-y-2">
-                  <Label htmlFor="userName">በማመልከቻው ላይ የተጠቀመ ሙሉ ስም</Label>
-                  <Input
-                      id="userName"
-                      placeholder="ሙሉ ስም ያስገቡ"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                  />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row gap-4">
-              <Button type="submit" disabled={isLoading} className="w-full">
-                    {isLoading ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <Search className="h-5 w-5" />
-                    )}
-                    <span className="ml-2">ፈልግ</span>
-                  </Button>
-            </CardFooter>
-          </form>
-        )}
-      </Card>
+      {!trackedSubmission && (
+         <Card>
+            <CardHeader>
+            <CardTitle className="font-headline text-2xl">የማመልከቻ ሁኔታን ይከታተሉ</CardTitle>
+            <CardDescription>
+                የማመልከቻዎን ሁኔታ ለማየት ከዚህ በታች የመከታተያ መታወቂያዎን እና ሙሉ ስምዎን ያስገቡ።
+            </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSearch}>
+                <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="trackingId">የመከታተያ መታወቂያ</Label>
+                    <Input
+                    id="trackingId"
+                    placeholder="TRX-..."
+                    value={trackingId}
+                    onChange={(e) => setTrackingId(e.target.value)}
+                    className="font-mono"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="userName">በማመልከቻው ላይ የተጠቀመ ሙሉ ስም</Label>
+                    <Input
+                        id="userName"
+                        placeholder="ሙሉ ስም ያስገቡ"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                    />
+                </div>
+                </CardContent>
+                <CardFooter className="flex flex-col sm:flex-row gap-4">
+                <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+                        {isLoading ? (
+                        <Loader2 className="animate-spin mr-2" />
+                        ) : (
+                        <Search className="mr-2 h-5 w-5" />
+                        )}
+                        <span>ፈልግ</span>
+                    </Button>
+                </CardFooter>
+            </form>
+         </Card>
+      )}
       
       {error && (
         <Card className="border-destructive bg-destructive/10">
@@ -112,33 +121,42 @@ export function SubmissionTracking({ onTracked, trackedSubmission, children }: S
       {trackedSubmission && (
         <div className="animate-in fade-in-50 space-y-6">
             <Card>
-                <CardHeader className="flex flex-row justify-between items-center">
-                    <CardTitle>የፍለጋ ውጤት</CardTitle>
+                <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                     <div>
+                        <CardTitle>የፍለጋ ውጤት</CardTitle>
+                        <CardDescription>የማመልከቻዎ ዝርዝሮች ከዚህ በታች ይታያሉ።</CardDescription>
+                     </div>
                     <Button variant="outline" onClick={handleNewSearch}>አዲስ ፍለጋ ጀምር</Button>
                 </CardHeader>
                 <CardContent>
-                    <SubmissionView submission={trackedSubmission} />
+                   <dl className="divide-y">
+                       <DescriptionListItem term="ID" isMono>{trackedSubmission.id}</DescriptionListItem>
+                       <DescriptionListItem term="ሁኔታ"><StatusBadge status={trackedSubmission.status} /></DescriptionListItem>
+                       <DescriptionListItem term="የገባበት ቀን"><DateDisplay dateString={trackedSubmission.submittedAt} includeTime /></DescriptionListItem>
+                       <DescriptionListItem term="ለመጨረሻ ጊዜ የተሻሻለው"><DateDisplay dateString={trackedSubmission.lastModifiedAt} includeTime /></DescriptionListItem>
+                   </dl>
                 </CardContent>
             </Card>
 
-            {children}
+            {trackedSubmission.comments && (
+                <Card className="bg-amber-50 border-amber-200">
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <MessageSquareWarning className="h-8 w-8 text-amber-600" />
+                        <div>
+                            <CardTitle className="font-headline text-amber-900">የአጽዳቂው አስተያየት</CardTitle>
+                            <CardDescription className="text-amber-700">ይህንን አስተያየት መሰረት በማድረግ ማመልከቻዎን ያስተካክሉ።</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-amber-800">{trackedSubmission.comments}</p>
+                    </CardContent>
+                </Card>
+            )}
         </div>
       )}
-
-      {!trackedSubmission && (
-         <div className="animate-in fade-in-50 space-y-6">
-            <Card>
-                 <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-center font-headline">ወይም አዲስ እቅድ ያስገቡ</CardTitle>
-                 </CardHeader>
-            </Card>
-            {children}
-         </div>
-      )}
-
-
+      
+      {/* The StrategicPlanForm is passed as children */}
+      {children}
     </div>
   );
 }
-
-  
