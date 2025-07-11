@@ -47,6 +47,7 @@ export default function Home() {
   const [isApprovedPasswordDialogOpen, setIsApprovedPasswordDialogOpen] = React.useState(false);
   const [newSubmissionId, setNewSubmissionId] = React.useState<string | null>(null);
   const [isTrackingIdDialogOpen, setIsTrackingIdDialogOpen] = React.useState(false);
+  const [trackedSubmission, setTrackedSubmission] = React.useState<Submission | null>(null);
 
   const { toast } = useToast();
 
@@ -54,10 +55,13 @@ export default function Home() {
     const loadData = async () => {
         setIsLoading(true);
         if (loggedInUser?.role === 'Admin') {
-            await fetchUsers();
-            await fetchSubmissions(); // Also fetch submissions for admin
+            const users = await fetchUsers();
+            const submissions = await fetchSubmissions();
+            setUsers(users);
+            setSubmissions(submissions);
         } else if (loggedInUser?.role === 'Approver') {
-            await fetchSubmissions();
+            const submissions = await fetchSubmissions();
+            setSubmissions(submissions);
         }
         setIsLoading(false);
     }
@@ -86,19 +90,25 @@ export default function Home() {
 
   const fetchSubmissions = async () => {
     const fetchedSubmissions = await getSubmissions();
-    setSubmissions(fetchedSubmissions);
+    return fetchedSubmissions;
   };
   
   const fetchUsers = async () => {
     const fetchedUsers = await getUsers();
-    setUsers(fetchedUsers);
+    return fetchedUsers;
   };
 
   const handleSelectView = (newView: 'form' | 'approver-login' | 'track-submission') => {
     if (newView === 'form') {
         setRole('User');
         setCurrentSubmissionId(null);
+        setTrackedSubmission(null);
         setFormKey(Date.now());
+    }
+     if (newView === 'track-submission') {
+        setRole('User');
+        setCurrentSubmissionId(null);
+        setTrackedSubmission(null);
     }
     setView(newView);
     setCurrentSubmissionId(null);
@@ -128,6 +138,7 @@ export default function Home() {
     setLoggedInUser(null);
     setView('role-selector');
     setCurrentSubmissionId(null);
+    setTrackedSubmission(null);
     setSubmissions([]);
     setUsers([]);
   };
@@ -143,8 +154,12 @@ export default function Home() {
   };
 
   const handleEdit = (id: string) => {
-    setCurrentSubmissionId(id);
-    setView('form');
+    const subToEdit = submissions.find(s => s.id === id) || trackedSubmission;
+    if (subToEdit) {
+      setCurrentSubmissionId(id);
+      setTrackedSubmission(subToEdit);
+      setView('track-submission');
+    }
   };
 
   const handleView = (id: string) => {
@@ -157,9 +172,9 @@ export default function Home() {
   };
   
   const handleBack = () => {
-      if (view === 'form' && role === 'User') {
+      if (view === 'form' || view === 'track-submission') {
         handleLogout();
-      } else if (view === 'approver-login' || view === 'admin-login' || view === 'register' || view === 'reset-password' || view === 'track-submission') {
+      } else if (view === 'approver-login' || view === 'admin-login' || view === 'register' || view === 'reset-password') {
         handleLogout();
       }
       else {
@@ -172,6 +187,7 @@ export default function Home() {
             handleLogout();
         }
         setCurrentSubmissionId(null);
+        setTrackedSubmission(null);
       }
   };
 
@@ -187,19 +203,26 @@ export default function Home() {
       if (!id && result.submission) {
          setNewSubmissionId(result.submission.id);
          setIsTrackingIdDialogOpen(true);
+         setTrackedSubmission(null);
       } else {
           toast({
             title: "ዕቅድ ተስተካክሏል",
             description: `"${data.projectTitle}" ${'የተሰኘው እቅድዎ ተስተካክሎ እንደገና ለግምገማ ተልኳል።'}`,
           });
+          setTrackedSubmission(null);
+          setCurrentSubmissionId(null);
+          // If a logged-in user is editing, fetch fresh data
+          if(loggedInUser) await fetchSubmissions();
       }
       
       if (role === 'User') {
         setFormKey(Date.now());
         if (!id) {
-          // Stay on the page to show dialog, user will click done to go back
+          // Stay on the page to show dialog, user will click done to go back to a clean page
         } else {
-          handleBack();
+           // Clear form after successful edit from tracking page
+           setTrackedSubmission(null);
+           setCurrentSubmissionId(null);
         }
       } else {
         setView(loggedInUser?.role === 'Admin' ? 'admin-dashboard' : 'dashboard');
@@ -220,7 +243,8 @@ export default function Home() {
     const result = await updateSubmissionStatus(id, status, comments);
     if(result.success) {
       toast({ title: "ሁኔታው ታድሷል", description: result.message });
-      fetchSubmissions();
+      const subs = await fetchSubmissions();
+      setSubmissions(subs);
       // After updating, go back to dashboard
       setView(loggedInUser?.role === 'Admin' ? 'admin-dashboard' : 'dashboard');
     } else {
@@ -232,7 +256,8 @@ export default function Home() {
     const result = await deleteSubmission(id);
     if(result.success) {
       toast({ title: "ማመልከቻ ተሰርዟል", description: result.message });
-      fetchSubmissions();
+      const subs = await fetchSubmissions();
+      setSubmissions(subs);
     } else {
       toast({ title: "ስህተት", description: result.message, variant: "destructive" });
     }
@@ -273,7 +298,8 @@ export default function Home() {
       const result = await updateUserStatus(userId, status);
       if (result.success) {
           toast({ title: "የተጠቃሚ ሁኔታ ታድሷል", description: result.message });
-          fetchUsers();
+          const users = await fetchUsers();
+          setUsers(users);
       } else {
           toast({ title: "ስህተት", description: result.message, variant: "destructive" });
       }
@@ -283,7 +309,8 @@ export default function Home() {
       const result = await deleteUser(userId);
       if (result.success) {
           toast({ title: "ተጠቃሚ ተሰርዟል", description: result.message });
-          fetchUsers();
+          const users = await fetchUsers();
+          setUsers(users);
       } else {
           toast({ title: "ስህተት", description: result.message, variant: "destructive" });
       }
@@ -293,7 +320,8 @@ export default function Home() {
       const result = await adminAddUser(data);
       if (result.success) {
           toast({ title: "ተጠቃሚ ተፈጥሯል", description: result.message });
-          fetchUsers();
+          const users = await fetchUsers();
+          setUsers(users);
           return true;
       } else {
           toast({ title: "ስህተት", description: result.message, variant: "destructive" });
@@ -308,7 +336,8 @@ export default function Home() {
         setApprovedPassword(result.newPassword);
         setIsApprovedPasswordDialogOpen(true);
         toast({ title: "ጥያቄ ጸድቋል", description: result.message });
-        fetchUsers();
+        const users = await fetchUsers();
+        setUsers(users);
     } else {
         toast({ title: "ስህተት", description: result.message, variant: "destructive" });
     }
@@ -318,7 +347,8 @@ export default function Home() {
       const result = await rejectPasswordReset(userId);
       if (result.success) {
           toast({ title: "ጥያቄ ውድቅ ተደርጓል", description: result.message });
-          fetchUsers();
+          const users = await fetchUsers();
+          setUsers(users);
       } else {
           toast({ title: "ስህተት", description: result.message, variant: "destructive" });
       }
@@ -330,13 +360,13 @@ export default function Home() {
       setLoggedInUser(updatedUser);
       handleBack();
   }
-
+  
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
 
-  const shouldShowHeaderButton = ['form', 'view-submission', 'analytics', 'settings'].includes(view);
+  const shouldShowHeaderButton = ['form', 'view-submission', 'analytics', 'settings', 'track-submission'].includes(view);
 
   const renderContent = () => {
-    if (isLoading && view !== 'role-selector' && view !== 'form' && view !== 'track-submission') {
+    if (isLoading && !['role-selector', 'form', 'track-submission'].includes(view)) {
         return (
             <div className="space-y-4">
                 <Skeleton className="h-16 w-1/2" />
@@ -369,7 +399,7 @@ export default function Home() {
         return <AnalyticsDashboard submissions={submissions} />;
 
       case 'form':
-        return <StrategicPlanForm key={formKey} submission={currentSubmission} onSave={handleSaveSubmission} isSubmitting={isSubmitting} />;
+        return <StrategicPlanForm key={formKey} onSave={handleSaveSubmission} isSubmitting={isSubmitting} />;
 
       case 'view-submission':
         if (currentSubmission) {
@@ -399,7 +429,18 @@ export default function Home() {
         return null;
         
       case 'track-submission':
-          return <SubmissionTracking onEdit={handleEdit} onBack={handleBack} />;
+          return <SubmissionTracking 
+                    onTracked={setTrackedSubmission}
+                    trackedSubmission={trackedSubmission}
+                  >
+                     <StrategicPlanForm
+                        key={trackedSubmission ? trackedSubmission.id : 'new-tracked'}
+                        submission={trackedSubmission}
+                        onSave={handleSaveSubmission}
+                        isSubmitting={isSubmitting}
+                        isReadOnly={trackedSubmission?.status === 'Approved'}
+                     />
+                  </SubmissionTracking>;
 
       default:
         return <RoleSelector onSelectView={handleSelectView} />;
@@ -412,6 +453,12 @@ export default function Home() {
             <RoleSelector onSelectView={handleSelectView} />
         </main>
     );
+  }
+
+  const handleDialogDone = () => {
+    setIsTrackingIdDialogOpen(false);
+    // This now clears the form for the next submission
+    setFormKey(Date.now()); 
   }
 
   return (
@@ -493,10 +540,7 @@ export default function Home() {
                 }}><Copy className="h-4 w-4" /></Button>
             </div>
             <DialogFooter>
-                <Button onClick={() => {
-                    setIsTrackingIdDialogOpen(false);
-                    handleBack();
-                }}>ተከናውኗል</Button>
+                <Button onClick={handleDialogDone}>ተከናውኗል</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -504,4 +548,4 @@ export default function Home() {
   );
 }
 
-    
+  

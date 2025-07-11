@@ -244,11 +244,11 @@
       "id": "02212e99-4713-4fb2-8b0a-ef37130dd65c",
       "name": "Test Test",
       "email": "Test@gmail.com",
-      "password": "174hyidj",
+      "password": "kj2e1x40",
       "role": "Approver",
       "status": "Approved",
       "createdAt": "2025-07-09T08:53:31.032Z",
-      "statusUpdatedAt": "2025-07-09T17:58:14.763Z"
+      "statusUpdatedAt": "2025-07-10T17:29:19.895Z"
     },
     {
       "id": "542bc0b5-ac84-4540-8fb7-aaf8c3e464eb",
@@ -258,7 +258,8 @@
       "role": "Admin",
       "status": "Approved",
       "createdAt": "2025-07-09T08:58:30.975Z",
-      "statusUpdatedAt": "2025-07-09T10:11:18.984Z"
+      "statusUpdatedAt": "2025-07-10T17:30:49.046Z",
+      "passwordResetStatus": "Pending"
     },
     {
       "id": "f003ceae-dca5-4f0b-a771-140009fcb954",
@@ -266,9 +267,29 @@
       "email": "r@gmail.com",
       "password": "approver123",
       "role": "Approver",
-      "status": "Pending",
+      "status": "Approved",
       "createdAt": "2025-07-09T11:26:37.822Z",
-      "statusUpdatedAt": "2025-07-09T11:26:37.822Z"
+      "statusUpdatedAt": "2025-07-10T17:27:12.445Z"
+    },
+    {
+      "id": "fd65294b-e477-48a9-b87f-c7e371cf4b16",
+      "name": "Test",
+      "email": "test@example.com",
+      "password": "zxcvbnm",
+      "role": "Admin",
+      "status": "Approved",
+      "createdAt": "2025-07-10T16:51:30.492Z",
+      "statusUpdatedAt": "2025-07-10T16:51:30.492Z"
+    },
+    {
+      "id": "ab2b28c1-898c-4df0-97c0-c167c3a95e3d",
+      "name": "Test Test",
+      "email": "testt@gmail.com",
+      "password": "zxcvbnm",
+      "role": "Approver",
+      "status": "Pending",
+      "createdAt": "2025-07-10T17:29:57.225Z",
+      "statusUpdatedAt": "2025-07-10T17:29:57.225Z"
     }
   ]
 }
