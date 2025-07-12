@@ -72,6 +72,33 @@ export const strategicPlanSchema = z.object({
             });
         }
     }
+
+    const totalObjectiveWeight = data.objectives.reduce((acc, obj) => {
+        return acc + (parseFloat(obj.objectiveWeight) || 0);
+    }, 0);
+
+    if (Math.abs(totalObjectiveWeight - 100) > 0.01) { // Using a small tolerance for floating point math
+         ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `የሁሉም ዓላማ ክብደቶች ድምር 100 መሆን አለበት። የአሁኑ ድምር ${totalObjectiveWeight} ነው።`,
+            path: ['objectives'],
+        });
+    }
+
+    const totalStrategicActionWeight = data.objectives.reduce((totalAcc, obj) => {
+        const objectiveActionWeight = obj.strategicActions.reduce((actionAcc, action) => {
+            return actionAcc + (parseFloat(action.weight) || 0);
+        }, 0);
+        return totalAcc + objectiveActionWeight;
+    }, 0);
+
+    if (Math.abs(totalStrategicActionWeight - 100) > 0.01) { // Using a small tolerance for floating point math
+         ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `የሁሉም ስትራቴጂክ እርምጃ ክብደቶች ድምር 100 መሆን አለበት። የአሁኑ ድምር ${totalStrategicActionWeight} ነው።`,
+            path: ['objectives'],
+        });
+    }
 });
 
 

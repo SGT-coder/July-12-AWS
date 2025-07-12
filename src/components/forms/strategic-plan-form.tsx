@@ -35,6 +35,7 @@ import {
     govBudgetCodeOptions,
 } from "@/lib/options";
 import type { Submission } from "@/lib/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const defaultFormValues: StrategicPlanFormValues = {
     userName: "",
@@ -97,6 +98,7 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting, isReadOnly
   }, [submission, form]);
 
   const budgetSource = form.watch("budgetSource");
+  const formErrors = form.formState.errors.objectives?.root?.message;
 
   function onSubmit(data: StrategicPlanFormValues) {
     onSave(data, submission?.id);
@@ -324,11 +326,18 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting, isReadOnly
                     </Card>
 
                 </CardContent>
-                <CardFooter className="flex justify-end gap-4 p-6">
-                    {!submission && <Button type="button" variant="ghost" onClick={handleReset} disabled={isSubmitting || isReadOnly}>አጽዳ</Button>}
-                    <Button type="submit" disabled={isSubmitting || isReadOnly} className="text-lg px-6 py-4">
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (submission ? 'አርትዕ እና እንደገና አስገባ' : 'ዕቅድ አስገባ')}
-                    </Button>
+                <CardFooter className="flex flex-col items-stretch gap-4 p-6">
+                    {formErrors && (
+                        <Alert variant="destructive">
+                            <AlertDescription>{formErrors}</AlertDescription>
+                        </Alert>
+                    )}
+                    <div className="flex justify-end gap-4">
+                        {!submission && <Button type="button" variant="ghost" onClick={handleReset} disabled={isSubmitting || isReadOnly}>አጽዳ</Button>}
+                        <Button type="submit" disabled={isSubmitting || isReadOnly} className="text-lg px-6 py-4">
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (submission ? 'አርትዕ እና እንደገና አስገባ' : 'ዕቅድ አስገባ')}
+                        </Button>
+                    </div>
                 </CardFooter>
             </Card>
             </fieldset>
