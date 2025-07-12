@@ -153,15 +153,6 @@ export default function Home() {
     setView('form');
   };
 
-  const handleEdit = (id: string) => {
-    const subToEdit = submissions.find(s => s.id === id);
-    if (subToEdit) {
-      setCurrentSubmissionId(id);
-      setTrackedSubmission(subToEdit);
-      setView('track-submission');
-    }
-  };
-
   const handleView = (id: string) => {
     setCurrentSubmissionId(id);
     setView('view-submission');
@@ -366,7 +357,7 @@ export default function Home() {
 
     switch(view) {
       case 'dashboard':
-        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} onEdit={handleEdit} />;
+        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} />;
       
       case 'admin-dashboard':
         return <AdminDashboard 

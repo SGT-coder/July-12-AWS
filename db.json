@@ -188,6 +188,66 @@
       "governmentBudgetCode": "",
       "grantBudgetAmount": "4",
       "sdgBudgetAmount": ""
+    },
+    {
+      "id": "TRX-2025-0712-55OQS",
+      "userId": "user1",
+      "status": "Rejected",
+      "submittedAt": "2025-07-12T14:50:36.935Z",
+      "lastModifiedAt": "2025-07-12T14:58:19.995Z",
+      "userName": "sami",
+      "projectTitle": "sami",
+      "department": "የላብራቶሪ አገልግሎቶች",
+      "goal": "በማስረጃ ላይ የተመሰረተ ዉሳኔ አሰጣጥን ማሳደግ",
+      "objectives": [
+        {
+          "objective": "የሰው ሀብት ልማት፣ ሥራ አመራር እና አስተዳደርን ማሻሻል",
+          "objectiveWeight": "33",
+          "strategicActions": [
+            {
+              "action": "wew",
+              "weight": "33"
+            }
+          ]
+        },
+        {
+          "objective": "አጋርነትን መመስረት እና ማሻሻል",
+          "objectiveWeight": "33",
+          "strategicActions": [
+            {
+              "action": "ds",
+              "weight": "33"
+            }
+          ]
+        },
+        {
+          "objective": "አጋርነትን መመስረት እና ማሻሻል",
+          "objectiveWeight": "34",
+          "strategicActions": [
+            {
+              "action": "dsfds",
+              "weight": "33"
+            },
+            {
+              "action": "vcx",
+              "weight": "1"
+            }
+          ]
+        }
+      ],
+      "metric": "Test",
+      "mainTask": "asdas",
+      "mainTaskTarget": "dasds",
+      "metricWeight": "2",
+      "mainTaskWeight": "33",
+      "executingBody": "ፋርማሲዩቲካል ኢንደስትሪ ልማት ዳይሬክቶሬት",
+      "executionTime": "2ኛ ሩብ ዓመት",
+      "budgetSource": "መንግስት",
+      "governmentBudgetAmount": "78",
+      "governmentBudgetCode": "6211 የደንብ ልብስ ፣ የሥራ ልብስ ፣ የፍራሽና አልጋ ልብስ",
+      "grantBudgetAmount": "",
+      "sdgBudgetAmount": "",
+      "comments": "test"
     }
   ],
   "users": [
