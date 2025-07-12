@@ -27,6 +27,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 interface SubmissionViewProps {
   submission: Submission;
@@ -193,5 +194,3 @@ export function SubmissionView({ submission, onUpdateStatus }: SubmissionViewPro
     </div>
   );
 }
-
-    
