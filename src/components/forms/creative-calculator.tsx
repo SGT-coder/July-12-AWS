@@ -16,7 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { StrategicPlanFormValues } from "@/lib/schemas";
 
@@ -212,5 +212,3 @@ export function CreativeCalculator({ isOpen, onOpenChange, form }: CreativeCalcu
     </Dialog>
   );
 }
-
-    
