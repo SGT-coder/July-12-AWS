@@ -5,7 +5,7 @@ import * as React from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Minus, Equal, Percent, BookOpen, BrainCircuit } from "lucide-react";
+import { Plus, Minus, Equal, Percent, BrainCircuit, Trash2, Divide, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,12 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { StrategicPlanFormValues } from "@/lib/schemas";
-
-interface CreativeCalculatorProps {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-  form: UseFormReturn<StrategicPlanFormValues>;
-}
 
 const BudgetCalculator = ({ form }: { form: UseFormReturn<StrategicPlanFormValues> }) => {
     const [entries, setEntries] = React.useState<{label: string, amount: number}[]>([]);
@@ -52,7 +46,8 @@ const BudgetCalculator = ({ form }: { form: UseFormReturn<StrategicPlanFormValue
     return (
         <Card>
             <CardHeader>
-                <CardTitle>ቀላል የበጀት ማስያ</CardTitle>
+                <CardTitle>የበጀት ማስያ</CardTitle>
+                <CardDescription>የተለያዩ ወጪዎችን በፍጥነት ይደምሩ።</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -160,6 +155,65 @@ const WeightBalancer = ({
     )
 }
 
+const SimpleCalculator = () => {
+    const [num1, setNum1] = React.useState("");
+    const [num2, setNum2] = React.useState("");
+    const [result, setResult] = React.useState<number | null>(null);
+
+    const calculate = (operation: 'add' | 'subtract' | 'multiply' | 'divide') => {
+        const n1 = parseFloat(num1);
+        const n2 = parseFloat(num2);
+        if (isNaN(n1) || isNaN(n2)) {
+            setResult(null);
+            return;
+        }
+
+        switch (operation) {
+            case 'add': setResult(n1 + n2); break;
+            case 'subtract': setResult(n1 - n2); break;
+            case 'multiply': setResult(n1 * n2); break;
+            case 'divide': setResult(n2 !== 0 ? n1 / n2 : null); break;
+        }
+    };
+    
+    const clear = () => {
+        setNum1("");
+        setNum2("");
+        setResult(null);
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>ቀላል ማስያ</CardTitle>
+                <CardDescription>ለፈጣን ስሌቶች ይጠቀሙ።</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <Input type="number" placeholder="ቁጥር 1" value={num1} onChange={(e) => setNum1(e.target.value)} />
+                    <Input type="number" placeholder="ቁጥር 2" value={num2} onChange={(e) => setNum2(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                    <Button variant="outline" onClick={() => calculate('add')}><Plus /></Button>
+                    <Button variant="outline" onClick={() => calculate('subtract')}><Minus /></Button>
+                    <Button variant="outline" onClick={() => calculate('multiply')}><X /></Button>
+                    <Button variant="outline" onClick={() => calculate('divide')}><Divide /></Button>
+                </div>
+                 <Separator />
+                 <div className="text-center">
+                    <p className="text-muted-foreground">ውጤት</p>
+                    <p className="text-3xl font-bold font-mono text-primary h-10">
+                        {result !== null ? result.toLocaleString() : "-"}
+                    </p>
+                 </div>
+            </CardContent>
+            <CardFooter>
+                <Button variant="ghost" onClick={clear} className="w-full">አጽዳ</Button>
+            </CardFooter>
+        </Card>
+    )
+}
+
 
 export function CreativeCalculator({ isOpen, onOpenChange, form }: CreativeCalculatorProps) {
   if (!isOpen) return null;
@@ -180,10 +234,11 @@ export function CreativeCalculator({ isOpen, onOpenChange, form }: CreativeCalcu
         </DialogHeader>
         <div className="py-4">
           <Tabs defaultValue="budget">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="budget">የበጀት ማስያ</TabsTrigger>
               <TabsTrigger value="objectives">የዓላማ ክብደት</TabsTrigger>
               <TabsTrigger value="actions">የእርምጃ ክብደት</TabsTrigger>
+              <TabsTrigger value="simple-calc">ቀላል ማስያ</TabsTrigger>
             </TabsList>
             <TabsContent value="budget" className="pt-4">
               <BudgetCalculator form={form} />
@@ -205,6 +260,9 @@ export function CreativeCalculator({ isOpen, onOpenChange, form }: CreativeCalcu
                     fieldArrayName="objectives.0.strategicActions" // Placeholder
                     weightFieldName="objectives.0.strategicActions.0.weight" // Placeholder
                 />
+            </TabsContent>
+            <TabsContent value="simple-calc" className="pt-4">
+                <SimpleCalculator />
             </TabsContent>
           </Tabs>
         </div>
