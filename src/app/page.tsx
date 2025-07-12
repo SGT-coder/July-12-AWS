@@ -154,7 +154,7 @@ export default function Home() {
   };
 
   const handleEdit = (id: string) => {
-    const subToEdit = submissions.find(s => s.id === id) || trackedSubmission;
+    const subToEdit = submissions.find(s => s.id === id);
     if (subToEdit) {
       setCurrentSubmissionId(id);
       setTrackedSubmission(subToEdit);
@@ -205,14 +205,14 @@ export default function Home() {
          setIsTrackingIdDialogOpen(true);
          setTrackedSubmission(null); // Clear tracked submission after new one is created
          setFormKey(Date.now()); // Reset form
-      } else {
+      } else if (id && result.submission) {
           toast({
             title: "ዕቅድ ተስተካክሏል",
             description: `"${data.projectTitle}" ${'የተሰኘው እቅድዎ ተስተካክሎ እንደገና ለግምገማ ተልኳል።'}`,
           });
-          setTrackedSubmission(null); // Clear tracked submission
-          setCurrentSubmissionId(null);
-          setFormKey(Date.now()); // Reset form
+          setTrackedSubmission(result.submission);
+          setCurrentSubmissionId(id);
+          setFormKey(Date.now());
           // If a logged-in user is editing, fetch fresh data
           if(loggedInUser) await fetchSubmissions();
       }
@@ -366,7 +366,7 @@ export default function Home() {
 
     switch(view) {
       case 'dashboard':
-        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} />;
+        return <ApproverDashboard submissions={submissions} onView={handleView} onUpdateStatus={handleUpdateSubmissionStatus} onDelete={handleDeleteSubmission} onEdit={handleEdit} />;
       
       case 'admin-dashboard':
         return <AdminDashboard 

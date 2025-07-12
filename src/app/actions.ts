@@ -380,6 +380,17 @@ export async function getSubmissionById(id: string): Promise<{ success: boolean;
         const submission = db.submissions.find(s => s.id.toLowerCase() === id.toLowerCase());
 
         if (submission) {
+             // Ensure old submissions have the new objectives structure for form compatibility
+            if (!submission.objectives && submission.objective) {
+                submission.objectives = [{
+                    objective: submission.objective,
+                    objectiveWeight: submission.objectiveWeight || "0",
+                    strategicActions: [{
+                        action: submission.strategicAction || "",
+                        weight: submission.strategicActionWeight || "0"
+                    }]
+                }];
+            }
             return { success: true, submission };
         } else {
             return { success: false, message: "በዚህ መታወቂያ ምንም ማመልከቻ አልተገኘም።" };
@@ -411,6 +422,17 @@ export async function trackSubmission(data: z.infer<typeof trackSubmissionSchema
         );
 
         if (submission) {
+             // Ensure old submissions have the new objectives structure for form compatibility
+            if (!submission.objectives && submission.objective) {
+                submission.objectives = [{
+                    objective: submission.objective,
+                    objectiveWeight: submission.objectiveWeight || "0",
+                    strategicActions: [{
+                        action: submission.strategicAction || "",
+                        weight: submission.strategicActionWeight || "0"
+                    }]
+                }];
+            }
             return { success: true, submission };
         } else {
             return { success: false, message: "በዚህ መታወቂያ እና ስም ምንም ማመልከቻ አልተገኘም። እባክዎ መረጃዎን ያረጋግጡ።" };
@@ -425,8 +447,12 @@ export async function addSubmission(data: StrategicPlanFormValues) {
     const parsedData = strategicPlanSchema.safeParse(data);
 
     if (!parsedData.success) {
+        const errorPath = parsedData.error.issues[0]?.path.join('.');
+        const errorMessage = parsedData.error.issues[0]?.message;
+        const finalMessage = errorPath ? `${errorPath}: ${errorMessage}` : errorMessage;
+
         console.log("Validation Errors: ", parsedData.error.flatten());
-        return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
+        return { success: false, message: finalMessage || "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
     
     const newId = generateTrackingId();
@@ -453,7 +479,12 @@ export async function addSubmission(data: StrategicPlanFormValues) {
 export async function updateSubmission(id: string, data: StrategicPlanFormValues) {
     const parsedData = strategicPlanSchema.safeParse(data);
      if (!parsedData.success) {
-        return { success: false, message: "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
+        const errorPath = parsedData.error.issues[0]?.path.join('.');
+        const errorMessage = parsedData.error.issues[0]?.message;
+        const finalMessage = errorPath ? `${errorPath}: ${errorMessage}` : errorMessage;
+        
+        console.log("Validation Errors: ", parsedData.error.flatten());
+        return { success: false, message: finalMessage || "የገባው መረጃ ትክክል አይደለም።", errors: parsedData.error.flatten() };
     }
 
     try {
@@ -464,7 +495,7 @@ export async function updateSubmission(id: string, data: StrategicPlanFormValues
             return { success: false, message: "ማመልከቻው አልተገኘም።" };
         }
 
-        const updatedSubmission = {
+        const updatedSubmission: Submission = {
             ...db.submissions[submissionIndex],
             ...parsedData.data,
             status: 'Pending' as SubmissionStatus,
@@ -473,7 +504,7 @@ export async function updateSubmission(id: string, data: StrategicPlanFormValues
 
         db.submissions[submissionIndex] = updatedSubmission;
         await writeDb(db);
-        return { success: true, message: "ዕቅድ በተሳካ ሁኔታ ተስተካክሏል!" };
+        return { success: true, submission: updatedSubmission, message: "ዕቅድ በተሳካ ሁኔታ ተስተካክሏል!" };
     } catch (error) {
         console.error("Error updating submission: ", error);
         return { success: false, message: "ማመልከቻውን በማዘመን ላይ ሳለ ስህተት ተፈጥሯል።" };
@@ -526,5 +557,3 @@ export async function deleteSubmission(id: string) {
         return { success: false, message: "ማመልከቻውን በመሰረዝ ላይ ሳለ ስህተት ተፈጥሯል።" };
     }
 }
-
-    

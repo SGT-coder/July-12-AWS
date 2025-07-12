@@ -13,6 +13,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Edit
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ interface ApproverDashboardProps {
     comments?: string
   ) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
 const RejectionDialog = ({ onConfirm }: { onConfirm: (comment: string) => void }) => {
@@ -124,6 +126,7 @@ export function ApproverDashboard({
   onView,
   onUpdateStatus,
   onDelete,
+  onEdit,
 }: ApproverDashboardProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [departmentFilter, setDepartmentFilter] = React.useState("all");
@@ -317,6 +320,12 @@ export function ApproverDashboard({
                           <DropdownMenuItem onSelect={() => onView(submission.id)}>
                             <Eye className="mr-2 h-4 w-4" /> ይመልከቱ
                           </DropdownMenuItem>
+                          {submission.status === 'Rejected' && (
+                            <DropdownMenuItem onSelect={() => onEdit(submission.id)}>
+                              <Edit className="mr-2 h-4 w-4" /> አርትዕ
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onSelect={() =>
                               onUpdateStatus(submission.id, "Approved")
