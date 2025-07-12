@@ -156,31 +156,39 @@ const WeightBalancer = ({
 }
 
 const SimpleCalculator = () => {
-    const [num1, setNum1] = React.useState("");
-    const [num2, setNum2] = React.useState("");
-    const [result, setResult] = React.useState<number | null>(null);
+    const [input, setInput] = React.useState("");
+    const [result, setResult] = React.useState<string>("");
 
-    const calculate = (operation: 'add' | 'subtract' | 'multiply' | 'divide') => {
-        const n1 = parseFloat(num1);
-        const n2 = parseFloat(num2);
-        if (isNaN(n1) || isNaN(n2)) {
-            setResult(null);
-            return;
+    const handleInput = (value: string) => {
+        if (result !== "") {
+            setInput(result + value);
+            setResult("");
+        } else {
+            setInput(input + value);
         }
+    };
 
-        switch (operation) {
-            case 'add': setResult(n1 + n2); break;
-            case 'subtract': setResult(n1 - n2); break;
-            case 'multiply': setResult(n1 * n2); break;
-            case 'divide': setResult(n2 !== 0 ? n1 / n2 : null); break;
+    const handleClear = () => {
+        setInput("");
+        setResult("");
+    };
+
+    const handleCalculate = () => {
+        try {
+            // Avoid using eval(). A safer approach is to parse and calculate.
+            // This simple implementation handles chained operations but not operator precedence.
+            let evalResult = new Function('return ' + input.replace(/[^-()\d/*+.]/g, ''))();
+            setResult(String(evalResult));
+        } catch (e) {
+            setResult("Error");
         }
     };
     
-    const clear = () => {
-        setNum1("");
-        setNum2("");
-        setResult(null);
-    }
+    const renderButton = (value: string, handler: (val: string) => void, className: string = "") => (
+        <Button variant="outline" className={`text-xl font-bold h-14 ${className}`} onClick={() => handler(value)}>
+            {value}
+        </Button>
+    )
 
     return (
         <Card>
@@ -189,33 +197,42 @@ const SimpleCalculator = () => {
                 <CardDescription>ለፈጣን ስሌቶች ይጠቀሙ።</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <Input type="number" placeholder="ቁጥር 1" value={num1} onChange={(e) => setNum1(e.target.value)} />
-                    <Input type="number" placeholder="ቁጥር 2" value={num2} onChange={(e) => setNum2(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                    <Button variant="outline" onClick={() => calculate('add')}><Plus /></Button>
-                    <Button variant="outline" onClick={() => calculate('subtract')}><Minus /></Button>
-                    <Button variant="outline" onClick={() => calculate('multiply')}><X /></Button>
-                    <Button variant="outline" onClick={() => calculate('divide')}><Divide /></Button>
-                </div>
-                 <Separator />
-                 <div className="text-center">
-                    <p className="text-muted-foreground">ውጤት</p>
-                    <p className="text-3xl font-bold font-mono text-primary h-10">
-                        {result !== null ? result.toLocaleString() : "-"}
+                 <div className="p-4 bg-muted rounded-md text-right h-16 flex items-center justify-end">
+                    <p className="text-3xl font-mono text-foreground truncate">
+                       {result || input || "0"}
                     </p>
                  </div>
+                <div className="grid grid-cols-4 gap-2">
+                    {renderButton("C", () => handleClear(), "col-span-2 bg-destructive/20 text-destructive")}
+                    {renderButton("/", handleInput)}
+                    {renderButton("*", handleInput)}
+
+                    {renderButton("7", handleInput)}
+                    {renderButton("8", handleInput)}
+                    {renderButton("9", handleInput)}
+                    {renderButton("-", handleInput)}
+                    
+                    {renderButton("4", handleInput)}
+                    {renderButton("5", handleInput)}
+                    {renderButton("6", handleInput)}
+                    {renderButton("+", handleInput)}
+
+                    <div className="grid grid-rows-2 grid-cols-3 col-span-3 gap-2">
+                        {renderButton("1", handleInput, "col-start-1")}
+                        {renderButton("2", handleInput)}
+                        {renderButton("3", handleInput)}
+                        {renderButton("0", handleInput, "col-span-2")}
+                        {renderButton(".", handleInput)}
+                    </div>
+                    {renderButton("=", () => handleCalculate(), "row-span-2 h-full bg-primary/20 text-primary")}
+                </div>
             </CardContent>
-            <CardFooter>
-                <Button variant="ghost" onClick={clear} className="w-full">አጽዳ</Button>
-            </CardFooter>
         </Card>
     )
 }
 
 
-export function CreativeCalculator({ isOpen, onOpenChange, form }: CreativeCalculatorProps) {
+export function CreativeCalculator({ isOpen, onOpenChange, form }: { isOpen: boolean, onOpenChange: (open: boolean) => void, form: UseFormReturn<StrategicPlanFormValues>}) {
   if (!isOpen) return null;
 
   return (
