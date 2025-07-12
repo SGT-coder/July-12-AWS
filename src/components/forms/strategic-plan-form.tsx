@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
-import { Loader2, PlusCircle, Trash2 } from "lucide-react";
+import { Loader2, PlusCircle, Trash2, CalculatorIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,7 @@ import {
 } from "@/lib/options";
 import type { Submission } from "@/lib/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CreativeCalculator } from "@/components/forms/creative-calculator";
 
 const defaultFormValues: StrategicPlanFormValues = {
     userName: "",
@@ -72,6 +73,8 @@ interface StrategicPlanFormProps {
 }
 
 export function StrategicPlanForm({ submission, onSave, isSubmitting, isReadOnly = false }: StrategicPlanFormProps) {
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+  
   const form = useForm<StrategicPlanFormValues>({
     resolver: zodResolver(strategicPlanSchema),
     defaultValues: submission && submission.objectives ? {
@@ -121,10 +124,19 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting, isReadOnly
            <fieldset disabled={isSubmitting || isReadOnly} className="space-y-6 group">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-3xl font-bold text-center font-headline">{formTitle}</CardTitle>
-                    <CardDescription className="text-center text-lg">
-                        {formDescription}
-                    </CardDescription>
+                    <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                            <CardTitle className="text-3xl font-bold text-center font-headline">{formTitle}</CardTitle>
+                            <CardDescription className="text-center text-lg">
+                                {formDescription}
+                            </CardDescription>
+                        </div>
+                        {!isReadOnly && (
+                            <Button type="button" variant="outline" size="icon" onClick={() => setIsCalculatorOpen(true)} title="Creative Calculator">
+                                <CalculatorIcon className="h-5 w-5" />
+                            </Button>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-8 group-disabled:opacity-50">
                     <Card>
@@ -343,6 +355,11 @@ export function StrategicPlanForm({ submission, onSave, isSubmitting, isReadOnly
             </fieldset>
         </form>
         </Form>
+        <CreativeCalculator 
+            isOpen={isCalculatorOpen}
+            onOpenChange={setIsCalculatorOpen}
+            form={form}
+        />
     </div>
   );
 }
@@ -451,3 +468,5 @@ function ObjectiveFieldArray({ form, objectiveIndex, removeObjective, isReadOnly
     );
 }
   
+
+    
