@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="am" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="http://semonegna.com/wp-content/uploads/2017/10/Armauer-Hansen-Research-Institute.jpg" sizes="any" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
