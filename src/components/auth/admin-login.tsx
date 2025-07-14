@@ -67,11 +67,8 @@ export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
                 required
               />
             </div>
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-start items-center text-sm">
                 <Button variant="link" type="button" onClick={onGoToReset} className="p-0 h-auto">የይለፍ ቃል ረሱ?</Button>
-                <Button variant="link" asChild type="button" className="p-0 h-auto">
-                    <Link href="/admin/register">የአስተዳዳሪ መለያ ፍጠር</Link>
-                </Button>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
