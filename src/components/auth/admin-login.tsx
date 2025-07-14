@@ -29,7 +29,7 @@ export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // This will attempt to log in. The bypass logic is now in `page.tsx`.
+    // This will attempt to log in with hardcoded credentials to trigger the bypass.
     const success = await onLogin(email, password, 'Admin');
     if (!success) {
       setIsLoading(false);
