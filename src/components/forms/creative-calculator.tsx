@@ -47,7 +47,6 @@ const BudgetCalculator = ({ form }: { form: UseFormReturn<StrategicPlanFormValue
         <Card>
             <CardHeader>
                 <CardTitle>የበጀት ማስያ</CardTitle>
-                <text>.</text>
                 <CardDescription>የተለያዩ ወጪዎችን በፍጥነት ይደምሩ።</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
