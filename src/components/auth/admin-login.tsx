@@ -2,6 +2,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -14,6 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { getUsers } from "@/app/client-actions";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import type { User } from "@/lib/types";
 
 interface AdminLoginProps {
   onLogin: (email: string, password: string, role: 'Admin' | 'Approver') => Promise<boolean>;
@@ -22,19 +26,50 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
-  const [email, setEmail] = React.useState("admin@example.com");
-  const [password, setPassword] = React.useState("admin123");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [adminExists, setAdminExists] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    async function checkAdmin() {
+      const users: User[] = await getUsers();
+      setAdminExists(users.some(u => u.role === 'Admin'));
+    }
+    checkAdmin();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // This will attempt to log in with hardcoded credentials to trigger the bypass.
     const success = await onLogin(email, password, 'Admin');
     if (!success) {
       setIsLoading(false);
     }
   };
+  
+  if (adminExists === null) {
+      return <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin" /></div>
+  }
+  
+  if (!adminExists) {
+      return (
+        <div className="flex justify-center items-center h-full">
+            <Alert className="max-w-sm">
+                <AlertTitle>No Admin Account Found</AlertTitle>
+                <AlertDescription>
+                    An administrator account has not been set up yet. Please use the one-time registration page to create the first admin account.
+                </AlertDescription>
+                <div className="mt-4">
+                    <Button asChild>
+                       <Link href="/admin/register">Create Admin Account</Link>
+                    </Button>
+                </div>
+            </Alert>
+        </div>
+      );
+  }
+
 
   return (
     <div className="flex justify-center items-center h-full">

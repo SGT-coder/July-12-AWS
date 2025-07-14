@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { adminAddUser, getUsers } from "@/app/client-actions";
 import type { User } from "@/lib/types";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 
 const adminRegisterSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters."),
@@ -105,7 +106,9 @@ export default function AdminRegisterPage() {
                     An administrator account has already been set up. This registration page is for one-time use only. If you need to log in, please return to the homepage.
                 </AlertDescription>
                 <div className="mt-4">
-                    <Button onClick={() => router.push('/')}>Go to Homepage</Button>
+                    <Button asChild>
+                        <Link href="/">Go to Homepage</Link>
+                    </Button>
                 </div>
             </Alert>
         </div>
@@ -118,7 +121,9 @@ export default function AdminRegisterPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardHeader className="text-center">
-                <UserPlus className="mx-auto h-12 w-12 text-primary" />
+                <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
+                    <UserPlus className="h-10 w-10 text-primary" />
+                </div>
               <CardTitle className="font-headline text-2xl">Create Admin Account</CardTitle>
               <CardDescription>
                 This is a one-time setup for the primary administrator.
@@ -178,10 +183,13 @@ export default function AdminRegisterPage() {
                 )}
               />
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-4">
               <Button type="submit" disabled={isSubmitting} className="w-full">
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Admin
+                Create Admin Account
+              </Button>
+              <Button type="button" variant="link" asChild>
+                <Link href="/">Back to Role Selection</Link>
               </Button>
             </CardFooter>
           </form>

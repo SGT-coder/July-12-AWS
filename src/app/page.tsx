@@ -362,7 +362,7 @@ export default function Home() {
       
       case 'admin-dashboard':
         return <AdminDashboard 
-            users={users} 
+            users={users}
             submissions={submissions}
             currentUser={loggedInUser}
             onUpdateUserStatus={handleUpdateUserStatus} 
