@@ -54,10 +54,11 @@ export default function Home() {
   React.useEffect(() => {
     const loadData = async () => {
         setIsLoading(true);
+        const users = await fetchUsers();
+        setUsers(users);
+
         if (loggedInUser?.role === 'Admin') {
-            const users = await fetchUsers();
             const submissions = await fetchSubmissions();
-            setUsers(users);
             setSubmissions(submissions);
         } else if (loggedInUser?.role === 'Approver') {
             const submissions = await fetchSubmissions();
@@ -115,6 +116,20 @@ export default function Home() {
   };
 
   const handleLogin = async (email: string, password: string, role: "Admin" | "Approver"): Promise<boolean> => {
+    // --- TEMPORARY BYPASS FOR ADMIN LOGIN ---
+    if (role === 'Admin') {
+      const allUsers = await fetchUsers();
+      const adminUser = allUsers.find(u => u.role === 'Admin');
+      if (adminUser) {
+        setLoggedInUser(adminUser);
+        setRole(adminUser.role);
+        setView('admin-dashboard');
+        toast({ title: "በተሳካ ሁኔታ ገብተዋል (Bypassed)", description: `እንኳን ደህና መጡ، ${adminUser.name} (አስተዳዳሪ)!` });
+        return true;
+      }
+    }
+    // --- END TEMPORARY BYPASS ---
+
     const result = await loginUser({ email, password, role });
     if (result.success && result.user && result.translatedRole) {
         setLoggedInUser(result.user);
@@ -125,7 +140,7 @@ export default function Home() {
         } else {
             setView('dashboard');
         }
-        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ፣ ${result.user.name} (${result.translatedRole})!` });
+        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ، ${result.user.name} (${result.translatedRole})!` });
         return true;
     } else {
         toast({ title: "መግባት አልተቻለም", description: result.message, variant: "destructive" });
@@ -412,13 +427,15 @@ export default function Home() {
                     onTracked={setTrackedSubmission}
                     trackedSubmission={trackedSubmission}
                   >
-                     <StrategicPlanForm
-                        key={formKey}
-                        submission={trackedSubmission}
-                        onSave={handleSaveSubmission}
-                        isSubmitting={isSubmitting}
-                        isReadOnly={trackedSubmission?.status === 'Approved'}
-                     />
+                     {trackedSubmission && (
+                        <StrategicPlanForm
+                            key={formKey}
+                            submission={trackedSubmission}
+                            onSave={handleSaveSubmission}
+                            isSubmitting={isSubmitting}
+                            isReadOnly={trackedSubmission?.status === 'Approved'}
+                        />
+                     )}
                   </SubmissionTracking>;
 
       default:

@@ -22,13 +22,14 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = React.useState("admin@example.com");
+  const [password, setPassword] = React.useState("admin123");
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    // This will attempt to log in. The bypass logic is now in `page.tsx`.
     const success = await onLogin(email, password, 'Admin');
     if (!success) {
       setIsLoading(false);
