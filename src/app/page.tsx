@@ -116,20 +116,6 @@ export default function Home() {
   };
 
   const handleLogin = async (email: string, password: string, role: "Admin" | "Approver"): Promise<boolean> => {
-    // --- TEMPORARY BYPASS FOR ADMIN LOGIN ---
-    if (role === 'Admin') {
-      const allUsers = await fetchUsers();
-      const adminUser = allUsers.find(u => u.role === 'Admin');
-      if (adminUser) {
-        setLoggedInUser(adminUser);
-        setRole(adminUser.role);
-        setView('admin-dashboard');
-        toast({ title: "በተሳካ ሁኔታ ገብተዋል (Bypassed)", description: `እንኳን ደህና መጡ، ${adminUser.name} (አስተዳዳሪ)!` });
-        return true;
-      }
-    }
-    // --- END TEMPORARY BYPASS ---
-
     const result = await loginUser({ email, password, role });
     if (result.success && result.user && result.translatedRole) {
         setLoggedInUser(result.user);

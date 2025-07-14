@@ -83,7 +83,7 @@ export function ApproverLogin({ onLogin, onBack, onGoToRegister, onGoToReset, on
             </div>
             <Button
               type="button"
-              variant="link"
+              variant="ghost"
               onClick={onGoToAdminLogin}
               className="text-muted-foreground"
             >
