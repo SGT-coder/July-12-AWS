@@ -105,6 +105,10 @@ export default function Home() {
         setCurrentSubmissionId(null);
         setTrackedSubmission(null);
         setFormKey(Date.now());
+    } else if (newView === 'approver-login') {
+        setRole('Approver'); // Or Admin, this just sets context
+        setView('approver-login');
+        return;
     }
      if (newView === 'track-submission') {
         setRole('User');
@@ -363,7 +367,6 @@ export default function Home() {
       case 'admin-dashboard':
         return <AdminDashboard 
             users={users}
-            submissions={submissions}
             currentUser={loggedInUser}
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
@@ -391,7 +394,7 @@ export default function Home() {
         return null;
 
       case 'approver-login':
-        return <ApproverLogin onLogin={handleLogin} onBack={handleBack} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} onGoToAdminLogin={() => setView('admin-login')} />;
+        return <ApproverLogin onLogin={handleLogin} onBack={handleLogout} onGoToRegister={() => setView('register')} onGoToReset={() => setView('reset-password')} onGoToAdminLogin={() => setView('admin-login')} />;
       
       case 'admin-login':
         return <AdminLogin onLogin={handleLogin} onBack={() => setView('approver-login')} onGoToReset={() => setView('reset-password')} />;

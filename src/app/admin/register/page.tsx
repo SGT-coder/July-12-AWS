@@ -31,18 +31,8 @@ import { adminAddUser, getUsers } from "@/app/client-actions";
 import type { User } from "@/lib/types";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
+import { adminAddUserSchema, type AdminAddUserFormValues } from "@/lib/schemas";
 
-const adminRegisterSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters."),
-    email: z.string().email("Invalid email address."),
-    password: z.string().min(6, "Password must be at least 6 characters."),
-    confirmPassword: z.string(),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-});
-
-type AdminRegisterFormValues = z.infer<typeof adminRegisterSchema>;
 
 export default function AdminRegisterPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -52,24 +42,30 @@ export default function AdminRegisterPage() {
 
   React.useEffect(() => {
     async function checkAdmin() {
-      const users: User[] = await getUsers();
-      const existingAdmin = users.some(u => u.role === 'Admin');
-      setAdminExists(existingAdmin);
+      try {
+        const users: User[] = await getUsers();
+        const existingAdmin = users.some(u => u.role === 'Admin');
+        setAdminExists(existingAdmin);
+      } catch (error) {
+        console.error("Failed to check for admin user:", error);
+        setAdminExists(false); // Assume no admin if there's an error
+      }
     }
     checkAdmin();
   }, []);
 
-  const form = useForm<AdminRegisterFormValues>({
-    resolver: zodResolver(adminRegisterSchema),
+  const form = useForm<AdminAddUserFormValues>({
+    resolver: zodResolver(adminAddUserSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
       confirmPassword: "",
+      role: "Admin"
     },
   });
 
-  const onSubmit = async (data: AdminRegisterFormValues) => {
+  const onSubmit = async (data: AdminAddUserFormValues) => {
     setIsSubmitting(true);
     const result = await adminAddUser({ ...data, role: 'Admin' });
     if (result.success) {
@@ -107,7 +103,7 @@ export default function AdminRegisterPage() {
                 </AlertDescription>
                 <div className="mt-4">
                     <Button asChild>
-                        <Link href="/">Go to Homepage</Link>
+                        <Link href="/">Go to Login Page</Link>
                     </Button>
                 </div>
             </Alert>

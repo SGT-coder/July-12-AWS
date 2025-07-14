@@ -33,8 +33,13 @@ export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
 
   React.useEffect(() => {
     async function checkAdmin() {
-      const users: User[] = await getUsers();
-      setAdminExists(users.some(u => u.role === 'Admin'));
+      try {
+        const users: User[] = await getUsers();
+        setAdminExists(users.some(u => u.role === 'Admin'));
+      } catch (error) {
+        console.error("Failed to check for admin user:", error);
+        setAdminExists(false); // Assume no admin if there's an error
+      }
     }
     checkAdmin();
   }, []);

@@ -15,22 +15,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { User, UserStatus } from "@/lib/types";
+import type { User, UserStatus, Submission, SubmissionStatus } from "@/lib/types";
 import { DateDisplay } from "@/components/shared/date-display";
 import { adminAddUserSchema, type AdminAddUserFormValues } from "@/lib/schemas";
 import { Loader2 } from "lucide-react";
+import { StatusBadge as SubmissionStatusBadge } from "@/components/shared/status-badge";
+
 
 interface AdminDashboardProps {
   users: User[];
+  submissions: Submission[];
   currentUser: User | null;
   onUpdateUserStatus: (userId: string, status: UserStatus) => void;
   onDeleteUser: (userId: string) => void;
   onAddUser: (data: AdminAddUserFormValues) => Promise<boolean>;
   onApprovePasswordReset: (userId: string) => void;
   onRejectPasswordReset: (userId: string) => void;
+  onViewSubmission: (id: string) => void;
+  onUpdateSubmissionStatus: (id: string, status: SubmissionStatus, comments?: string) => void;
+  onDeleteSubmission: (id: string) => void;
 }
 
 type SortableUserColumn = keyof Pick<User, 'name' | 'email' | 'role' | 'status' | 'createdAt' | 'statusUpdatedAt'>;
+type SortableSubmissionColumn = keyof Pick<Submission, 'id' | 'projectTitle' | 'userName' | 'department' | 'submittedAt' | 'status'>;
+
 
 const statusTranslations: Record<UserStatus, string> = {
     Approved: "ጸድቋል",
@@ -147,7 +155,19 @@ const TablePagination = ({
     )
 }
 
-export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDeleteUser, onAddUser, onApprovePasswordReset, onRejectPasswordReset }: AdminDashboardProps) {
+export function AdminDashboard({ 
+    users, 
+    submissions,
+    currentUser, 
+    onUpdateUserStatus, 
+    onDeleteUser, 
+    onAddUser, 
+    onApprovePasswordReset, 
+    onRejectPasswordReset,
+    onViewSubmission,
+    onUpdateSubmissionStatus,
+    onDeleteSubmission
+}: AdminDashboardProps) {
 
   const ITEMS_PER_PAGE = 5;
 
@@ -176,23 +196,43 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
     direction: 'descending',
   });
   
-  // --- State for "History" tab ---
-  const [historySearchTerm, setHistorySearchTerm] = React.useState("");
-  const [historyRoleFilter, setHistoryRoleFilter] = React.useState<User['role'] | "all">("all");
-  const [historyStatusFilter, setHistoryStatusFilter] = React.useState<"Approved" | "Rejected" | "all">("all");
-  const [historyCurrentPage, setHistoryCurrentPage] = React.useState(1);
-  const [historySortConfig, setHistorySortConfig] = React.useState<{ key: SortableUserColumn; direction: 'ascending' | 'descending' }>({
-    key: 'statusUpdatedAt',
+  // --- State for "Submissions" tab ---
+  const [submissionsSearchTerm, setSubmissionsSearchTerm] = React.useState("");
+  const [submissionsStatusFilter, setSubmissionsStatusFilter] = React.useState<SubmissionStatus | "all">("all");
+  const [submissionsCurrentPage, setSubmissionsCurrentPage] = React.useState(1);
+  const [submissionsSortConfig, setSubmissionsSortConfig] = React.useState<{ key: SortableSubmissionColumn; direction: 'ascending' | 'descending' }>({
+    key: 'submittedAt',
     direction: 'descending',
   });
 
-  const genericSort = (items: User[], config: typeof sortConfig) => {
+  const genericUserSort = (items: User[], config: typeof sortConfig) => {
     const sortableItems = [...items];
     sortableItems.sort((a, b) => {
       const aValue = a[config.key];
       const bValue = b[config.key];
 
       if (['createdAt', 'statusUpdatedAt'].includes(config.key)) {
+          const dateA = new Date(aValue).getTime();
+          const dateB = new Date(bValue).getTime();
+          if (dateA < dateB) return config.direction === 'ascending' ? -1 : 1;
+          if (dateA > dateB) return config.direction === 'ascending' ? 1 : -1;
+          return 0;
+      }
+
+      if (aValue < bValue) return config.direction === 'ascending' ? -1 : 1;
+      if (aValue > bValue) return config.direction === 'ascending' ? 1 : -1;
+      return 0;
+    });
+    return sortableItems;
+  }
+
+  const genericSubmissionSort = (items: Submission[], config: typeof submissionsSortConfig) => {
+    const sortableItems = [...items];
+    sortableItems.sort((a, b) => {
+      const aValue = a[config.key];
+      const bValue = b[config.key];
+
+      if (config.key === 'submittedAt') {
           const dateA = new Date(aValue).getTime();
           const dateB = new Date(bValue).getTime();
           if (dateA < dateB) return config.direction === 'ascending' ? -1 : 1;
@@ -216,7 +256,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
         user.email.toLowerCase().includes(requestsSearchTerm.toLowerCase())
       );
   }, [pendingRegistrations, requestsSearchTerm]);
-  const sortedPendingUsers = React.useMemo(() => genericSort(filteredPendingUsers, requestsSortConfig), [filteredPendingUsers, requestsSortConfig]);
+  const sortedPendingUsers = React.useMemo(() => genericUserSort(filteredPendingUsers, requestsSortConfig), [filteredPendingUsers, requestsSortConfig]);
   const paginatedPendingUsers = sortedPendingUsers.slice((requestsCurrentPage - 1) * ITEMS_PER_PAGE, requestsCurrentPage * ITEMS_PER_PAGE);
 
   const passwordResetRequests = React.useMemo(() => users.filter(u => u.passwordResetStatus === 'Pending'), [users]);
@@ -227,7 +267,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
         user.email.toLowerCase().includes(passwordResetRequestsSearchTerm.toLowerCase())
       );
   }, [passwordResetRequests, passwordResetRequestsSearchTerm]);
-  const sortedPasswordResetRequests = React.useMemo(() => genericSort(filteredPasswordResetRequests, passwordResetRequestsSortConfig), [filteredPasswordResetRequests, passwordResetRequestsSortConfig]);
+  const sortedPasswordResetRequests = React.useMemo(() => genericUserSort(filteredPasswordResetRequests, passwordResetRequestsSortConfig), [filteredPasswordResetRequests, passwordResetRequestsSortConfig]);
   const paginatedPasswordResetRequests = sortedPasswordResetRequests.slice((passwordResetRequestsCurrentPage - 1) * ITEMS_PER_PAGE, passwordResetRequestsCurrentPage * ITEMS_PER_PAGE);
 
 
@@ -241,23 +281,26 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
       .filter((user) => roleFilter === "all" ? true : user.role === roleFilter)
       .filter((user) => statusFilter === "all" ? true : user.status === statusFilter);
   }, [users, searchTerm, roleFilter, statusFilter]);
-  const sortedUsers = React.useMemo(() => genericSort(filteredUsers, sortConfig), [filteredUsers, sortConfig]);
+  const sortedUsers = React.useMemo(() => genericUserSort(filteredUsers, sortConfig), [filteredUsers, sortConfig]);
   const paginatedUsers = sortedUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  // --- Memoized data for "History" tab ---
-  const filteredHistoryUsers = React.useMemo(() => {
-    return users
-      .filter(u => u.status !== 'Pending')
-      .filter(u => historySearchTerm ? u.name.toLowerCase().includes(historySearchTerm.toLowerCase()) || u.email.toLowerCase().includes(historySearchTerm.toLowerCase()) : true)
-      .filter(u => historyRoleFilter === "all" ? true : u.role === historyRoleFilter)
-      .filter(u => historyStatusFilter === "all" ? true : u.status === historyStatusFilter);
-  }, [users, historySearchTerm, historyRoleFilter, historyStatusFilter]);
+  // --- Memoized data for "Submissions" tab ---
+    const filteredSubmissions = React.useMemo(() => {
+        return submissions
+            .filter((sub) =>
+                sub.projectTitle.toLowerCase().includes(submissionsSearchTerm.toLowerCase()) ||
+                sub.id.toLowerCase().includes(submissionsSearchTerm.toLowerCase()) ||
+                sub.userName.toLowerCase().includes(submissionsSearchTerm.toLowerCase())
+            )
+            .filter((sub) => submissionsStatusFilter === "all" ? true : sub.status === submissionsStatusFilter);
+    }, [submissions, submissionsSearchTerm, submissionsStatusFilter]);
 
-  const sortedHistoryUsers = React.useMemo(() => genericSort(filteredHistoryUsers, historySortConfig), [filteredHistoryUsers, historySortConfig]);
-  const paginatedHistoryUsers = sortedHistoryUsers.slice((historyCurrentPage - 1) * ITEMS_PER_PAGE, historyCurrentPage * ITEMS_PER_PAGE);
+  const sortedSubmissions = React.useMemo(() => genericSubmissionSort(filteredSubmissions, submissionsSortConfig), [filteredSubmissions, submissionsSortConfig]);
+  const paginatedSubmissions = sortedSubmissions.slice((submissionsCurrentPage - 1) * ITEMS_PER_PAGE, submissionsCurrentPage * ITEMS_PER_PAGE);
+
 
   // --- Generic sort request handler ---
-  const createSortRequestHandler = (
+  const createUserSortRequestHandler = (
     config: typeof sortConfig,
     setConfig: React.Dispatch<React.SetStateAction<typeof sortConfig>>
   ) => (key: SortableUserColumn) => {
@@ -267,24 +310,35 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
     }
     setConfig({ key, direction });
   };
+   const createSubmissionSortRequestHandler = (
+    config: typeof submissionsSortConfig,
+    setConfig: React.Dispatch<React.SetStateAction<typeof submissionsSortConfig>>
+  ) => (key: SortableSubmissionColumn) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (config && config.key === key && config.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setConfig({ key, direction });
+  };
   
-  const requestSort = createSortRequestHandler(sortConfig, setSortConfig);
-  const requestHistorySort = createSortRequestHandler(historySortConfig, setHistorySortConfig);
-  const requestRequestsSort = createSortRequestHandler(requestsSortConfig, setRequestsSortConfig);
-  const requestPasswordResetSort = createSortRequestHandler(passwordResetRequestsSortConfig, setPasswordResetRequestsSortConfig);
+  const requestSort = createUserSortRequestHandler(sortConfig, setSortConfig);
+  const requestRequestsSort = createUserSortRequestHandler(requestsSortConfig, setRequestsSortConfig);
+  const requestPasswordResetSort = createUserSortRequestHandler(passwordResetRequestsSortConfig, setPasswordResetRequestsSortConfig);
+  const requestSubmissionsSort = createSubmissionSortRequestHandler(submissionsSortConfig, setSubmissionsSortConfig);
+
   
-  const getSortIcon = (columnKey: SortableUserColumn, currentConfig: typeof sortConfig) => {
+  const getSortIcon = (columnKey: SortableUserColumn | SortableSubmissionColumn, currentConfig: any) => {
     if (!currentConfig || currentConfig.key !== columnKey) return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/70" />;
     return currentConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
   };
 
   React.useEffect(() => { setCurrentPage(1); }, [searchTerm, roleFilter, statusFilter]);
-  React.useEffect(() => { setHistoryCurrentPage(1); }, [historySearchTerm, historyRoleFilter, historyStatusFilter]);
   React.useEffect(() => { setRequestsCurrentPage(1); }, [requestsSearchTerm]);
   React.useEffect(() => { setPasswordResetRequestsCurrentPage(1); }, [passwordResetRequestsSearchTerm]);
+  React.useEffect(() => { setSubmissionsCurrentPage(1); }, [submissionsSearchTerm, submissionsStatusFilter]);
 
   
-  const SortableHeader = ({ column, label, config, onRequestSort }: { column: SortableUserColumn, label: string, config: typeof sortConfig, onRequestSort: (key: SortableUserColumn) => void }) => (
+  const SortableUserHeader = ({ column, label, config, onRequestSort }: { column: SortableUserColumn, label: string, config: typeof sortConfig, onRequestSort: (key: SortableUserColumn) => void }) => (
     <TableHead>
         <Button variant="ghost" onClick={() => onRequestSort(column)} className="px-2">
             {label}
@@ -292,6 +346,16 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
         </Button>
     </TableHead>
   );
+
+  const SortableSubmissionHeader = ({ column, label, config, onRequestSort }: { column: SortableSubmissionColumn, label: string, config: typeof submissionsSortConfig, onRequestSort: (key: SortableSubmissionColumn) => void }) => (
+    <TableHead>
+        <Button variant="ghost" onClick={() => onRequestSort(column)} className="px-2">
+            {label}
+            {getSortIcon(column, config)}
+        </Button>
+    </TableHead>
+  );
+
 
   return (
     <div className="space-y-8">
@@ -303,8 +367,8 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
       <Tabs defaultValue="requests">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="requests">ጥያቄዎች</TabsTrigger>
-          <TabsTrigger value="users">ሁሉም ተጠቃሚዎች</TabsTrigger>
-          <TabsTrigger value="history">ታሪክ</TabsTrigger>
+          <TabsTrigger value="users">ተጠቃሚዎች</TabsTrigger>
+          <TabsTrigger value="submissions">ማመልከቻዎች</TabsTrigger>
         </TabsList>
         
         <TabsContent value="requests" className="space-y-6">
@@ -324,9 +388,9 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <SortableHeader column="name" label="ስም" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
-                                <SortableHeader column="email" label="ኢሜይል" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
-                                <SortableHeader column="createdAt" label="የተጠየቀበት ቀን" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
+                                <SortableUserHeader column="name" label="ስም" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
+                                <SortableUserHeader column="email" label="ኢሜይል" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
+                                <SortableUserHeader column="createdAt" label="የተጠየቀበት ቀን" config={requestsSortConfig} onRequestSort={requestRequestsSort} />
                                 <TableHead className="text-right">ድርጊቶች</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -366,9 +430,9 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <SortableHeader column="name" label="ስም" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
-                                    <SortableHeader column="email" label="ኢሜይል" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
-                                    <SortableHeader column="createdAt" label="የተጠየቀበት ቀን" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
+                                    <SortableUserHeader column="name" label="ስም" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
+                                    <SortableUserHeader column="email" label="ኢሜይል" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
+                                    <SortableUserHeader column="createdAt" label="የተጠየቀበት ቀን" config={passwordResetRequestsSortConfig} onRequestSort={requestPasswordResetSort} />
                                     <TableHead className="text-right">ድርጊቶች</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -431,11 +495,12 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <SortableHeader column="name" label="ስም" config={sortConfig} onRequestSort={requestSort} />
-                                <SortableHeader column="email" label="ኢሜይል" config={sortConfig} onRequestSort={requestSort} />
-                                <SortableHeader column="role" label="ሚና" config={sortConfig} onRequestSort={requestSort} />
-                                <SortableHeader column="status" label="ሁኔታ" config={sortConfig} onRequestSort={requestSort} />
-                                <SortableHeader column="createdAt" label="የተፈጠረበት ቀን" config={sortConfig} onRequestSort={requestSort} />
+                                <SortableUserHeader column="name" label="ስም" config={sortConfig} onRequestSort={requestSort} />
+                                <SortableUserHeader column="email" label="ኢሜይል" config={sortConfig} onRequestSort={requestSort} />
+                                <SortableUserHeader column="role" label="ሚና" config={sortConfig} onRequestSort={requestSort} />
+                                <SortableUserHeader column="status" label="ሁኔታ" config={sortConfig} onRequestSort={requestSort} />
+                                <SortableUserHeader column="createdAt" label="የተፈጠረበት ቀን" config={sortConfig} onRequestSort={requestSort} />
+                                <SortableUserHeader column="statusUpdatedAt" label="ሁኔታ የዘመነው" config={sortConfig} onRequestSort={requestSort} />
                                 <TableHead className="text-right">ድርጊቶች</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -447,8 +512,9 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                                     <TableCell><Badge variant={user.role === 'Admin' ? "default" : "secondary"}>{roleTranslations[user.role]}</Badge></TableCell>
                                     <TableCell><StatusBadge status={user.status} /></TableCell>
                                     <TableCell><DateDisplay dateString={user.createdAt} /></TableCell>
+                                    <TableCell><DateDisplay dateString={user.statusUpdatedAt} /></TableCell>
                                     <TableCell className="text-right space-x-2">
-                                       {currentUser?.id !== user.id && user.status !== 'Pending' && (
+                                       {currentUser?.id !== user.id && (
                                          <AlertDialog>
                                               <AlertDialogTrigger asChild><Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-red-50"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
                                               <AlertDialogContent>
@@ -460,7 +526,7 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
                                     </TableCell>
                                 </TableRow>
                             )) : (
-                                <TableRow><TableCell colSpan={6} className="h-24 text-center">ምንም ተጠቃሚዎች አልተገኙም።</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={7} className="h-24 text-center">ምንም ተጠቃሚዎች አልተገኙም።</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
@@ -470,63 +536,78 @@ export function AdminDashboard({ users, currentUser, onUpdateUserStatus, onDelet
             </Card>
         </TabsContent>
 
-        <TabsContent value="history">
+        <TabsContent value="submissions">
             <Card>
                 <CardHeader>
-                    <CardTitle>የተጠቃሚ አስተዳደር ታሪክ</CardTitle>
-                    <CardDescription>የጸደቁ እና ውድቅ የተደረጉ የተጠቃሚ ምዝገባዎች መዝገብ።</CardDescription>
+                    <CardTitle>የማመልከቻ አስተዳደር</CardTitle>
+                    <CardDescription>ሁሉንም ማመልከቻዎች ፈልግ፣ አጣራ እና አስተዳድር።</CardDescription>
                 </CardHeader>
-                <CardContent>
+                 <CardContent>
                     <div className="flex flex-col sm:flex-row gap-4 mb-6">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="በስም ወይም በኢሜይል ይፈልጉ..." value={historySearchTerm} onChange={(e) => setHistorySearchTerm(e.target.value)} className="pl-10 w-full"/>
+                            <Input
+                                placeholder="በፕሮጀክት ርዕስ፣ ID ወይም ስም ይፈልጉ..."
+                                value={submissionsSearchTerm}
+                                onChange={(e) => setSubmissionsSearchTerm(e.target.value)}
+                                className="pl-10 w-full"
+                            />
                         </div>
-                        <Select value={historyRoleFilter} onValueChange={(value) => setHistoryRoleFilter(value as User['role'] | "all")}>
-                            <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሚና ማጣሪያ" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">ሁሉም ሚናዎች</SelectItem>
-                                <SelectItem value="Admin">{roleTranslations['Admin']}</SelectItem>
-                                <SelectItem value="Approver">{roleTranslations['Approver']}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select value={historyStatusFilter} onValueChange={(value) => setHistoryStatusFilter(value as "Approved" | "Rejected" | "all")}>
-                            <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="በሁኔታ ማጣሪያ" /></SelectTrigger>
+                        <Select value={submissionsStatusFilter} onValueChange={(value) => setSubmissionsStatusFilter(value as SubmissionStatus | "all")}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="በሁኔታ ማጣሪያ" />
+                            </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">ሁሉም ሁኔታዎች</SelectItem>
-                                <SelectItem value="Approved">{statusTranslations['Approved']}</SelectItem>
-                                <SelectItem value="Rejected">{statusTranslations['Rejected']}</SelectItem>
+                                <SelectItem value="Pending">በመጠባበቅ ላይ</SelectItem>
+                                <SelectItem value="Approved">ጸድቋል</SelectItem>
+                                <SelectItem value="Rejected">ውድቅ ተደርጓል</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                   <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <SortableHeader column="name" label="ስም" config={historySortConfig} onRequestSort={requestHistorySort} />
-                                <SortableHeader column="email" label="ኢሜይል" config={historySortConfig} onRequestSort={requestHistorySort} />
-                                <SortableHeader column="role" label="ሚና" config={historySortConfig} onRequestSort={requestHistorySort} />
-                                <SortableHeader column="status" label="ሁኔታ" config={historySortConfig} onRequestSort={requestHistorySort} />
-                                <SortableHeader column="statusUpdatedAt" label="የተወሰነበት ቀን" config={historySortConfig} onRequestSort={requestHistorySort} />
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {paginatedHistoryUsers.length > 0 ? paginatedHistoryUsers.map(user => (
-                                <TableRow key={user.id}>
-                                    <TableCell className="font-medium">{user.name}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell><Badge variant={user.role === 'Admin' ? "default" : "secondary"}>{roleTranslations[user.role]}</Badge></TableCell>
-                                    <TableCell><StatusBadge status={user.status} /></TableCell>
-                                    <TableCell><DateDisplay dateString={user.statusUpdatedAt} /></TableCell>
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <SortableSubmissionHeader column="id" label="ID" config={submissionsSortConfig} onRequestSort={requestSubmissionsSort}/>
+                                    <SortableSubmissionHeader column="projectTitle" label="የፕሮጀክት ርዕስ" config={submissionsSortConfig} onRequestSort={requestSubmissionsSort}/>
+                                    <SortableSubmissionHeader column="userName" label="ያስገባው" config={submissionsSortConfig} onRequestSort={requestSubmissionsSort}/>
+                                    <SortableSubmissionHeader column="submittedAt" label="የገባበት ቀን" config={submissionsSortConfig} onRequestSort={requestSubmissionsSort}/>
+                                    <SortableSubmissionHeader column="status" label="ሁኔታ" config={submissionsSortConfig} onRequestSort={requestSubmissionsSort}/>
+                                    <TableHead className="text-right">ድርጊቶች</TableHead>
                                 </TableRow>
-                            )) : (
-                                <TableRow><TableCell colSpan={5} className="h-24 text-center">ምንም የታሪክ መዝገቦች አልተገኙም።</TableCell></TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                   </div>
+                            </TableHeader>
+                            <TableBody>
+                                {paginatedSubmissions.length > 0 ? (
+                                paginatedSubmissions.map((sub) => (
+                                    <TableRow key={sub.id}>
+                                        <TableCell className="font-mono text-xs text-muted-foreground">{sub.id}</TableCell>
+                                        <TableCell className="font-medium">{sub.projectTitle}</TableCell>
+                                        <TableCell>{sub.userName}</TableCell>
+                                        <TableCell><DateDisplay dateString={sub.submittedAt} /></TableCell>
+                                        <TableCell><SubmissionStatusBadge status={sub.status} /></TableCell>
+                                        <TableCell className="text-right space-x-2">
+                                            <Button size="sm" variant="outline" onClick={() => onViewSubmission(sub.id)}>ይመልከቱ</Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild><Button size="sm" variant="destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader><AlertDialogTitle>እርግጠኛ ነዎት?</AlertDialogTitle><AlertDialogDescription>ይህ ማመልከቻን እስከመጨረሻው ይሰርዘዋል። ይህን እርምጃ መቀልበስ አይቻልም።</AlertDialogDescription></AlertDialogHeader>
+                                                    <AlertDialogFooter><AlertDialogCancel>ይቅር</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteSubmission(sub.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">አዎ፣ ማመልከቻውን ሰርዝ</AlertDialogAction></AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                                ) : (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-24 text-center">ምንም ማመልከቻዎች አልተገኙም።</TableCell>
+                                </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
-                <TablePagination itemCount={sortedHistoryUsers.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={historyCurrentPage} onPreviousPage={() => setHistoryCurrentPage(p => p - 1)} onNextPage={() => setHistoryCurrentPage(p => p + 1)} />
+                <TablePagination itemCount={sortedSubmissions.length} itemsPerPage={ITEMS_PER_PAGE} currentPage={submissionsCurrentPage} onPreviousPage={() => setSubmissionsCurrentPage(p => p - 1)} onNextPage={() => setSubmissionsCurrentPage(p => p + 1)} />
             </Card>
         </TabsContent>
       </Tabs>
