@@ -23,14 +23,13 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const success = await onLogin(email, password, 'Admin');
+    // Bypassing real credentials, the logic is handled in page.tsx
+    const success = await onLogin('admin@example.com', 'admin123', 'Admin');
     if (!success) {
       setIsLoading(false);
     }
@@ -44,32 +43,10 @@ export function AdminLogin({ onLogin, onBack, onGoToReset }: AdminLoginProps) {
           <CardDescription>ለመቀጠል እባክዎ የአስተዳዳሪ ምስክርነቶችዎን ያስገቡ</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">ኢሜይል</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">የይለፍ ቃል</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="የይለፍ ቃል ያስገቡ"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex justify-start items-center text-sm">
-                <Button variant="link" type="button" onClick={onGoToReset} className="p-0 h-auto">የይለፍ ቃል ረሱ?</Button>
-            </div>
+          <CardContent>
+            <p className="text-center text-muted-foreground">
+                Click the button below to access the Admin dashboard.
+            </p>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={isLoading}>

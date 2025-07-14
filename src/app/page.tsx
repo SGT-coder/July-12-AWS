@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { SubmissionTracking } from "@/components/tracking/submission-tracking";
+import { initialUsers } from "@/lib/data";
 
 type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings' | 'track-submission' | 'admin/register';
 
@@ -120,22 +121,38 @@ export default function Home() {
   };
 
   const handleLogin = async (email: string, password: string, role: "Admin" | "Approver"): Promise<boolean> => {
-    const result = await loginUser({ email, password, role });
-    if (result.success && result.user && result.translatedRole) {
-        setLoggedInUser(result.user);
-        setRole(result.user.role);
-        
-        if (result.user.role === 'Admin') {
+    let userToLogin: User | undefined;
+    
+    const roleTranslations: Record<User['role'], string> = {
+        Admin: "አስተዳዳሪ",
+        Approver: "አጽዳቂ",
+    };
+
+    if (role === 'Admin') {
+        userToLogin = initialUsers.find(u => u.role === 'Admin');
+        if (userToLogin) {
+            setLoggedInUser(userToLogin);
+            setRole('Admin');
             setView('admin-dashboard');
-        } else {
-            setView('dashboard');
+            toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ، ${userToLogin.name} (${roleTranslations[userToLogin.role]})!` });
+            return true;
         }
-        toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ، ${result.user.name} (${result.translatedRole})!` });
-        return true;
-    } else {
-        toast({ title: "መግባት አልተቻለም", description: result.message, variant: "destructive" });
-        return false;
     }
+
+    if (role === 'Approver') {
+        userToLogin = initialUsers.find(u => u.role === 'Approver');
+        if (userToLogin) {
+            setLoggedInUser(userToLogin);
+            setRole('Approver');
+            setView('dashboard');
+            toast({ title: "በተሳካ ሁኔታ ገብተዋል", description: `እንኳን ደህና መጡ، ${userToLogin.name} (${roleTranslations[userToLogin.role]})!` });
+            return true;
+        }
+    }
+    
+    // Fallback if no sample user is found, though this shouldn't happen with the current setup.
+    toast({ title: "መግባት አልተቻለም", description: "Sample user not found.", variant: "destructive" });
+    return false;
   }
 
   const handleLogout = () => {
