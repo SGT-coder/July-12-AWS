@@ -286,7 +286,7 @@ export function AdminDashboard({
 
   // --- Memoized data for "Submissions" tab ---
     const filteredSubmissions = React.useMemo(() => {
-        return submissions
+        return (submissions || [])
             .filter((sub) =>
                 sub.projectTitle.toLowerCase().includes(submissionsSearchTerm.toLowerCase()) ||
                 sub.id.toLowerCase().includes(submissionsSearchTerm.toLowerCase()) ||
@@ -614,3 +614,5 @@ export function AdminDashboard({
     </div>
   );
 }
+
+    

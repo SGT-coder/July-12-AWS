@@ -361,6 +361,16 @@
       "status": "Pending",
       "createdAt": "2025-07-14T06:10:53.188Z",
       "statusUpdatedAt": "2025-07-14T06:10:53.188Z"
+    },
+    {
+      "id": "8e36a591-902a-4946-adf4-80e34dc88f9a",
+      "name": "sami",
+      "email": "sas@gmail.com",
+      "password": "sas@gmail.com",
+      "role": "Admin",
+      "status": "Approved",
+      "createdAt": "2025-07-14T06:21:05.815Z",
+      "statusUpdatedAt": "2025-07-14T06:21:05.815Z"
     }
   ]
 }
