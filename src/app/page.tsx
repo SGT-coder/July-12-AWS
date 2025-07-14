@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
     getSubmissions, addSubmission, updateSubmission, updateSubmissionStatus, deleteSubmission, 
     loginUser, registerUser, requestPasswordReset, getUsers, updateUserStatus, deleteUser,
-    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset, getSubmissionById,
+    updateUserProfile, changeUserPassword, adminAddUser, approvePasswordReset, rejectPasswordReset,
     trackSubmission
 } from "@/app/client-actions";
 import { AppHeader } from "@/components/shared/header";
@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { SubmissionTracking } from "@/components/tracking/submission-tracking";
 
-type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings' | 'track-submission';
+type AppView = 'role-selector' | 'dashboard' | 'admin-dashboard' | 'form' | 'view-submission' | 'approver-login' | 'admin-login' | 'register' | 'reset-password' | 'analytics' | 'settings' | 'track-submission' | 'admin/register';
 
 export default function Home() {
   const [role, setRole] = React.useState<Role>(null);
@@ -99,7 +99,7 @@ export default function Home() {
     return fetchedUsers;
   };
 
-  const handleSelectView = (newView: 'form' | 'approver-login' | 'track-submission') => {
+  const handleSelectView = (newView: 'form' | 'approver-login' | 'track-submission' | 'admin/register') => {
     if (newView === 'form') {
         setRole('User');
         setCurrentSubmissionId(null);
@@ -168,7 +168,7 @@ export default function Home() {
   };
   
   const handleBack = () => {
-      if (view === 'form' || view === 'track-submission') {
+      if (view === 'form' || view === 'track-submission' || view === 'admin/register') {
         handleLogout();
       } else if (view === 'approver-login' || view === 'admin-login' || view === 'register' || view === 'reset-password') {
         handleLogout();
@@ -347,10 +347,10 @@ export default function Home() {
   
   const currentSubmission = submissions.find(s => s.id === currentSubmissionId);
 
-  const shouldShowHeaderButton = ['form', 'view-submission', 'analytics', 'settings', 'track-submission'].includes(view);
+  const shouldShowHeaderButton = ['form', 'view-submission', 'analytics', 'settings', 'track-submission', 'admin/register'].includes(view);
 
   const renderContent = () => {
-    if (isLoading && !['role-selector', 'form', 'track-submission'].includes(view)) {
+    if (isLoading && !['role-selector', 'form', 'track-submission', 'admin/register'].includes(view)) {
         return (
             <div className="space-y-4">
                 <Skeleton className="h-16 w-1/2" />
@@ -367,6 +367,7 @@ export default function Home() {
       case 'admin-dashboard':
         return <AdminDashboard 
             users={users}
+            submissions={submissions}
             currentUser={loggedInUser}
             onUpdateUserStatus={handleUpdateUserStatus} 
             onDeleteUser={handleDeleteUser}
@@ -426,6 +427,9 @@ export default function Home() {
                         />
                      )}
                   </SubmissionTracking>;
+      case 'admin/register':
+        const AdminRegisterPage = require('@/app/admin/register/page').default;
+        return <AdminRegisterPage />;
 
       default:
         return <RoleSelector onSelectView={handleSelectView} />;
