@@ -5,8 +5,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Loader2, ShieldCheck, UserPlus } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,32 +26,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { adminAddUser, getUsers } from "@/app/client-actions";
-import type { User } from "@/lib/types";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { adminAddUser } from "@/app/client-actions";
 import Link from "next/link";
 import { adminAddUserSchema, type AdminAddUserFormValues } from "@/lib/schemas";
 
 
 export default function AdminRegisterPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [adminExists, setAdminExists] = React.useState<boolean | null>(null);
   const { toast } = useToast();
   const router = useRouter();
-
-  React.useEffect(() => {
-    async function checkAdmin() {
-      try {
-        const users: User[] = await getUsers();
-        const existingAdmin = users.some(u => u.role === 'Admin');
-        setAdminExists(existingAdmin);
-      } catch (error) {
-        console.error("Failed to check for admin user:", error);
-        setAdminExists(false); // Assume no admin if there's an error
-      }
-    }
-    checkAdmin();
-  }, []);
 
   const form = useForm<AdminAddUserFormValues>({
     resolver: zodResolver(adminAddUserSchema),
@@ -71,7 +53,7 @@ export default function AdminRegisterPage() {
     if (result.success) {
       toast({
         title: "Admin Account Created",
-        description: "You have successfully created the admin account. Please log in.",
+        description: "You have successfully created a new admin account. Please log in.",
       });
       router.push('/');
     } else {
@@ -84,35 +66,8 @@ export default function AdminRegisterPage() {
     setIsSubmitting(false);
   };
   
-  if (adminExists === null) {
-      return (
-        <div className="flex justify-center items-center min-h-screen bg-background">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      )
-  }
-
-  if (adminExists) {
-    return (
-        <div className="flex justify-center items-center min-h-screen bg-background p-4">
-            <Alert variant="destructive" className="max-w-md">
-                <ShieldCheck className="h-4 w-4" />
-                <AlertTitle>Admin Account Already Exists</AlertTitle>
-                <AlertDescription>
-                    An administrator account has already been set up. This registration page is for one-time use only. If you need to log in, please return to the homepage.
-                </AlertDescription>
-                <div className="mt-4">
-                    <Button asChild>
-                        <Link href="/">Go to Login Page</Link>
-                    </Button>
-                </div>
-            </Alert>
-        </div>
-    )
-  }
-
   return (
-    <div className="flex justify-center items-center min-h-screen bg-background">
+    <div className="flex justify-center items-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -122,7 +77,7 @@ export default function AdminRegisterPage() {
                 </div>
               <CardTitle className="font-headline text-2xl">Create Admin Account</CardTitle>
               <CardDescription>
-                This is a one-time setup for the primary administrator.
+                Fill in the details to create a new administrator account.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -133,7 +88,7 @@ export default function AdminRegisterPage() {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your full name" {...field} />
+                      <Input placeholder="Enter user's full name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -146,7 +101,7 @@ export default function AdminRegisterPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter your email" {...field} />
+                      <Input type="email" placeholder="Enter user's email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -172,7 +127,7 @@ export default function AdminRegisterPage() {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Confirm your password" {...field} />
+                      <Input type="password" placeholder="Confirm the password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
